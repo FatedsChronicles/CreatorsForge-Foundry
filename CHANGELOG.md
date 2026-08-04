@@ -20,6 +20,8 @@ All notable changes to Creators Forge Foundry are documented in this file.
 - Explicit Stable and Prerelease update channels. Stable follows GitHub's latest
   stable release; Prerelease safely discovers published alpha, beta, and
   release-candidate manifests while excluding drafts.
+- A **Restore Official GitHub Source** settings action that restores the
+  canonical update-manifest URL without requiring users to paste it manually.
 - A two-step **Stage Verified Update** and **Install Verified Update** desktop
   flow that verifies package size and SHA-256 before permitting execution.
 - Optional Authenticode signing hooks for the setup executable and generated
@@ -60,6 +62,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
   selected directory, settings, recovery state, and user projects.
 - The GitHub-hosted release rehearsal and clean in-place update from
   `0.19.0-alpha.1` to `0.19.0-alpha.3` passed using the generated native updater.
+- Phase 19C product-owner acceptance passed: alpha.5 discovered the published
+  alpha.6 prerelease through Foundry, verified and installed it, then reported
+  alpha.6 up to date on the Prerelease channel.
 - GitHub Release automation now runs on the Node.js 24-compatible
   `actions/checkout@v7`, `actions/setup-dotnet@v6`, and
   `actions/upload-artifact@v7` action majors.

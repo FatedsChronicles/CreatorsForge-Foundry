@@ -265,3 +265,8 @@ Phase 19C acceptance additionally requires a private-alpha build on the
 Prerelease channel to discover a newer published prerelease through **Check for
 Updates**, stage it with matching size and SHA-256, install it in place, and
 preserve the selected installation directory and user data.
+
+Phase 19C channel acceptance passed on 2026-08-04: alpha.5 discovered, verified,
+and installed alpha.6 from the published Prerelease channel and subsequently
+reported alpha.6 up to date. The official source can be restored from Settings
+without manually entering its URL.

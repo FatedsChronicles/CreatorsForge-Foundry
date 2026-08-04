@@ -46,6 +46,13 @@ public partial class SettingsDialog : Window
         }
     }
 
+    private void RestoreOfficialUpdateSource_Click(object sender, RoutedEventArgs e)
+    {
+        UpdateLocationTextBox.Text = FoundryUserSettings.DefaultUpdateManifestLocation;
+        UpdateLocationTextBox.CaretIndex = UpdateLocationTextBox.Text.Length;
+        UpdateLocationTextBox.Focus();
+    }
+
     private void Save_Click(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(ProjectDirectoryTextBox.Text) ||

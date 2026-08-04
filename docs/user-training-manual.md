@@ -665,6 +665,8 @@ backup or silently migrate during open/build.
 - Select **Prerelease (includes stable)** for private-alpha, beta, and release-
   candidate testing. Draft releases are never offered.
 - Enter a local file path or HTTPS update-manifest location.
+- Select **Restore Official GitHub Source** to replace a local or customized
+  location with Foundry's canonical GitHub Releases manifest URL.
 - Enable **Allow explicit HTTPS update checks and SDK downloads** only when you
   want Foundry to use the network for an action you start.
 - Leave the location empty to disable update checks. Foundry never checks
@@ -683,15 +685,17 @@ Select **Save** to apply valid settings or **Cancel** to discard dialog edits.
 1. In **Settings > Updates**, select **Stable** or **Prerelease (includes
    stable)**. Channel selection applies to the default official GitHub source;
    custom and local manifests remain channel-neutral.
-2. Enable explicit HTTPS access to use GitHub Releases, or select a local
+2. If the manifest field contains a local/custom location, select **Restore
+   Official GitHub Source** to use the selected GitHub channel.
+3. Enable explicit HTTPS access to use GitHub Releases, or select a local
    manifest for offline use.
-3. Select **Check for Updates**.
-4. Review the selected channel, current version, available version, and package.
-5. Select **Stage Verified Update**. Foundry verifies the native updater size
+4. Select **Check for Updates**.
+5. Review the selected channel, current version, available version, and package.
+6. Select **Stage Verified Update**. Foundry verifies the native updater size
    and SHA-256 before it can run.
-6. Save open work and select **Install Verified Update**. Confirm the prompt;
+7. Save open work and select **Install Verified Update**. Confirm the prompt;
    Foundry starts the elevated Windows setup and then closes.
-7. Complete the setup wizard. An update retains the existing installation
+8. Complete the setup wizard. An update retains the existing installation
    directory, including a custom directory selected during first install.
 
 Updates are never checked or installed silently. The same native setup engine
