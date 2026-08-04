@@ -677,14 +677,20 @@ Select **Save** to apply valid settings or **Cancel** to discard dialog edits.
 
 ### Check for updates — Help > Check for Updates...
 
-1. Configure a local or permitted HTTPS manifest in Settings.
+1. In **Settings > Updates**, enable explicit HTTPS access to use the default
+   official GitHub Releases manifest, or select a local manifest for offline use.
 2. Select **Check for Updates**.
 3. Review the current and available version and verification information.
-4. If an update is available, select **Stage Verified Update**. Foundry checks
-   the package size and SHA-256 before making it available.
+4. Select **Stage Verified Update**. Foundry verifies the native updater size
+   and SHA-256 before it can run.
+5. Save open work and select **Install Verified Update**. Confirm the prompt;
+   Foundry starts the elevated Windows setup and then closes.
+6. Complete the setup wizard. An update retains the existing installation
+   directory, including a custom directory selected during first install.
 
-Updates are never checked or installed silently. Preserve and verify projects,
-settings, and recovery state as part of a release acceptance update rehearsal.
+Updates are never checked or installed silently. The same native setup engine
+is used for clean installs and updates. Preserve and verify projects, settings,
+and recovery state as part of a release acceptance update rehearsal.
 
 ### Recovery and diagnostics — Tools > Recovery and Diagnostics...
 

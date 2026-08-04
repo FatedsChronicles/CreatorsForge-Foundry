@@ -43,6 +43,9 @@
     <None Include="..\..\eng\desktop\package-desktop.ps1"
           Link="Fixtures\Desktop\package-desktop.ps1"
           CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\eng\desktop\FoundrySetup.iss"
+          Link="Fixtures\Desktop\FoundrySetup.iss"
+          CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\eng\private-alpha\package-private-alpha.ps1"
           Link="Fixtures\PrivateAlpha\package-private-alpha.ps1"
           CopyToOutputDirectory="PreserveNewest" />

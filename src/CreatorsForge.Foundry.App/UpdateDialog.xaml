@@ -5,7 +5,7 @@
     <TextBlock Grid.Row="1" Margin="0,6,0,12" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap" Text="Update checks are manual. Local manifests work offline; HTTPS is used only when network access is enabled in Settings." />
     <TextBox x:Name="OutputText" Grid.Row="2" Padding="10" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="Update status" />
     <StackPanel Grid.Row="3" Margin="0,14,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
-      <Button x:Name="DownloadButton" MinWidth="150" Content="Stage Verified Update" IsEnabled="False" Click="Download_Click"/>
+      <Button x:Name="DownloadButton" MinWidth="160" Content="Stage Verified Update" IsEnabled="False" Click="Download_Click"/>
       <Button MinWidth="120" Content="Check for Updates" IsDefault="True" Click="Check_Click"/>
       <Button MinWidth="90" Content="Close" IsCancel="True"/>
     </StackPanel>

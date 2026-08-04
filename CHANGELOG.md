@@ -8,6 +8,15 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 - Dark / Light / System mode 
 - Branding Logo
+- Native Windows setup and updater executables with a selectable installation
+  directory and a default of `C:\Program Files\Creators Forge\Foundry`.
+- GitHub Releases as the default manual update source, with verified staged
+  updater launch from the desktop.
+
+### Changed
+
+- Windows installation, upgrade, and uninstall now use a registered native
+  setup workflow instead of requiring end users to run PowerShell scripts.
 
 ## [Unreleased] — changes since 0.1.0-rc.1
 

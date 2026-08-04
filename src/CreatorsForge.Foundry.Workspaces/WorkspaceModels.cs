@@ -121,11 +121,14 @@ public sealed record FoundryUserSettings(
     IReadOnlyList<string>? StreamerBotInstallations = null,
     IReadOnlyList<string>? ObsInstallations = null,
     bool FirstRunCompleted = false,
-    string? UpdateManifestLocation = null,
+    string? UpdateManifestLocation = "https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases/latest/download/foundry-update.json",
     bool AllowNetworkAccess = false,
     bool IncludePathsInDiagnosticBundles = false,
     FoundryThemePreference Theme = FoundryThemePreference.System)
 {
+    public const string DefaultUpdateManifestLocation =
+        "https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases/latest/download/foundry-update.json";
+
     public static FoundryUserSettings CreateDefault() => new(
         Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
@@ -135,7 +138,7 @@ public sealed record FoundryUserSettings(
         [],
         [],
         false,
-        null,
+        DefaultUpdateManifestLocation,
         false,
         false,
         FoundryThemePreference.System);

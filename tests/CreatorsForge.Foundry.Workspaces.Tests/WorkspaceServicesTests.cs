@@ -588,6 +588,46 @@ public sealed class WorkspaceServicesTests
     }
 
     [Fact]
+    public async Task NativeUpdateStagesAsExeAndCreatesElevatedInstallerLaunch()
+    {
+        using var temporary = TemporaryDirectory.Create();
+        var package = Path.Combine(temporary.Path, "CreatorsForge-Foundry-2.0.0-Update.exe");
+        await File.WriteAllTextAsync(package, "verified native updater");
+        var bytes = await File.ReadAllBytesAsync(package);
+        var manifest = new FoundryUpdateManifest(
+            1,
+            "2.0.0",
+            package,
+            Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(bytes)),
+            bytes.Length,
+            DateTimeOffset.UtcNow);
+
+        var staged = await FoundryUpdateService.StageAsync(
+            manifest,
+            Path.Combine(temporary.Path, "staged"),
+            allowNetworkAccess: false);
+
+        Assert.Empty(staged.Diagnostics);
+        Assert.EndsWith("-Update.exe", staged.PackagePath, StringComparison.OrdinalIgnoreCase);
+        var startInfo = FoundryUpdateService.CreateInstallerStartInfo(staged.PackagePath!);
+        Assert.True(startInfo.UseShellExecute);
+        Assert.Equal("runas", startInfo.Verb);
+        Assert.Contains("/CLOSEAPPLICATIONS", startInfo.Arguments, StringComparison.Ordinal);
+        Assert.Contains("/NORESTART", startInfo.Arguments, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DefaultSettingsUseOfficialGitHubReleaseManifest()
+    {
+        var settings = FoundryUserSettings.CreateDefault();
+
+        Assert.Equal(
+            "https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases/latest/download/foundry-update.json",
+            settings.UpdateManifestLocation);
+        Assert.False(settings.AllowNetworkAccess);
+    }
+
+    [Fact]
     public async Task UpdateServiceBlocksNetworkByDefaultAndRejectsModifiedPackage()
     {
         var blocked = await FoundryUpdateService.CheckAsync("https://example.invalid/foundry-update.json", "1.0.0", allowNetworkAccess: false);
