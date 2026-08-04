@@ -16,11 +16,13 @@ Foundry v1 supports:
 - Streamer.bot 1.0.4 stable;
 - Streamer.bot 1.0.5-alpha.34;
 - Streamer.bot 1.0.5-beta.1;
-- OBS Studio 32.1.2 on Windows x64.
+- Streamer.bot 1.0.5-beta.6;
+- OBS Studio 32.1.2 on Windows x64;
+- OBS Studio 32.2.1 on Windows x64.
 
-The three Streamer.bot profiles control editor compatibility checks. Foundry
-currently exports the verified stable-v23 import format for all three profiles.
-OBS Studio 32.1.2 is the only exact OBS version supported for v1; a general
+The four Streamer.bot profiles control editor compatibility checks. Foundry
+currently exports the verified stable-v23 import format for all four profiles.
+OBS Studio 32.1.2 & OBS Studio 32.2.1 are the only exact OBS versions supported for v1; a general
 `32.x-windows-x64` label is not a promise of support for every 32.x release.
 
 Use disposable Streamer.bot and OBS installations while learning, testing
