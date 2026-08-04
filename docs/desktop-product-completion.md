@@ -63,6 +63,8 @@ warnings or errors. Product-owner acceptance also passed: alpha.5 discovered,
 verified, and installed the published alpha.6 release entirely through Foundry's
 Prerelease channel, then reported alpha.6 up to date. Settings provides a
 one-click action to restore the canonical GitHub source after local/offline use.
+The installed alpha.7 build passed the corresponding visual and functional
+acceptance check: the action was visible and restored the canonical URL exactly.
 
 ## First-run and toolchain health
 
