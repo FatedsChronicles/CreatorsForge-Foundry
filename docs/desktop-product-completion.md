@@ -51,8 +51,12 @@ Product-owner acceptance completed on 2026-08-04 using the generated
 - native Windows uninstall; and
 - preservation of user-owned projects, settings, and recovery data.
 
-The complete automated gate also passed with 218 tests, zero build warnings or
+The complete automated gate also passed with 220 tests, zero build warnings or
 errors, and all managed, native, and multi-project desktop smoke tests.
+
+GitHub Release creation and upload of the setup, updater, and update manifest
+are automated by the guarded manual workflow documented in
+[github-release-automation.md](github-release-automation.md).
 
 ## First-run and toolchain health
 

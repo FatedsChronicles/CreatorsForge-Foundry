@@ -1,0 +1,142 @@
+name: Publish Foundry Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Semantic version without the leading v (for example 1.0.0 or 1.1.0-beta.1)
+        required: true
+        type: string
+      release_type:
+        description: GitHub Release visibility
+        required: true
+        default: draft
+        type: choice
+        options:
+          - draft
+          - prerelease
+          - stable
+
+permissions:
+  contents: write
+
+concurrency:
+  group: foundry-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build, verify, and publish
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_OUTPUT: ${{ github.workspace }}\artifacts\github-release
+      RELEASE_VERSION_INPUT: ${{ inputs.version }}
+      RELEASE_TYPE_INPUT: ${{ inputs.release_type }}
+
+    steps:
+      - name: Check out release source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET from global.json
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Validate release inputs
+        id: release
+        shell: pwsh
+        run: |
+          $version = $env:RELEASE_VERSION_INPUT.Trim()
+          if ($version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$') {
+            throw "Version '$version' is not valid semantic version text."
+          }
+          if ($env:RELEASE_TYPE_INPUT -eq 'stable' -and $version.Contains('-')) {
+            throw 'A stable GitHub Release cannot use a prerelease version.'
+          }
+          $tag = "v$version"
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -eq 0) {
+            throw "GitHub Release $tag already exists. Releases are immutable inputs; choose a new version."
+          }
+          $global:LASTEXITCODE = 0
+          git ls-remote --exit-code --tags origin "refs/tags/$tag" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            throw "Git tag $tag already exists without a release. Review it before continuing."
+          }
+          $global:LASTEXITCODE = 0
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+
+      - name: Install Inno Setup 6
+        shell: pwsh
+        run: |
+          winget install --id JRSoftware.InnoSetup --exact --silent --accept-package-agreements --accept-source-agreements
+          if ($LASTEXITCODE -ne 0) {
+            throw "Inno Setup installation failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Run full release regression gate
+        shell: pwsh
+        run: .\build.ps1 -Configuration Release
+
+      - name: Build native setup and updater
+        shell: pwsh
+        run: |
+          .\eng\desktop\package-desktop.ps1 `
+            -Configuration Release `
+            -Version '${{ steps.release.outputs.version }}' `
+            -PublishedAtUtc ([DateTimeOffset]::UtcNow) `
+            -OutputDirectory $env:RELEASE_OUTPUT
+
+      - name: Verify release assets
+        shell: pwsh
+        run: |
+          .\eng\desktop\verify-desktop-release.ps1 `
+            -Version '${{ steps.release.outputs.version }}' `
+            -ReleaseDirectory $env:RELEASE_OUTPUT
+
+      - name: Retain verified workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: creators-forge-foundry-${{ steps.release.outputs.version }}
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            ${{ env.RELEASE_OUTPUT }}\CreatorsForge-Foundry-${{ steps.release.outputs.version }}-Setup.exe
+            ${{ env.RELEASE_OUTPUT }}\CreatorsForge-Foundry-${{ steps.release.outputs.version }}-Update.exe
+            ${{ env.RELEASE_OUTPUT }}\foundry-update.json
+
+      - name: Create GitHub Release and upload assets
+        id: github_release
+        shell: pwsh
+        run: |
+          $version = '${{ steps.release.outputs.version }}'
+          $tag = '${{ steps.release.outputs.tag }}'
+          $setup = Join-Path $env:RELEASE_OUTPUT "CreatorsForge-Foundry-$version-Setup.exe"
+          $updater = Join-Path $env:RELEASE_OUTPUT "CreatorsForge-Foundry-$version-Update.exe"
+          $manifest = Join-Path $env:RELEASE_OUTPUT 'foundry-update.json'
+          $arguments = @(
+            'release', 'create', $tag,
+            $setup, $updater, $manifest,
+            '--repo', $env:GITHUB_REPOSITORY,
+            '--target', $env:GITHUB_SHA,
+            '--title', "Creators Forge Foundry $version",
+            '--generate-notes',
+            '--fail-on-no-commits'
+          )
+          switch ($env:RELEASE_TYPE_INPUT) {
+            'draft' { $arguments += '--draft' }
+            'prerelease' { $arguments += '--prerelease'; $arguments += '--latest=false' }
+            'stable' { $arguments += '--latest' }
+          }
+          gh @arguments
+          if ($LASTEXITCODE -ne 0) {
+            throw "GitHub Release creation failed with exit code $LASTEXITCODE."
+          }
+          $releaseUrl = gh release view $tag --repo $env:GITHUB_REPOSITORY --json url --jq .url
+          "url=$releaseUrl" >> $env:GITHUB_OUTPUT
+          "### Foundry release created`n`n- Version: $version`n- Type: $env:RELEASE_TYPE_INPUT`n- URL: $releaseUrl" >> $env:GITHUB_STEP_SUMMARY

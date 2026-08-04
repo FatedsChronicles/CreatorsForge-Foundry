@@ -49,4 +49,43 @@ public sealed class DesktopPackagingTests
         Assert.Contains("PublishedAtUtc", script, StringComparison.Ordinal);
         Assert.DoesNotContain("CreateFromDirectory", script, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void GitHubReleaseWorkflowIsManualGuardedAndUploadsExactNativeAssets()
+    {
+        var root = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Desktop");
+        var workflow = File.ReadAllText(Path.Combine(root, "publish-foundry-release.yml"));
+
+        Assert.Contains("workflow_dispatch:", workflow, StringComparison.Ordinal);
+        Assert.Contains("default: draft", workflow, StringComparison.Ordinal);
+        Assert.Contains("contents: write", workflow, StringComparison.Ordinal);
+        Assert.Contains("cancel-in-progress: false", workflow, StringComparison.Ordinal);
+        Assert.Contains("gh release view", workflow, StringComparison.Ordinal);
+        Assert.Contains("git ls-remote --exit-code --tags", workflow, StringComparison.Ordinal);
+        Assert.Contains(".\\build.ps1 -Configuration Release", workflow, StringComparison.Ordinal);
+        Assert.Contains("verify-desktop-release.ps1", workflow, StringComparison.Ordinal);
+        Assert.Contains("gh @arguments", workflow, StringComparison.Ordinal);
+        Assert.Contains("-Setup.exe", workflow, StringComparison.Ordinal);
+        Assert.Contains("-Update.exe", workflow, StringComparison.Ordinal);
+        Assert.Contains("foundry-update.json", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("-win-x64.zip", workflow, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DesktopReleaseVerifierPinsManifestIdentityHashAndMetadata()
+    {
+        var verifier = File.ReadAllText(Path.Combine(
+            AppContext.BaseDirectory,
+            "Fixtures",
+            "Desktop",
+            "verify-desktop-release.ps1"));
+
+        Assert.Contains("schemaVersion -ne 1", verifier, StringComparison.Ordinal);
+        Assert.Contains("Get-FileHash", verifier, StringComparison.Ordinal);
+        Assert.Contains("$setupHash -ne $updaterHash", verifier, StringComparison.Ordinal);
+        Assert.Contains("$manifest.sha256 -ne $updaterHash", verifier, StringComparison.Ordinal);
+        Assert.Contains("ProductName", verifier, StringComparison.Ordinal);
+        Assert.Contains("ProductVersion", verifier, StringComparison.Ordinal);
+        Assert.Contains("official GitHub Releases page", verifier, StringComparison.Ordinal);
+    }
 }

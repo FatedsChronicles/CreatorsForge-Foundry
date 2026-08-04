@@ -21,6 +21,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
   flow that verifies package size and SHA-256 before permitting execution.
 - Optional Authenticode signing hooks for the setup executable and generated
   native uninstaller when a publisher signing command is supplied.
+- A manual, draft-by-default GitHub Actions release workflow that runs the full
+  regression gate, compiles and verifies the native payload, creates the tag and
+  GitHub Release, and uploads the setup, updater, and update manifest assets.
 
 ### Changed
 
@@ -54,8 +57,10 @@ All notable changes to Creators Forge Foundry are documented in this file.
   selected directory, settings, recovery state, and user projects.
 - Windows Installed Apps uninstall removed Foundry and its shortcuts without
   removing user-owned data or requiring a PowerShell script.
-- The complete automated suite passes 218 tests with zero build warnings or
+- The complete automated suite passes 220 tests with zero build warnings or
   errors and all six desktop smoke-test projects passing.
+- Release automation regression tests enforce manual dispatch, least-privilege
+  release permissions, duplicate tag/release rejection, and exact asset upload.
 
 ## [Unreleased] — changes since 0.1.0-rc.1
 
