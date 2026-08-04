@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "name": "OBS Configurable Filter",
+  "id": "dev.creatorsforge.samples.configurable-filter",
+  "version": "1.0.1",
+  "target": {
+    "provider": "obsstudio",
+    "profile": "32.x-windows-x64"
+  },
+  "template": {
+    "id": "obs-filter-v1",
+    "revision": "1",
+    "parameters": {
+      "author": "Creators Forge",
+      "description": "A configurable lifecycle-safe filter sample."
+    }
+  },
+  "components": [],
+  "publishing": {
+    "packageName": "dev.creatorsforge.samples.configurable-filter",
+    "summary": "A release-ready configurable OBS filter with safe source lifecycle handling.",
+    "authors": [
+      "Creators Forge"
+    ],
+    "licenseFile": "LICENSE.txt",
+    "changelogFile": "CHANGELOG.md",
+    "tags": [
+      "filter",
+      "obs",
+      "sample"
+    ],
+    "dependencies": [
+      {
+        "name": "OBS Studio",
+        "version": "32.1.2",
+        "kind": "runtime",
+        "license": "GPL-2.0-or-later",
+        "source": "https://obsproject.com"
+      }
+    ],
+    "signing": {
+      "enabled": false,
+      "toolPath": "",
+      "certificateThumbprint": "",
+      "timestampUrl": ""
+    }
+  },
+  "features": {
+    "winForms": false,
+    "mockRuntime": false
+  },
+  "nativeBuild": {
+    "language": "c17",
+    "architecture": "x64",
+    "toolchain": "cmake-msvc",
+    "sources": [
+      "src/plugin.c"
+    ]
+  },
+  "obsPlugin": {
+    "contract": "libobs-module-v1",
+    "moduleName": "foundry-configurable-filter",
+    "entrySymbol": "foundry_obs_plugin_load",
+    "displayName": "Foundry Configurable Filter",
+    "author": "Creators Forge",
+    "description": "A settings-aware lifecycle-safe OBS video filter sample.",
+    "apiVersion": "32.1.2",
+    "sdkVersion": "32.1.2",
+    "design": {
+      "template": "configurable-filter-v1",
+      "source": "src/plugin.c",
+      "componentId": "dev.creatorsforge.configurable-filter",
+      "componentName": "Foundry Configurable Filter"
+    }
+  },
+  "testDefinition": "tests/foundry-tests.json",
+  "outputs": [
+    "obsPlugin",
+    "obsPluginPackage"
+  ]
+}

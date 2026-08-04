@@ -1,0 +1,99 @@
+{
+  "format": "streamerbot-stable-v23",
+  "payloadVersion": 23,
+  "exportedFrom": "1.0.4",
+  "projectId": "com.creatorsforge.golden.streamerbot",
+  "projectVersion": "1.2.3",
+  "counts": {
+    "actions": 1,
+    "commands": 1,
+    "queues": 1
+  },
+  "roundTripVerified": true,
+  "definition": {
+    "schemaVersion": 1,
+    "metadata": {
+      "author": "Creators Forge",
+      "description": "Round-trip fixture"
+    },
+    "queues": [
+      {
+        "id": "2a3333c7-783e-5a75-ac1d-b327fcf8a156",
+        "name": "Default",
+        "blocking": false
+      }
+    ],
+    "commands": [
+      {
+        "id": "e5abefc0-f385-57d6-9191-d1cc37a4e4b8",
+        "name": "Hello",
+        "commands": [
+          "!hello",
+          "!hi"
+        ],
+        "enabled": true,
+        "caseSensitive": false,
+        "globalCooldown": 5,
+        "userCooldown": 10
+      }
+    ],
+    "actions": [
+      {
+        "id": "9e10b774-3f5c-5454-ae9a-f4b7fc08e240",
+        "name": "Hello",
+        "enabled": true,
+        "queueId": "2a3333c7-783e-5a75-ac1d-b327fcf8a156",
+        "concurrent": false,
+        "alwaysRun": false,
+        "triggers": [
+          {
+            "id": "22b6354f-0494-52a0-81d5-2ef4d17a3a54",
+            "kind": "command",
+            "enabled": true,
+            "commandId": "e5abefc0-f385-57d6-9191-d1cc37a4e4b8"
+          },
+          {
+            "id": "35e0babf-4d68-5250-a828-c4958ff8adc6",
+            "kind": "test",
+            "enabled": true,
+            "commandId": null
+          }
+        ],
+        "subActions": [
+          {
+            "id": "21519f89-a27f-55c2-9534-5ad1b70eb612",
+            "kind": "setArgument",
+            "enabled": true,
+            "variableName": "message",
+            "value": "hello",
+            "autoType": true
+          },
+          {
+            "id": "89f63d94-6ae2-5042-a539-bd010f391067",
+            "kind": "executeBridge",
+            "enabled": true,
+            "variableName": null,
+            "value": null,
+            "autoType": false
+          }
+        ]
+      }
+    ]
+  },
+  "wire": {
+    "actionId": "9e10b774-3f5c-5454-ae9a-f4b7fc08e240",
+    "queueId": "2a3333c7-783e-5a75-ac1d-b327fcf8a156",
+    "commandId": "e5abefc0-f385-57d6-9191-d1cc37a4e4b8",
+    "triggerIds": [
+      "22b6354f-0494-52a0-81d5-2ef4d17a3a54",
+      "35e0babf-4d68-5250-a828-c4958ff8adc6"
+    ],
+    "subActionIds": [
+      "21519f89-a27f-55c2-9534-5ad1b70eb612",
+      "89f63d94-6ae2-5042-a539-bd010f391067"
+    ],
+    "queueLinkValid": true,
+    "commandLinkValid": true,
+    "bridgeSha256": "3c3f19cfe1dccb95ae73022d8f4c4ccb88e17c2e9796ae3e2f72eef93fd70d45"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/publishing-checklist/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "packageName", "version", "checklist", "dependencies"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "packageName": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "minLength": 1 },
+    "checklist": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "required", "passed", "details"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "required": { "type": "boolean" },
+          "passed": { "type": "boolean" },
+          "details": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "version", "kind"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "version": { "type": "string", "minLength": 1 },
+          "kind": { "enum": ["runtime", "library", "tool"] },
+          "license": { "type": "string", "minLength": 1 },
+          "source": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/deployment/streamerbot-receipt/v1",
+  "title": "Creators Forge Foundry Streamer.bot deployment receipt",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "deploymentId",
+    "projectId",
+    "projectName",
+    "projectVersion",
+    "targetProfile",
+    "installationVersion",
+    "installedAtUtc",
+    "files"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "deploymentId": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "projectId": { "type": "string", "minLength": 1 },
+    "projectName": { "type": "string", "minLength": 1 },
+    "projectVersion": { "type": "string", "minLength": 1 },
+    "targetProfile": { "type": "string", "minLength": 1 },
+    "installationVersion": { "type": "string", "minLength": 1 },
+    "installedAtUtc": { "type": "string", "format": "date-time" },
+    "previousReceiptBackup": {
+      "type": ["string", "null"],
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"
+    },
+    "importPackageSha256": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "verification": {
+      "type": "object",
+      "required": [
+        "packageImported",
+        "compilerReferenceAdded",
+        "codeCompiled",
+        "runtimeVerified",
+        "verifiedAtUtc"
+      ],
+      "properties": {
+        "packageImported": { "type": "boolean" },
+        "compilerReferenceAdded": { "type": "boolean" },
+        "codeCompiled": { "type": "boolean" },
+        "runtimeVerified": { "type": "boolean" },
+        "verifiedAtUtc": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "destinationRelativePath",
+          "installedSha256",
+          "size",
+          "originalBackup",
+          "rollbackBackup"
+        ],
+        "properties": {
+          "destinationRelativePath": {
+            "type": "string",
+            "pattern": "^(?![A-Za-z]:)(?![\\\\/])(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$)).+$"
+          },
+          "installedSha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "size": { "type": "integer", "minimum": 0 },
+          "originalBackup": {
+            "type": ["string", "null"],
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"
+          },
+          "rollbackBackup": {
+            "type": ["string", "null"],
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

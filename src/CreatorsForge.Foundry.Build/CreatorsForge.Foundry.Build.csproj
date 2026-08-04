@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CreatorsForge.Foundry.Core\CreatorsForge.Foundry.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource
+        Include="..\CreatorsForge.Foundry.Editor\Catalogs\streamerbot-cph-v1.json"
+        Link="Catalogs\streamerbot-cph-v1.json" />
+  </ItemGroup>
+
+</Project>

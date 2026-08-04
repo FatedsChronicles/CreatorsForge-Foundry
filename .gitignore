@@ -1,0 +1,30 @@
+# .NET build output
+bin/
+obj/
+artifacts/
+TestResults/
+experiments/StreamerBotCompatibility/captures/raw/
+
+# Foundry-generated output
+build/
+src/Generated/
+
+# IDE and user state
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Operating system files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Local environment and logs
+*.log
+*.tmp
+.env
+.env.*
+!.env.example

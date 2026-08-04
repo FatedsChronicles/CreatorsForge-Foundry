@@ -1,0 +1,25 @@
+{
+    "schemaVersion":  1,
+    "profile":  "32.x-windows-x64",
+    "obsRoot":  "C:\\Program Files\\obs-studio",
+    "obsVersion":  "32.1.1",
+    "pluginPath":  "J:\\Creators Forge\\Creators Forge Foundry\\samples\\ObsCompatibilityProbe\\build\\obs\\bin\\creators-forge-compatibility-probe.dll",
+    "moduleApiVersion":  "32.1.1",
+    "moduleApiEncoded":  536936449,
+    "requiredExports":  [
+                            "obs_module_ver",
+                            "obs_module_set_pointer",
+                            "obs_module_load"
+                        ],
+    "loadCallbackSucceeded":  true,
+    "obsOpenResult":  0,
+    "obsInitSucceeded":  true,
+    "registeredSourceIds":  [
+                                "scene",
+                                "group",
+                                "audio_line"
+                            ],
+    "expectedSourceId":  null,
+    "expectedSourceRegistered":  null,
+    "inObsRuntimeVerificationRequired":  true
+}

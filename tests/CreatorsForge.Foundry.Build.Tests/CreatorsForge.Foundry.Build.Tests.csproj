@@ -1,0 +1,128 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\schemas\projects\foundry-project-v1.schema.json"
+          Link="Fixtures\Schemas\foundry-project-v1.schema.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\schemas\packages\package-ir-v1.schema.json"
+          Link="Fixtures\Schemas\package-ir-v1.schema.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\schemas\packages\release-manifest-v1.schema.json"
+          Link="Fixtures\Schemas\release-manifest-v1.schema.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\schemas\packages\publishing-checklist-v1.schema.json"
+          Link="Fixtures\Schemas\publishing-checklist-v1.schema.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\schemas\packages\reproducibility-report-v1.schema.json"
+          Link="Fixtures\Schemas\reproducibility-report-v1.schema.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\schemas\product\foundry-update-manifest-v1.schema.json"
+          Link="Fixtures\Schemas\foundry-update-manifest-v1.schema.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\schemas\product\foundry-private-alpha-manifest-v1.schema.json"
+          Link="Fixtures\Schemas\foundry-private-alpha-manifest-v1.schema.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\eng\desktop\install-foundry.ps1"
+          Link="Fixtures\Desktop\install-foundry.ps1"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\eng\desktop\uninstall-foundry.ps1"
+          Link="Fixtures\Desktop\uninstall-foundry.ps1"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\eng\desktop\package-desktop.ps1"
+          Link="Fixtures\Desktop\package-desktop.ps1"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\eng\private-alpha\package-private-alpha.ps1"
+          Link="Fixtures\PrivateAlpha\package-private-alpha.ps1"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\eng\private-alpha\verify-private-alpha.ps1"
+          Link="Fixtures\PrivateAlpha\verify-private-alpha.ps1"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\eng\release\package-v1.ps1"
+          Link="Fixtures\FinalAcceptance\package-v1.ps1"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\eng\release\verify-v1-release.ps1"
+          Link="Fixtures\FinalAcceptance\verify-v1-release.ps1"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\eng\release\invoke-final-acceptance.ps1"
+          Link="Fixtures\FinalAcceptance\invoke-final-acceptance.ps1"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\docs\private-alpha\**\*.md"
+          Link="Fixtures\PrivateAlpha\Docs\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\docs\compatibility\private-alpha-matrix.*"
+          Link="Fixtures\PrivateAlpha\Compatibility\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\docs\final-acceptance\**\*.md"
+          Link="Fixtures\FinalAcceptance\Docs\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\docs\compatibility\v1-matrix.json"
+          Link="Fixtures\FinalAcceptance\v1-matrix.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\samples\PrivateAlphaSamples.foundryworkspace"
+          Link="Fixtures\PrivateAlpha\Samples\PrivateAlphaSamples.foundryworkspace"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\samples\StreamerBotCreatorToolkit\StreamerBotCreatorToolkit.foundryproj"
+          Link="Fixtures\PrivateAlpha\Samples\StreamerBotCreatorToolkit.foundryproj"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\samples\StreamerBotCreatorToolkit\tests\foundry-tests.json"
+          Link="Fixtures\PrivateAlpha\Samples\StreamerBotCreatorToolkit.tests.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\samples\ObsConfigurableFilter\ObsConfigurableFilter.foundryproj"
+          Link="Fixtures\PrivateAlpha\Samples\ObsConfigurableFilter.foundryproj"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\samples\ObsConfigurableFilter\tests\foundry-tests.json"
+          Link="Fixtures\PrivateAlpha\Samples\ObsConfigurableFilter.tests.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\samples\StreamerBotCreatorToolkit\CHANGELOG.md"
+          Link="Fixtures\PrivateAlpha\Samples\StreamerBotCreatorToolkit.CHANGELOG.md"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\samples\ObsConfigurableFilter\CHANGELOG.md"
+          Link="Fixtures\PrivateAlpha\Samples\ObsConfigurableFilter.CHANGELOG.md"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\schemas\product\foundry-v1-release-manifest-v1.schema.json"
+          Link="Fixtures\Schemas\foundry-v1-release-manifest-v1.schema.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\schemas\product\foundry-final-acceptance-report-v1.schema.json"
+          Link="Fixtures\Schemas\foundry-final-acceptance-report-v1.schema.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\schemas\streamerbot\streamerbot-definition-v1.schema.json"
+          Link="Fixtures\Schemas\streamerbot-definition-v1.schema.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\samples\HelloFoundry\streamerbot\streamerbot.json"
+          Link="Fixtures\streamerbot.json"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CreatorsForge.Foundry.Build\CreatorsForge.Foundry.Build.csproj" />
+    <ProjectReference Include="..\..\src\CreatorsForge.Foundry.Core\CreatorsForge.Foundry.Core.csproj" />
+    <ProjectReference Include="..\..\src\CreatorsForge.Foundry.Workspaces\CreatorsForge.Foundry.Workspaces.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Golden\**\*.cs" />
+    <None Include="Golden\CPHInline.args-log-v1.cs"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Golden\streamerbot-stable-v23-package.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Golden\obs-module-load-v1-package.json"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

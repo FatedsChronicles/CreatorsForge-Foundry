@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "phase": "9C",
+  "profile": "32.x-windows-x64",
+  "sdkVersion": "32.1.2",
+  "verifiedOn": "2026-07-26",
+  "verificationMethod": "foundry-cmake-msvc-native-build",
+  "templates": [
+    { "id": "module-starter-v1", "compiled": true },
+    { "id": "passthrough-filter-v1", "compiled": true },
+    { "id": "configurable-filter-v1", "compiled": true },
+    { "id": "video-input-v1", "compiled": true }
+  ],
+  "result": "passed"
+}

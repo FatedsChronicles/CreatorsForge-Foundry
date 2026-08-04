@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "name": "Foundry Passthrough Filter",
+  "id": "dev.creatorsforge.obs-passthrough-filter",
+  "version": "0.2.2",
+  "target": {
+    "provider": "obsstudio",
+    "profile": "32.x-windows-x64"
+  },
+  "components": [],
+  "publishing": {
+    "packageName": "dev.creatorsforge.obs-passthrough-filter",
+    "summary": "Foundry Passthrough Filter extension",
+    "authors": [
+      "CreatorsForge"
+    ],
+    "licenseFile": "LICENSE.txt",
+    "changelogFile": "CHANGELOG.md",
+    "tags": [],
+    "dependencies": [],
+    "signing": {
+      "enabled": false,
+      "toolPath": "",
+      "certificateThumbprint": "",
+      "timestampUrl": ""
+    }
+  },
+  "features": {
+    "winForms": false,
+    "mockRuntime": false
+  },
+  "nativeBuild": {
+    "language": "c17",
+    "architecture": "x64",
+    "toolchain": "cmake-msvc",
+    "sources": [
+      "src/plugin.c"
+    ]
+  },
+  "obsPlugin": {
+    "contract": "libobs-module-v1",
+    "moduleName": "foundry-passthrough-filter",
+    "entrySymbol": "foundry_obs_plugin_load",
+    "displayName": "Foundry Passthrough Filter",
+    "author": "Creators Forge",
+    "description": "Pinned-SDK OBS video filter compatibility sample.",
+    "apiVersion": "32.1.2",
+    "sdkVersion": "32.1.2"
+  },
+  "testDefinition": "tests/foundry-tests.json",
+  "outputs": [
+    "obsPlugin",
+    "obsPluginPackage"
+  ]
+}

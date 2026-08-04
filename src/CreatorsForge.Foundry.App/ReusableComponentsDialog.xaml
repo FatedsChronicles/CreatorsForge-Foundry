@@ -1,0 +1,41 @@
+<Window Style="{StaticResource FoundryWindowStyle}"
+    x:Class="CreatorsForge.Foundry.App.ReusableComponentsDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Reusable Components"
+    Width="760"
+    Height="520"
+    MinWidth="640"
+    MinHeight="420"
+    ShowInTaskbar="False"
+    WindowStartupLocation="CenterOwner">
+  <Grid Margin="14">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <StackPanel>
+      <TextBlock FontSize="20" FontWeight="SemiBold" Text="Reusable components" />
+      <TextBlock x:Name="ProviderText" Margin="0,4,0,12" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap" />
+    </StackPanel>
+    <ListBox x:Name="ComponentsList" Grid.Row="1" SelectionChanged="ComponentsList_SelectionChanged">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <StackPanel Margin="7,6">
+            <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+            <TextBlock Margin="0,2,0,0" Foreground="{DynamicResource AccentBrush}" Text="{Binding Id}" />
+            <TextBlock Margin="0,3,0,0" Foreground="{DynamicResource MutedTextBrush}" Text="{Binding Description}" TextWrapping="Wrap" />
+          </StackPanel>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+    <DockPanel Grid.Row="2" Margin="0,12,0,0">
+      <TextBlock x:Name="StatusText" VerticalAlignment="Center" Foreground="{DynamicResource MutedTextBrush}" />
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+        <Button MinWidth="90" Content="Close" IsCancel="True" />
+        <Button x:Name="AddButton" MinWidth="130" Content="Add to project" IsEnabled="False" Click="AddButton_Click" />
+      </StackPanel>
+    </DockPanel>
+  </Grid>
+</Window>

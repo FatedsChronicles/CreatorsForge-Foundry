@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "provider": "obsstudio",
+  "profiles": ["32.x-windows-x64"],
+  "cases": [
+    {
+      "id": "module-source-lifecycle",
+      "name": "Loads the module and completes the filter source lifecycle",
+      "event": {
+        "kind": "obs-source-lifecycle",
+        "name": "dev.creatorsforge.passthrough-filter",
+        "arguments": {}
+      },
+      "assertions": [
+        { "kind": "abiExport", "key": "obs_module_ver", "expected": true },
+        { "kind": "abiExport", "key": "obs_module_set_pointer", "expected": true },
+        { "kind": "abiExport", "key": "obs_module_load", "expected": true },
+        { "kind": "abiExport", "key": "obs_module_name", "expected": true },
+        { "kind": "abiExport", "key": "obs_module_author", "expected": true },
+        { "kind": "abiExport", "key": "obs_module_description", "expected": true },
+        { "kind": "moduleLoadSucceeded", "expected": true },
+        { "kind": "sourceRegistered", "key": "dev.creatorsforge.passthrough-filter", "expected": true },
+        { "kind": "sourceCreated", "expected": true },
+        { "kind": "sourceDestroyed", "expected": true }
+      ]
+    }
+  ]
+}

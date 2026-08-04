@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/product/update-manifest/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "version", "packageUrl", "sha256", "size", "publishedAtUtc"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$" },
+    "packageUrl": { "type": "string", "minLength": 1 },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "size": { "type": "integer", "minimum": 1 },
+    "publishedAtUtc": { "type": "string", "format": "date-time" },
+    "releaseNotesUrl": { "type": ["string", "null"] }
+  }
+}

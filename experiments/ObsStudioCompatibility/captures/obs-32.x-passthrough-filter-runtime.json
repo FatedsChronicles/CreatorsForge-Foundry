@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "profile": "32.x-windows-x64",
+  "sdkVersion": "32.1.2",
+  "moduleName": "foundry-passthrough-filter",
+  "sourceId": "dev.creatorsforge.passthrough-filter",
+  "verificationMethod": "disposable-obs-gui-filter-persistence-and-log",
+  "verifiedOn": "2026-07-26",
+  "targets": [
+    {
+      "obsVersion": "32.1.1",
+      "filterAttachedAfterRestart": true,
+      "moduleErrorPresent": false,
+      "result": "passed"
+    },
+    {
+      "obsVersion": "32.1.2",
+      "filterAttachedAfterRestart": true,
+      "moduleErrorPresent": false,
+      "result": "passed"
+    }
+  ],
+  "result": "passed",
+  "evidenceSource": "user-confirmed runtime observation"
+}

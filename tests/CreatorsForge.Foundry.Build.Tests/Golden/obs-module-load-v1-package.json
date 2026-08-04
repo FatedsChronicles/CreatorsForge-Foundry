@@ -1,0 +1,39 @@
+{
+  "format": "obs-plugin-package-v1",
+  "project": {
+    "id": "dev.creatorsforge.golden.obs-module",
+    "name": "OBS Golden Module",
+    "version": "2.3.4"
+  },
+  "target": {
+    "provider": "obsstudio",
+    "profile": "32.x-windows-x64",
+    "framework": "native-c17-windows-x64",
+    "apiVersion": "32.1.1"
+  },
+  "artifacts": [
+    {
+      "kind": "nativeObsPlugin",
+      "path": "obs/bin/golden-obs-module.dll"
+    },
+    {
+      "kind": "obsPluginPackage",
+      "path": "obs/package/golden-obs-module-2.3.4-windows-x64.zip"
+    }
+  ],
+  "archiveEntries": [
+    "obs-plugins/64bit/golden-obs-module.dll",
+    "foundry-package.json"
+  ],
+  "fixedTimestamps": true,
+  "packageManifest": {
+    "schemaVersion": 1,
+    "projectId": "dev.creatorsforge.golden.obs-module",
+    "projectVersion": "2.3.4",
+    "provider": "obsstudio",
+    "profile": "32.x-windows-x64",
+    "moduleName": "golden-obs-module",
+    "apiVersion": "32.1.1",
+    "architecture": "x64"
+  }
+}

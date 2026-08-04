@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "name": "Hello Foundry",
+  "id": "com.creatorsforge.samples.hello",
+  "version": "0.1.0",
+  "target": {
+    "provider": "streamerbot",
+    "profile": "1.0.4-stable",
+    "releaseChannel": "stable"
+  },
+  "features": {
+    "winForms": false,
+    "mockRuntime": true
+  },
+  "managedBuild": {
+    "targetFramework": "net481",
+    "languageVersion": "7.3",
+    "assemblyName": "CreatorsForge.Samples.HelloFoundry",
+    "sources": [
+      "src/HelloExtension.cs"
+    ]
+  },
+  "cphInlineBridge": {
+    "contract": "args-log-v1",
+    "entryType": "CreatorsForge.Samples.HelloFoundry.HelloExtension",
+    "entryMethod": "Execute"
+  },
+  "targetDefinition": "streamerbot/streamerbot.json",
+  "testDefinition": "tests/foundry-tests.json",
+  "outputs": [
+    "managedLibrary",
+    "cphInlineBridge",
+    "streamerBotPackage"
+  ],
+  "futureSetting": {
+    "preserved": true
+  }
+}

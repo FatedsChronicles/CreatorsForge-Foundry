@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "metadata": { "author": "Creators Forge", "description": "Welcome, shout-out, and milestone workflows sharing one tested bridge." },
+  "queues": [{ "id": "creator-events", "name": "Creator Events", "blocking": false }],
+  "commands": [
+    { "id": "welcome", "name": "Creator Welcome", "commands": ["!welcome"], "enabled": true, "caseSensitive": false, "globalCooldown": 2, "userCooldown": 10 },
+    { "id": "shoutout", "name": "Creator Shout-out", "commands": ["!so", "!shoutout"], "enabled": true, "caseSensitive": false, "globalCooldown": 5, "userCooldown": 15 }
+  ],
+  "actions": [
+    { "id": "welcome", "name": "Creator Welcome", "enabled": true, "queueId": "creator-events", "concurrent": false, "alwaysRun": false, "triggers": [{ "id": "welcome-command", "kind": "command", "enabled": true, "commandId": "welcome" }], "subActions": [{ "id": "welcome-workflow", "kind": "setArgument", "enabled": true, "variableName": "workflow", "value": "welcome", "autoType": false }, { "id": "welcome-bridge", "kind": "executeBridge", "enabled": true, "variableName": null, "value": null, "autoType": false }] },
+    { "id": "shoutout", "name": "Creator Shout-out", "enabled": true, "queueId": "creator-events", "concurrent": false, "alwaysRun": false, "triggers": [{ "id": "shoutout-command", "kind": "command", "enabled": true, "commandId": "shoutout" }], "subActions": [{ "id": "shoutout-workflow", "kind": "setArgument", "enabled": true, "variableName": "workflow", "value": "shoutout", "autoType": false }, { "id": "shoutout-bridge", "kind": "executeBridge", "enabled": true, "variableName": null, "value": null, "autoType": false }] },
+    { "id": "milestone", "name": "Creator Milestone", "enabled": true, "queueId": "creator-events", "concurrent": false, "alwaysRun": false, "triggers": [{ "id": "milestone-test", "kind": "test", "enabled": true }], "subActions": [{ "id": "milestone-workflow", "kind": "setArgument", "enabled": true, "variableName": "workflow", "value": "milestone", "autoType": false }, { "id": "milestone-bridge", "kind": "executeBridge", "enabled": true, "variableName": null, "value": null, "autoType": false }] }
+  ]
+}
+

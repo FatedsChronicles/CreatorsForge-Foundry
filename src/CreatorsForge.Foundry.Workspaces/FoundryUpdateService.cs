@@ -1,0 +1,177 @@
+using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text.Json;
+using CreatorsForge.Foundry.Core.Diagnostics;
+
+namespace CreatorsForge.Foundry.Workspaces;
+
+public sealed record FoundryUpdateManifest(
+    int SchemaVersion,
+    string Version,
+    string PackageUrl,
+    string Sha256,
+    long Size,
+    DateTimeOffset PublishedAtUtc,
+    string? ReleaseNotesUrl = null);
+
+public sealed record FoundryUpdateCheckResult(
+    bool IsSuccess,
+    bool IsUpdateAvailable,
+    FoundryUpdateManifest? Manifest,
+    IReadOnlyList<FoundryDiagnostic> Diagnostics);
+
+public static class FoundryUpdateService
+{
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+    private static readonly HttpClient Client = new() { Timeout = TimeSpan.FromSeconds(30) };
+
+    public static async Task<FoundryUpdateCheckResult> CheckAsync(
+        string? manifestLocation,
+        string currentVersion,
+        bool allowNetworkAccess,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(manifestLocation))
+            return Failure("CFU1001", "No update manifest is configured.", "Configure a local file or HTTPS update manifest in Settings.");
+        try
+        {
+            string json;
+            if (Uri.TryCreate(manifestLocation, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https")
+            {
+                if (!allowNetworkAccess)
+                    return Failure("CFU1002", "Network access is disabled.", "Enable network access in Settings or use a local update manifest.");
+                if (uri.Scheme != Uri.UriSchemeHttps)
+                    return Failure("CFU1003", "Update manifests must use HTTPS.", "Use an HTTPS endpoint.");
+                json = await Client.GetStringAsync(uri, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                json = await File.ReadAllTextAsync(Path.GetFullPath(manifestLocation), cancellationToken).ConfigureAwait(false);
+            }
+
+            var manifest = JsonSerializer.Deserialize<FoundryUpdateManifest>(json, JsonOptions);
+            if (manifest is not null && !Uri.TryCreate(manifest.PackageUrl, UriKind.Absolute, out _) && !Path.IsPathRooted(manifest.PackageUrl))
+            {
+                manifest = manifest with
+                {
+                    PackageUrl = Uri.TryCreate(manifestLocation, UriKind.Absolute, out var manifestUri) && manifestUri.Scheme is "http" or "https"
+                        ? new Uri(manifestUri, manifest.PackageUrl).ToString()
+                        : Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(manifestLocation))!, manifest.PackageUrl)),
+                };
+            }
+            var diagnostics = Validate(manifest, manifestLocation);
+            if (manifest is null || diagnostics.Any(item => item.IsError))
+                return new(false, false, manifest, diagnostics);
+            var available = TryCompareVersions(manifest.Version, currentVersion, out var comparison) && comparison > 0;
+            return new(true, available, manifest, diagnostics);
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException or HttpRequestException)
+        {
+            return Failure("CFU1004", $"The update manifest could not be read: {exception.Message}", "Check the location and try again.");
+        }
+    }
+
+    public static async Task<(string? PackagePath, IReadOnlyList<FoundryDiagnostic> Diagnostics)> StageAsync(
+        FoundryUpdateManifest manifest,
+        string destinationDirectory,
+        bool allowNetworkAccess,
+        IProgress<string>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(manifest);
+        try
+        {
+            Directory.CreateDirectory(destinationDirectory);
+            var destination = Path.Combine(destinationDirectory, $"CreatorsForge-Foundry-{manifest.Version}.zip");
+            var temporary = destination + ".partial";
+            if (File.Exists(temporary)) File.Delete(temporary);
+            await using (var output = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, true))
+            {
+                if (Uri.TryCreate(manifest.PackageUrl, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https")
+                {
+                    if (!allowNetworkAccess) return (null, [Diagnostic("CFU1010", "Network access is disabled.", "Enable it explicitly or use a local package.")]);
+                    if (uri.Scheme != Uri.UriSchemeHttps) return (null, [Diagnostic("CFU1011", "Update packages must use HTTPS.", "Use an HTTPS package URL.")]);
+                    progress?.Report("Downloading the update package...");
+                    await using var input = await Client.GetStreamAsync(uri, cancellationToken).ConfigureAwait(false);
+                    await input.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    progress?.Report("Copying the local update package...");
+                    await using var input = new FileStream(Path.GetFullPath(manifest.PackageUrl), FileMode.Open, FileAccess.Read, FileShare.Read, 81920, true);
+                    await input.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            var info = new FileInfo(temporary);
+            string hash;
+            await using (var hashInput = new FileStream(temporary, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, true))
+                hash = Convert.ToHexStringLower(await SHA256.HashDataAsync(hashInput, cancellationToken).ConfigureAwait(false));
+            if (info.Length != manifest.Size || !string.Equals(hash, manifest.Sha256, StringComparison.OrdinalIgnoreCase))
+            {
+                File.Delete(temporary);
+                return (null, [Diagnostic("CFU1012", "The update package size or SHA-256 does not match the manifest.", "Do not install this package; obtain a fresh manifest and package.")]);
+            }
+            File.Move(temporary, destination, overwrite: true);
+            return (destination, []);
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or HttpRequestException)
+        {
+            return (null, [Diagnostic("CFU1013", $"The update package could not be staged: {exception.Message}", "Check storage and connectivity, then retry.")]);
+        }
+    }
+
+    private static IReadOnlyList<FoundryDiagnostic> Validate(FoundryUpdateManifest? manifest, string location)
+    {
+        if (manifest is null || manifest.SchemaVersion != 1 || !TryParseVersion(manifest.Version, out _) ||
+            manifest.Size < 1 || manifest.Sha256.Length != 64 || !manifest.Sha256.All(Uri.IsHexDigit) ||
+            string.IsNullOrWhiteSpace(manifest.PackageUrl))
+            return [new("CFU1005", FoundryDiagnosticSeverity.Error, "The update manifest is invalid.", new FoundryDiagnosticLocation(location), "Use the Foundry update-manifest v1 schema.")];
+        return [];
+    }
+
+    private static FoundryUpdateCheckResult Failure(string code, string message, string fix) => new(false, false, null, [Diagnostic(code, message, fix)]);
+    private static FoundryDiagnostic Diagnostic(string code, string message, string fix) => new(code, FoundryDiagnosticSeverity.Error, message, SuggestedFix: fix);
+    private static bool TryCompareVersions(string candidateText, string currentText, out int comparison)
+    {
+        comparison = 0;
+        if (!TryParseVersion(candidateText, out var candidate) || !TryParseVersion(currentText, out var current)) return false;
+        comparison = candidate.Core.CompareTo(current.Core);
+        if (comparison != 0) return true;
+        if (candidate.PreRelease.Count == 0 || current.PreRelease.Count == 0)
+        {
+            comparison = candidate.PreRelease.Count == current.PreRelease.Count ? 0 : candidate.PreRelease.Count == 0 ? 1 : -1;
+            return true;
+        }
+        for (var index = 0; index < Math.Max(candidate.PreRelease.Count, current.PreRelease.Count); index++)
+        {
+            if (index >= candidate.PreRelease.Count) { comparison = -1; return true; }
+            if (index >= current.PreRelease.Count) { comparison = 1; return true; }
+            var left = candidate.PreRelease[index];
+            var right = current.PreRelease[index];
+            var leftNumeric = int.TryParse(left, out var leftNumber);
+            var rightNumeric = int.TryParse(right, out var rightNumber);
+            comparison = leftNumeric && rightNumeric
+                ? leftNumber.CompareTo(rightNumber)
+                : leftNumeric != rightNumeric
+                    ? leftNumeric ? -1 : 1
+                    : string.Compare(left, right, StringComparison.OrdinalIgnoreCase);
+            if (comparison != 0) return true;
+        }
+        return true;
+    }
+
+    private static bool TryParseVersion(string text, out (Version Core, IReadOnlyList<string> PreRelease) version)
+    {
+        version = default;
+        if (string.IsNullOrWhiteSpace(text)) return false;
+        var withoutMetadata = text.Split('+', 2)[0];
+        var parts = withoutMetadata.Split('-', 2);
+        if (!Version.TryParse(parts[0], out var core) || core.Major < 0 || core.Minor < 0 || core.Build < 0) return false;
+        var preRelease = parts.Length == 1 ? [] : parts[1].Split('.', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 2 && (preRelease.Length == 0 || preRelease.Any(item => !item.All(character => char.IsAsciiLetterOrDigit(character) || character == '-')))) return false;
+        version = (core, preRelease);
+        return true;
+    }
+}

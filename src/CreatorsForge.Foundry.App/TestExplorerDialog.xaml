@@ -1,0 +1,138 @@
+<Window Style="{StaticResource FoundryWindowStyle}"
+    x:Class="CreatorsForge.Foundry.App.TestExplorerDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Test Explorer"
+    Width="1180"
+    Height="760"
+    MinWidth="900"
+    MinHeight="600"
+    WindowStartupLocation="CenterOwner"
+    Closing="Window_Closing">
+  <Grid Margin="12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="8" />
+      <RowDefinition Height="190" MinHeight="120" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <StackPanel>
+        <TextBlock FontSize="18" FontWeight="SemiBold" Text="TEST EXPLORER" />
+        <TextBlock
+            x:Name="ProjectSummaryText"
+            Margin="0,4,0,0"
+            Foreground="{DynamicResource MutedTextBrush}" />
+      </StackPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal">
+        <Button x:Name="RunTestsButton" MinWidth="110" Content="Run Tests" Click="RunTests_Click" />
+        <Button x:Name="RunMatrixButton" MinWidth="110" Content="Run Matrix" Click="RunMatrix_Click" />
+        <Button x:Name="CancelRunButton" MinWidth="80" Content="Cancel" IsEnabled="False" Click="CancelRun_Click" />
+      </StackPanel>
+    </Grid>
+
+    <Grid Grid.Row="1" Margin="0,10,0,10">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="2*" />
+        <ColumnDefinition Width="160" />
+        <ColumnDefinition Width="3*" />
+      </Grid.ColumnDefinitions>
+      <TextBox
+          x:Name="FilterTextBox"
+          Margin="0,0,8,0"
+          Padding="7,5"
+          ToolTip="Filter by case name, ID, profile, runtime, or diagnostic"
+          TextChanged="Filter_Changed" />
+      <ComboBox
+          x:Name="OutcomeFilter"
+          Grid.Column="1"
+          Margin="0,0,8,0"
+          Padding="7,4"
+          SelectionChanged="Filter_Changed" />
+      <DockPanel x:Name="ObsRuntimePanel" Grid.Column="2" Visibility="Collapsed">
+        <Button DockPanel.Dock="Right" MinWidth="90" Content="Add OBS..." Click="AddObs_Click" />
+        <ListBox
+            x:Name="ObsInstallationsList"
+            Height="64"
+            Margin="0,0,8,0"
+            SelectionMode="Extended"
+            ToolTip="Select one installation for Run Tests, or one or more for Run Matrix" />
+      </DockPanel>
+    </Grid>
+
+    <Grid Grid.Row="2">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="5*" />
+        <ColumnDefinition Width="8" />
+        <ColumnDefinition Width="4*" />
+      </Grid.ColumnDefinitions>
+      <DataGrid
+          x:Name="EntriesGrid"
+          AutoGenerateColumns="False"
+          CanUserAddRows="False"
+          IsReadOnly="True"
+          SelectionChanged="EntriesGrid_SelectionChanged">
+        <DataGrid.Columns>
+          <DataGridTextColumn Width="110" Header="Outcome" Binding="{Binding OutcomeText}" />
+          <DataGridTextColumn Width="2*" Header="Test" Binding="{Binding Name}" />
+          <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
+          <DataGridTextColumn Width="2*" Header="Profile / runtime" Binding="{Binding Context}" />
+        </DataGrid.Columns>
+      </DataGrid>
+      <GridSplitter Grid.Column="1" Width="8" HorizontalAlignment="Stretch" ResizeDirection="Columns" />
+      <TextBox
+          x:Name="DetailsTextBox"
+          Grid.Column="2"
+          Padding="9"
+          FontFamily="Cascadia Mono, Consolas"
+          HorizontalScrollBarVisibility="Auto"
+          IsReadOnly="True"
+          Text="Select a test result to inspect its event, assertions, logs, and CPH calls."
+          TextWrapping="NoWrap"
+          VerticalScrollBarVisibility="Auto" />
+    </Grid>
+
+    <GridSplitter Grid.Row="3" Height="8" HorizontalAlignment="Stretch" ResizeDirection="Rows" />
+
+    <DataGrid
+        x:Name="DiagnosticsGrid"
+        Grid.Row="4"
+        AutoGenerateColumns="False"
+        CanUserAddRows="False"
+        IsReadOnly="True"
+        SelectionChanged="DiagnosticsGrid_SelectionChanged"
+        MouseDoubleClick="DiagnosticsGrid_MouseDoubleClick">
+      <DataGrid.Columns>
+        <DataGridTextColumn Width="90" Header="Severity" Binding="{Binding Severity}" />
+        <DataGridTextColumn Width="90" Header="Code" Binding="{Binding Code}" />
+        <DataGridTextColumn Width="2*" Header="Message" Binding="{Binding Message}" />
+        <DataGridTextColumn Width="*" Header="File" Binding="{Binding Location.FilePath}" />
+        <DataGridTextColumn Width="70" Header="Line" Binding="{Binding Location.Line}" />
+      </DataGrid.Columns>
+    </DataGrid>
+
+    <Grid Grid.Row="5" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <TextBlock x:Name="StatusText" VerticalAlignment="Center" Text="Ready" TextWrapping="Wrap" />
+      <StackPanel Grid.Column="1" Orientation="Horizontal">
+        <Button
+            x:Name="OpenDiagnosticButton"
+            MinWidth="120"
+            Content="Open Diagnostic"
+            IsEnabled="False"
+            Click="OpenDiagnostic_Click" />
+        <Button MinWidth="90" Content="Close" IsCancel="True" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</Window>

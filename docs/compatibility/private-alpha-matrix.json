@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "publishedAt": "2026-07-29",
+  "productChannel": "private-alpha",
+  "targets": [
+    { "provider": "streamerbot", "profile": "1.0.4-stable", "runtimeVersion": "1.0.4", "status": "verified", "gates": ["build", "mock-matrix", "import", "runtime", "deployment-health"] },
+    { "provider": "streamerbot", "profile": "1.0.5-alpha.34", "runtimeVersion": "1.0.5-alpha.34", "status": "verified", "gates": ["build", "mock-matrix", "import", "runtime", "deployment-health"] },
+    { "provider": "streamerbot", "profile": "1.0.5-beta.1", "runtimeVersion": "1.0.5-beta.1", "status": "verified", "gates": ["build", "mock-matrix", "import", "runtime", "deployment-health"] },
+    { "provider": "obsstudio", "profile": "32.x-windows-x64", "runtimeVersion": "32.1.2", "status": "verified", "gates": ["build", "abi", "source-lifecycle", "restart", "clean-shutdown", "deployment-health"] }
+  ]
+}
+

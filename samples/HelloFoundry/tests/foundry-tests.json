@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "provider": "streamerbot",
+  "profiles": [
+    "1.0.4-stable",
+    "1.0.5-alpha.34",
+    "1.0.5-beta.1",
+    "1.0.5-beta.6"
+  ],
+  "cases": [
+    {
+      "id": "custom-message",
+      "name": "Logs the message supplied by a command event",
+      "event": {
+        "kind": "command",
+        "name": "!hello",
+        "arguments": {
+          "message": "Hello from the mock runtime.",
+          "user": "foundry-tester"
+        }
+      },
+      "assertions": [
+        { "kind": "returnEquals", "expected": true },
+        { "kind": "logContains", "expected": "Hello from the mock runtime." },
+        { "kind": "argumentEquals", "key": "user", "expected": "foundry-tester" },
+        { "kind": "cphCallCount", "key": "CPH.LogInfo", "expected": 1 }
+      ]
+    },
+    {
+      "id": "default-message",
+      "name": "Uses the defensive default when the event has no message",
+      "event": {
+        "kind": "channel-reward",
+        "name": "Hello Foundry",
+        "arguments": {}
+      },
+      "assertions": [
+        { "kind": "returnEquals", "expected": true },
+        { "kind": "logEquals", "expected": ["Hello from Creators Forge Foundry."] }
+      ]
+    }
+  ]
+}
