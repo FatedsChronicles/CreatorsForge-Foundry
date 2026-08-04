@@ -1,0 +1,23 @@
+For clarity, the following are ordinarily **Foundry** and may not be redistributed unless a separate written licence expressly permits it:
+
+- the WPF desktop application;
+- Foundry command-line tools;
+- Foundry application and service libraries;
+- editor, designer, testing, compatibility, build, deployment, publishing, update, repair and rollback implementations;
+- licence and signing systems;
+- complete built-in template, snippet, catalogue and documentation collections;
+- proprietary schemas and internal diagnostic catalogues, except where separately published under an express schema licence; and
+- installers, updates and Licence Credentials.
+
+The following are ordinarily part of a **Built Product** and may be commercially distributed under clause 4:
+
+- the user’s project source and assets;
+- source code intentionally generated or inserted into that project by Foundry;
+- the project’s `.foundryproj` manifest and publishing metadata;
+- generated CPHInline bridge code;
+- compiled Streamer.bot extension libraries and packages;
+- compiled OBS Studio plugin binaries and associated plugin-data files;
+- provider distribution archives, package manifests, dependency inventories, hashes and release documentation generated for that project; and
+- modifications and derivatives of those project-level Generated Materials.
+
+This schedule remains subject to Third-Party Licences and any notice embedded in a particular component.
