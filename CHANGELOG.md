@@ -55,6 +55,11 @@ All notable changes to Creators Forge Foundry are documented in this file.
   destination and a user-selected custom destination.
 - The verified `0.19.0-alpha.1` to `0.19.0-alpha.2` in-place update retained the
   selected directory, settings, recovery state, and user projects.
+- The GitHub-hosted release rehearsal and clean in-place update from
+  `0.19.0-alpha.1` to `0.19.0-alpha.3` passed using the generated native updater.
+- GitHub Release automation now runs on the Node.js 24-compatible
+  `actions/checkout@v7`, `actions/setup-dotnet@v6`, and
+  `actions/upload-artifact@v7` action majors.
 - Windows Installed Apps uninstall removed Foundry and its shortcuts without
   removing user-owned data or requiring a PowerShell script.
 - The complete automated suite passes 220 tests with zero build warnings or

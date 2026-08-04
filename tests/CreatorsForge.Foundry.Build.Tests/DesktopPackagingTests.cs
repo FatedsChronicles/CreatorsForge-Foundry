@@ -59,6 +59,12 @@ public sealed class DesktopPackagingTests
         Assert.Contains("workflow_dispatch:", workflow, StringComparison.Ordinal);
         Assert.Contains("default: draft", workflow, StringComparison.Ordinal);
         Assert.Contains("contents: write", workflow, StringComparison.Ordinal);
+        Assert.Contains("actions/checkout@v7", workflow, StringComparison.Ordinal);
+        Assert.Contains("actions/setup-dotnet@v6", workflow, StringComparison.Ordinal);
+        Assert.Contains("actions/upload-artifact@v7", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("actions/checkout@v4", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("actions/setup-dotnet@v4", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("actions/upload-artifact@v4", workflow, StringComparison.Ordinal);
         Assert.Contains("cancel-in-progress: false", workflow, StringComparison.Ordinal);
         Assert.Contains("gh release view", workflow, StringComparison.Ordinal);
         Assert.Contains("git ls-remote --exit-code --tags", workflow, StringComparison.Ordinal);
