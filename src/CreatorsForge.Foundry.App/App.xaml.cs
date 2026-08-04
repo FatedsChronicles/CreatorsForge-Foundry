@@ -8,6 +8,7 @@ namespace CreatorsForge.Foundry.App;
 
 public partial class App : Application
 {
+    private static Mutex? runningMutex;
     private AppServices? services;
     private FoundryThemePreference themePreference = FoundryThemePreference.System;
 
@@ -21,6 +22,8 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        runningMutex = new Mutex(initiallyOwned: true, "CreatorsForge.Foundry", out _);
 
         Resources["CreatorForgeLogoImage"] = FoundrySvgLogo.Load();
         services = AppServices.CreateDefault();
@@ -87,6 +90,7 @@ public partial class App : Application
     {
         SystemParameters.StaticPropertyChanged -= SystemParameters_StaticPropertyChanged;
         SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
+        runningMutex?.Dispose();
         base.OnExit(e);
     }
 

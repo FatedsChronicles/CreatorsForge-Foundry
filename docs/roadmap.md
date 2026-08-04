@@ -220,7 +220,7 @@ update, repair, rollback, modified-file protection, and uninstall on exact OBS
 
 ## Phase 18 — Branding, themes, and visual accessibility
 
-Phase 18 implementation is complete and awaits product-owner visual acceptance.
+Phase 18 completed on 2026-08-04 after product-owner visual acceptance.
 The supplied Creator Forge logo is embedded in the executable, windows, and
 workspace header. Foundry provides persisted Dark, Light, and System themes,
 live Windows preference handling, High Contrast priority, semantic dynamic
@@ -231,3 +231,30 @@ Exit gate: branding is visible and sharp; Dark, Light, and System themes remain
 readable across the workspace and every dialog; the selection persists across
 restart; Windows theme and High Contrast changes are respected; hover,
 selection, disabled, error, and keyboard-focus states remain distinguishable.
+
+## Phase 19 — Native Windows installer and updater
+
+Phase 19 completed on 2026-08-04. Automated validation passed with 220 tests,
+the native setup and updater compiled successfully, and product-owner manual
+acceptance passed for the default destination, a custom destination, verified
+in-place update, and Windows uninstall with user-data preservation.
+
+Phase 19 replaces the developer-oriented PowerShell installation path with a
+native Windows setup and update experience. It uses one stable product identity
+for first install, custom-location install, upgrade, repair, and uninstall.
+
+- Native `.exe` setup with a user-selectable destination.
+- Default destination `C:\Program Files\Creators Forge\Foundry`.
+- Add/Remove Programs registration and native uninstaller.
+- Stable upgrade identity that retains a previously selected destination.
+- Separate setup and update `.exe` release assets from one verified payload.
+- GitHub Releases as the default manual update source.
+- Size and SHA-256 verification before an updater can launch.
+- Explicit elevation, running-process protection, and no silent installation.
+- User settings, recovery snapshots, and projects preserved by uninstall.
+- Installer/update packaging and regression tests.
+
+Exit gate: a clean machine can install to the default or a custom directory,
+launch Foundry, update in place from the GitHub-backed update dialog, retain its
+chosen location and user data, and uninstall through Windows without executing
+a PowerShell script.

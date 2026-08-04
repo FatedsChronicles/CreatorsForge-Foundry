@@ -6,8 +6,61 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
-- Dark / Light / System mode 
-- Branding Logo
+- Persisted Dark, Light, and System themes with live Windows-theme handling,
+  High Contrast priority, readable interaction states, and SVG branding.
+- A conventional Inno Setup 6 Windows installer with a stable product identity,
+  Windows Apps / Add or Remove Programs registration, Start Menu integration,
+  and an optional desktop shortcut.
+- User-selectable installation directories with
+  `C:\Program Files\Creators Forge\Foundry` as the clean-install default.
+- Separate versioned setup and update `.exe` release assets generated from the
+  same self-contained Windows x64 payload.
+- The official GitHub Releases manifest as the default manual update source,
+  while retaining local update manifests for offline testing and distribution.
+- A two-step **Stage Verified Update** and **Install Verified Update** desktop
+  flow that verifies package size and SHA-256 before permitting execution.
+- Optional Authenticode signing hooks for the setup executable and generated
+  native uninstaller when a publisher signing command is supplied.
+- A manual, draft-by-default GitHub Actions release workflow that runs the full
+  regression gate, compiles and verifies the native payload, creates the tag and
+  GitHub Release, and uploads the setup, updater, and update manifest assets.
+
+### Changed
+
+- Windows installation, upgrade, and uninstall now use a registered native
+  setup workflow instead of requiring end users to run PowerShell scripts.
+- Clean installations default to Program Files, while native upgrades retain
+  the destination previously selected by the user.
+- Receipt-backed installations created by the former PowerShell workflow are
+  safely adopted in place instead of being duplicated or recursively deleted.
+- The verified updater launches through Windows elevation only after explicit
+  user confirmation; Foundry then closes so setup can replace application files.
+- Native uninstall removes installer-owned application files and shortcuts but
+  preserves projects, settings, recovery snapshots, and other user-owned data.
+
+### Security
+
+- Update packages must come from a local path or HTTPS endpoint and must match
+  the release manifest's declared length and SHA-256 hash.
+- A process-wide Foundry mutex prevents native uninstall while the application
+  is running, while Windows Restart Manager handles files in use during update.
+- Legacy installation adoption requires both the existing Foundry executable
+  and its ownership receipt; no unreceipted directory is adopted or removed.
+
+### Validation
+
+- Inno Setup 6.7.3 compiled the native `0.19.0-alpha.1` setup and updater
+  executables with matching payload hashes and correct Windows product metadata.
+- Product-owner acceptance passed installation to the default Program Files
+  destination and a user-selected custom destination.
+- The verified `0.19.0-alpha.1` to `0.19.0-alpha.2` in-place update retained the
+  selected directory, settings, recovery state, and user projects.
+- Windows Installed Apps uninstall removed Foundry and its shortcuts without
+  removing user-owned data or requiring a PowerShell script.
+- The complete automated suite passes 220 tests with zero build warnings or
+  errors and all six desktop smoke-test projects passing.
+- Release automation regression tests enforce manual dispatch, least-privilege
+  release permissions, duplicate tag/release rejection, and exact asset upload.
 
 ## [Unreleased] — changes since 0.1.0-rc.1
 

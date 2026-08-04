@@ -3,22 +3,22 @@ namespace CreatorsForge.Foundry.Build.Tests;
 public sealed class DesktopPackagingTests
 {
     [Fact]
-    public void InstallerAndUninstallerDeclareOwnershipAndRunningProcessGuards()
+    public void NativeInstallerUsesStableIdentityProgramFilesAndSafeUninstall()
     {
         var root = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Desktop");
-        var installer = File.ReadAllText(Path.Combine(root, "install-foundry.ps1"));
-        var uninstaller = File.ReadAllText(Path.Combine(root, "uninstall-foundry.ps1"));
+        var installer = File.ReadAllText(Path.Combine(root, "FoundrySetup.iss"));
+        Assert.Contains("AppId={{D9786586-E859-4A81-B8AB-906A99E00510}", installer, StringComparison.Ordinal);
+        Assert.Contains("DefaultDirName={code:GetDefaultInstallDir}", installer, StringComparison.Ordinal);
+        Assert.Contains("Result := ExpandConstant('{autopf}\\Creators Forge\\Foundry')", installer, StringComparison.Ordinal);
+        Assert.Contains("{localappdata}\\Programs\\Creators Forge Foundry", installer, StringComparison.Ordinal);
+        Assert.Contains("FileExists(AddBackslash(LegacyInstallDir) + 'install-receipt.json')", installer, StringComparison.Ordinal);
+        Assert.Contains("PrivilegesRequired=admin", installer, StringComparison.Ordinal);
+        Assert.Contains("UsePreviousAppDir=yes", installer, StringComparison.Ordinal);
+        Assert.Contains("CloseApplications=yes", installer, StringComparison.Ordinal);
+        Assert.Contains("CheckForMutexes('CreatorsForge.Foundry')", installer, StringComparison.Ordinal);
         Assert.Contains("install-receipt.json", installer, StringComparison.Ordinal);
-        Assert.Contains("Get-Process -Name 'CreatorsForge.Foundry'", installer, StringComparison.Ordinal);
-        Assert.Contains(".previous", installer, StringComparison.Ordinal);
-        Assert.Contains("install-receipt.json", uninstaller, StringComparison.Ordinal);
-        Assert.Contains("RemoveUserData", uninstaller, StringComparison.Ordinal);
-        Assert.Contains("preserved", uninstaller, StringComparison.Ordinal);
-        Assert.Contains("GetTempPath", uninstaller, StringComparison.Ordinal);
-        Assert.Contains("Set-Location", uninstaller, StringComparison.Ordinal);
-        Assert.Contains("TrimEnd", uninstaller, StringComparison.Ordinal);
-        Assert.DoesNotContain("TrimEndingDirectorySeparator", uninstaller, StringComparison.Ordinal);
-        Assert.Contains("installed file is still in use", uninstaller, StringComparison.Ordinal);
+        Assert.Contains("InitializeUninstall", installer, StringComparison.Ordinal);
+        Assert.DoesNotContain("{localappdata}\\Creators Forge\\Foundry", installer, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -28,6 +28,12 @@ public sealed class DesktopPackagingTests
         Assert.Contains("--self-contained true", script, StringComparison.Ordinal);
         Assert.Contains("SHA256", script, StringComparison.Ordinal);
         Assert.Contains("foundry-update.json", script, StringComparison.Ordinal);
+        Assert.Contains("FoundrySetup.iss", script, StringComparison.Ordinal);
+        Assert.Contains("-Setup.exe", script, StringComparison.Ordinal);
+        Assert.Contains("-Update.exe", script, StringComparison.Ordinal);
+        Assert.Contains("JRSoftware.InnoSetup", script, StringComparison.Ordinal);
+        Assert.Contains("SignToolCommand", script, StringComparison.Ordinal);
+        Assert.Contains("/Sfoundry=", script, StringComparison.Ordinal);
         Assert.Contains("privacy-and-offline.md", script, StringComparison.Ordinal);
     }
 
@@ -42,5 +48,44 @@ public sealed class DesktopPackagingTests
         Assert.Contains("UTF8Encoding", script, StringComparison.Ordinal);
         Assert.Contains("PublishedAtUtc", script, StringComparison.Ordinal);
         Assert.DoesNotContain("CreateFromDirectory", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GitHubReleaseWorkflowIsManualGuardedAndUploadsExactNativeAssets()
+    {
+        var root = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Desktop");
+        var workflow = File.ReadAllText(Path.Combine(root, "publish-foundry-release.yml"));
+
+        Assert.Contains("workflow_dispatch:", workflow, StringComparison.Ordinal);
+        Assert.Contains("default: draft", workflow, StringComparison.Ordinal);
+        Assert.Contains("contents: write", workflow, StringComparison.Ordinal);
+        Assert.Contains("cancel-in-progress: false", workflow, StringComparison.Ordinal);
+        Assert.Contains("gh release view", workflow, StringComparison.Ordinal);
+        Assert.Contains("git ls-remote --exit-code --tags", workflow, StringComparison.Ordinal);
+        Assert.Contains(".\\build.ps1 -Configuration Release", workflow, StringComparison.Ordinal);
+        Assert.Contains("verify-desktop-release.ps1", workflow, StringComparison.Ordinal);
+        Assert.Contains("gh @arguments", workflow, StringComparison.Ordinal);
+        Assert.Contains("-Setup.exe", workflow, StringComparison.Ordinal);
+        Assert.Contains("-Update.exe", workflow, StringComparison.Ordinal);
+        Assert.Contains("foundry-update.json", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("-win-x64.zip", workflow, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DesktopReleaseVerifierPinsManifestIdentityHashAndMetadata()
+    {
+        var verifier = File.ReadAllText(Path.Combine(
+            AppContext.BaseDirectory,
+            "Fixtures",
+            "Desktop",
+            "verify-desktop-release.ps1"));
+
+        Assert.Contains("schemaVersion -ne 1", verifier, StringComparison.Ordinal);
+        Assert.Contains("Get-FileHash", verifier, StringComparison.Ordinal);
+        Assert.Contains("$setupHash -ne $updaterHash", verifier, StringComparison.Ordinal);
+        Assert.Contains("$manifest.sha256 -ne $updaterHash", verifier, StringComparison.Ordinal);
+        Assert.Contains("ProductName", verifier, StringComparison.Ordinal);
+        Assert.Contains("ProductVersion", verifier, StringComparison.Ordinal);
+        Assert.Contains("official GitHub Releases page", verifier, StringComparison.Ordinal);
     }
 }

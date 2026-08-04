@@ -11,15 +11,52 @@ Create a self-contained Windows x64 package:
 .\eng\desktop\package-desktop.ps1 -Version 1.0.0
 ```
 
-The package contains the application and reviewed installer and uninstaller
-scripts. Installation is per-user, refuses to run while Foundry is open, stages
-files before replacement, keeps a rollback copy until success, writes an
-ownership receipt, and creates a Start Menu shortcut. Uninstall requires that
-receipt and preserves user data unless `-RemoveUserData` is supplied.
+Phase 19 packages a native Windows setup executable using Inno Setup 6. The
+interactive wizard defaults to `C:\Program Files\Creators Forge\Foundry` but
+allows the end user to choose another location. Its stable product identity
+retains that choice during upgrades, registers Foundry in Windows Apps / Add or
+Remove Programs, creates an optional desktop shortcut and a Start Menu shortcut,
+and blocks uninstall while Foundry is running. The native uninstaller removes
+only installer-owned application files; projects, settings, and recovery data
+remain untouched.
 
-Packaging also emits `foundry-update.json`, containing the version, package
-location, size, SHA-256, and publication time. Update staging verifies both size
-and hash before exposing the package.
+When setup detects the receipt-backed Phase 14 installation at the old default
+per-user location, it adopts that directory instead of creating a duplicate or
+deleting it. Clean installations still default to Program Files. All later
+native updates retain whichever directory the user selected or migrated from.
+
+Packaging emits separate `CreatorsForge-Foundry-<version>-Setup.exe` and
+`CreatorsForge-Foundry-<version>-Update.exe` assets from the same payload, plus
+`foundry-update.json`. The manifest contains the updater location, size,
+SHA-256, publication time, and GitHub release-notes location. Update staging
+verifies both size and hash before enabling **Install Verified Update**.
+
+Install Inno Setup 6 on a packaging workstation before running the command:
+
+```powershell
+winget install --id JRSoftware.InnoSetup
+```
+
+The older PowerShell scripts remain as historical Phase 14 evidence and are no
+longer included in the end-user package.
+
+### Phase 19 acceptance evidence
+
+Product-owner acceptance completed on 2026-08-04 using the generated
+`0.19.0-alpha.1` setup and `0.19.0-alpha.2` updater. The following checks passed:
+
+- installation to the default directory;
+- installation to a user-selected custom directory;
+- verified in-place update with the selected directory retained;
+- native Windows uninstall; and
+- preservation of user-owned projects, settings, and recovery data.
+
+The complete automated gate also passed with 220 tests, zero build warnings or
+errors, and all managed, native, and multi-project desktop smoke tests.
+
+GitHub Release creation and upload of the setup, updater, and update manifest
+are automated by the guarded manual workflow documented in
+[github-release-automation.md](github-release-automation.md).
 
 ## First-run and toolchain health
 
@@ -34,8 +71,9 @@ can be downloaded explicitly or installed from an offline archive folder.
 ## Updates, recovery, accessibility, and performance
 
 Settings separates workspace, update, and privacy options. Update checks are
-manual, support local manifests, require opt-in for HTTPS, and never install
-silently. **Tools > Recovery and Diagnostics** lists local recovery/failure
+manual, default to the official GitHub Releases manifest, support local
+manifests, require opt-in for HTTPS, and never install silently. **Tools >
+Recovery and Diagnostics** lists local recovery/failure
 evidence and creates a reviewable bundle.
 
 Core regions expose automation names, menu access keys remain available,

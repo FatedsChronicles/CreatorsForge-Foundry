@@ -23,7 +23,7 @@
       <TabItem Header="Updates"><StackPanel Margin="14">
         <TextBlock FontWeight="SemiBold" Text="Update manifest location"/><TextBox x:Name="UpdateLocationTextBox" Margin="0,6,0,12" Padding="7" AutomationProperties.Name="Update manifest location"/>
         <CheckBox x:Name="NetworkAccessCheckBox" Content="Allow explicit HTTPS update checks and SDK downloads"/>
-        <TextBlock Margin="0,12,0,0" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap" Text="Leave the location empty to disable update checks. A local manifest path works without network access. Foundry never checks automatically."/>
+        <TextBlock Margin="0,12,0,0" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap" Text="The default manifest checks the latest release in the official GitHub repository. Leave the location empty to disable update checks. A local manifest works offline. Foundry never checks automatically."/>
       </StackPanel></TabItem>
       <TabItem Header="Privacy"><StackPanel Margin="14">
         <TextBlock TextWrapping="Wrap" Text="Foundry includes no telemetry. Projects, settings, build output, recovery snapshots, and failure reports remain on this computer. Diagnostic bundles are created only when requested and are never uploaded by Foundry."/>

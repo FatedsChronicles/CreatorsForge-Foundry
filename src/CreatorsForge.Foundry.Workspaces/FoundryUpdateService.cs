@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -18,6 +19,10 @@ public sealed record FoundryUpdateCheckResult(
     bool IsSuccess,
     bool IsUpdateAvailable,
     FoundryUpdateManifest? Manifest,
+    IReadOnlyList<FoundryDiagnostic> Diagnostics);
+
+public sealed record FoundryUpdateLaunchResult(
+    bool IsSuccess,
     IReadOnlyList<FoundryDiagnostic> Diagnostics);
 
 public static class FoundryUpdateService
@@ -83,7 +88,10 @@ public static class FoundryUpdateService
         try
         {
             Directory.CreateDirectory(destinationDirectory);
-            var destination = Path.Combine(destinationDirectory, $"CreatorsForge-Foundry-{manifest.Version}.zip");
+            var extension = GetPackageExtension(manifest.PackageUrl);
+            var destination = Path.Combine(
+                destinationDirectory,
+                $"CreatorsForge-Foundry-{manifest.Version}-Update{extension}");
             var temporary = destination + ".partial";
             if (File.Exists(temporary)) File.Delete(temporary);
             await using (var output = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, true))
@@ -122,6 +130,36 @@ public static class FoundryUpdateService
         }
     }
 
+    public static ProcessStartInfo CreateInstallerStartInfo(string packagePath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(packagePath);
+        var fullPath = Path.GetFullPath(packagePath);
+        if (!string.Equals(Path.GetExtension(fullPath), ".exe", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("The verified update is not a native Windows installer.", nameof(packagePath));
+        return new(fullPath)
+        {
+            Arguments = "/CLOSEAPPLICATIONS /NORESTART",
+            UseShellExecute = true,
+            Verb = "runas",
+            WorkingDirectory = Path.GetDirectoryName(fullPath)!,
+        };
+    }
+
+    public static FoundryUpdateLaunchResult LaunchInstaller(string packagePath)
+    {
+        try
+        {
+            if (!File.Exists(packagePath))
+                return new(false, [Diagnostic("CFU1014", "The verified update installer is missing.", "Stage the update again before installing it.")]);
+            Process.Start(CreateInstallerStartInfo(packagePath));
+            return new(true, []);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception or ArgumentException)
+        {
+            return new(false, [Diagnostic("CFU1015", $"The update installer could not be started: {exception.Message}", "Keep Foundry open, check Windows security prompts, and try again.")]);
+        }
+    }
+
     private static IReadOnlyList<FoundryDiagnostic> Validate(FoundryUpdateManifest? manifest, string location)
     {
         if (manifest is null || manifest.SchemaVersion != 1 || !TryParseVersion(manifest.Version, out _) ||
@@ -129,6 +167,17 @@ public static class FoundryUpdateService
             string.IsNullOrWhiteSpace(manifest.PackageUrl))
             return [new("CFU1005", FoundryDiagnosticSeverity.Error, "The update manifest is invalid.", new FoundryDiagnosticLocation(location), "Use the Foundry update-manifest v1 schema.")];
         return [];
+    }
+
+    private static string GetPackageExtension(string packageLocation)
+    {
+        var path = Uri.TryCreate(packageLocation, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https"
+            ? uri.AbsolutePath
+            : packageLocation;
+        var extension = Path.GetExtension(path);
+        return string.Equals(extension, ".exe", StringComparison.OrdinalIgnoreCase)
+            ? ".exe"
+            : ".zip";
     }
 
     private static FoundryUpdateCheckResult Failure(string code, string message, string fix) => new(false, false, null, [Diagnostic(code, message, fix)]);
