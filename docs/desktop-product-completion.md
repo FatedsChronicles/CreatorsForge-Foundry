@@ -40,6 +40,20 @@ winget install --id JRSoftware.InnoSetup
 The older PowerShell scripts remain as historical Phase 14 evidence and are no
 longer included in the end-user package.
 
+### Phase 19 acceptance evidence
+
+Product-owner acceptance completed on 2026-08-04 using the generated
+`0.19.0-alpha.1` setup and `0.19.0-alpha.2` updater. The following checks passed:
+
+- installation to the default directory;
+- installation to a user-selected custom directory;
+- verified in-place update with the selected directory retained;
+- native Windows uninstall; and
+- preservation of user-owned projects, settings, and recovery data.
+
+The complete automated gate also passed with 218 tests, zero build warnings or
+errors, and all managed, native, and multi-project desktop smoke tests.
+
 ## First-run and toolchain health
 
 First launch checks supported Windows, .NET 10, writable local storage, CMake,

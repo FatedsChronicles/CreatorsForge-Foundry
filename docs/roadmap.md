@@ -234,6 +234,11 @@ selection, disabled, error, and keyboard-focus states remain distinguishable.
 
 ## Phase 19 — Native Windows installer and updater
 
+Phase 19 completed on 2026-08-04. Automated validation passed with 218 tests,
+the native setup and updater compiled successfully, and product-owner manual
+acceptance passed for the default destination, a custom destination, verified
+in-place update, and Windows uninstall with user-data preservation.
+
 Phase 19 replaces the developer-oriented PowerShell installation path with a
 native Windows setup and update experience. It uses one stable product identity
 for first install, custom-location install, upgrade, repair, and uninstall.

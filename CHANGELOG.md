@@ -18,6 +18,14 @@ All notable changes to Creators Forge Foundry are documented in this file.
 - Windows installation, upgrade, and uninstall now use a registered native
   setup workflow instead of requiring end users to run PowerShell scripts.
 
+### Validation
+
+- Native setup passed default-directory and custom-directory installation.
+- The verified `0.19.0-alpha.1` to `0.19.0-alpha.2` update retained the selected
+  directory and user data.
+- Windows uninstall removed the application while preserving user-owned data.
+- The complete automated suite passes 218 tests with all desktop smoke tests.
+
 ## [Unreleased] — changes since 0.1.0-rc.1
 
 No later release-candidate number has been assigned yet. This section describes
