@@ -65,6 +65,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 - Phase 19C product-owner acceptance passed: alpha.5 discovered the published
   alpha.6 prerelease through Foundry, verified and installed it, then reported
   alpha.6 up to date on the Prerelease channel.
+- Alpha.7 installed-build acceptance passed: **Restore Official GitHub Source**
+  was visible and restored a local/custom manifest location to Foundry's
+  canonical GitHub Releases URL correctly.
 - GitHub Release automation now runs on the Node.js 24-compatible
   `actions/checkout@v7`, `actions/setup-dotnet@v6`, and
   `actions/upload-artifact@v7` action majors.

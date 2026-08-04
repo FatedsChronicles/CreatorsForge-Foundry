@@ -270,3 +270,7 @@ Phase 19C channel acceptance passed on 2026-08-04: alpha.5 discovered, verified,
 and installed alpha.6 from the published Prerelease channel and subsequently
 reported alpha.6 up to date. The official source can be restored from Settings
 without manually entering its URL.
+
+The alpha.7 installed-build follow-up also passed: **Restore Official GitHub
+Source** was visible and replaced a local/custom manifest location with the
+canonical GitHub Releases manifest URL.
