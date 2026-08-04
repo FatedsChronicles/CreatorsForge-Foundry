@@ -661,6 +661,9 @@ backup or silently migrate during open/build.
 
 **Updates**:
 
+- Select **Stable** to receive only the latest published stable release.
+- Select **Prerelease (includes stable)** for private-alpha, beta, and release-
+  candidate testing. Draft releases are never offered.
 - Enter a local file path or HTTPS update-manifest location.
 - Enable **Allow explicit HTTPS update checks and SDK downloads** only when you
   want Foundry to use the network for an action you start.
@@ -677,15 +680,18 @@ Select **Save** to apply valid settings or **Cancel** to discard dialog edits.
 
 ### Check for updates — Help > Check for Updates...
 
-1. In **Settings > Updates**, enable explicit HTTPS access to use the default
-   official GitHub Releases manifest, or select a local manifest for offline use.
-2. Select **Check for Updates**.
-3. Review the current and available version and verification information.
-4. Select **Stage Verified Update**. Foundry verifies the native updater size
+1. In **Settings > Updates**, select **Stable** or **Prerelease (includes
+   stable)**. Channel selection applies to the default official GitHub source;
+   custom and local manifests remain channel-neutral.
+2. Enable explicit HTTPS access to use GitHub Releases, or select a local
+   manifest for offline use.
+3. Select **Check for Updates**.
+4. Review the selected channel, current version, available version, and package.
+5. Select **Stage Verified Update**. Foundry verifies the native updater size
    and SHA-256 before it can run.
-5. Save open work and select **Install Verified Update**. Confirm the prompt;
+6. Save open work and select **Install Verified Update**. Confirm the prompt;
    Foundry starts the elevated Windows setup and then closes.
-6. Complete the setup wizard. An update retains the existing installation
+7. Complete the setup wizard. An update retains the existing installation
    directory, including a custom directory selected during first install.
 
 Updates are never checked or installed silently. The same native setup engine

@@ -17,6 +17,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
   same self-contained Windows x64 payload.
 - The official GitHub Releases manifest as the default manual update source,
   while retaining local update manifests for offline testing and distribution.
+- Explicit Stable and Prerelease update channels. Stable follows GitHub's latest
+  stable release; Prerelease safely discovers published alpha, beta, and
+  release-candidate manifests while excluding drafts.
 - A two-step **Stage Verified Update** and **Install Verified Update** desktop
   flow that verifies package size and SHA-256 before permitting execution.
 - Optional Authenticode signing hooks for the setup executable and generated
@@ -62,7 +65,7 @@ All notable changes to Creators Forge Foundry are documented in this file.
   `actions/upload-artifact@v7` action majors.
 - Windows Installed Apps uninstall removed Foundry and its shortcuts without
   removing user-owned data or requiring a PowerShell script.
-- The complete automated suite passes 220 tests with zero build warnings or
+- The complete automated suite passes 223 tests with zero build warnings or
   errors and all six desktop smoke-test projects passing.
 - Release automation regression tests enforce manual dispatch, least-privilege
   release permissions, duplicate tag/release rejection, and exact asset upload.

@@ -93,6 +93,9 @@ public sealed class FoundrySettingsStore
             Theme = Enum.IsDefined(settings.Theme)
                 ? settings.Theme
                 : FoundryThemePreference.System,
+            UpdateChannel = Enum.IsDefined(settings.UpdateChannel)
+                ? settings.UpdateChannel
+                : FoundryUpdateChannel.Stable,
             Layout = layout with
             {
                 WindowWidth = Math.Clamp(layout.WindowWidth, 900, 7680),

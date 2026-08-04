@@ -20,13 +20,17 @@ public partial class UpdateDialog : Window
             var current = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion?.Split('+', 2)[0]
                 ?? assembly.GetName().Version?.ToString(3)
                 ?? "0.0.0";
-            var result = await FoundryUpdateService.CheckAsync(settings.UpdateManifestLocation, current, settings.AllowNetworkAccess);
+            var result = await FoundryUpdateService.CheckAsync(
+                settings.UpdateManifestLocation,
+                current,
+                settings.AllowNetworkAccess,
+                settings.UpdateChannel);
             update = result.IsUpdateAvailable ? result.Manifest : null;
             stagedInstallerPath = null;
             DownloadButton.Content = "Stage Verified Update";
             DownloadButton.IsEnabled = update is not null;
             OutputText.Text = result.IsSuccess
-                ? result.IsUpdateAvailable ? $"Update {result.Manifest!.Version} is available.\nPublished: {result.Manifest.PublishedAtUtc:u}\nPackage: {result.Manifest.PackageUrl}" : $"Foundry {current} is up to date."
+                ? result.IsUpdateAvailable ? $"{settings.UpdateChannel} channel update {result.Manifest!.Version} is available.\nPublished: {result.Manifest.PublishedAtUtc:u}\nPackage: {result.Manifest.PackageUrl}" : $"Foundry {current} is up to date on the {settings.UpdateChannel} channel."
                 : string.Join(Environment.NewLine, result.Diagnostics.Select(item => $"{item.Code}: {item.Message}\n{item.SuggestedFix}"));
         }
         finally { IsEnabled = true; }

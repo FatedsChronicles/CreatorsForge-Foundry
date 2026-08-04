@@ -17,6 +17,7 @@ public partial class SettingsDialog : Window
         AutosaveTextBox.Text = settings.AutosaveSeconds.ToString(
             CultureInfo.InvariantCulture);
         UpdateLocationTextBox.Text = settings.UpdateManifestLocation;
+        UpdateChannelComboBox.SelectedIndex = settings.UpdateChannel == FoundryUpdateChannel.Prerelease ? 1 : 0;
         NetworkAccessCheckBox.IsChecked = settings.AllowNetworkAccess;
         IncludePathsCheckBox.IsChecked = settings.IncludePathsInDiagnosticBundles;
         ThemeComboBox.SelectedIndex = settings.Theme switch
@@ -69,6 +70,9 @@ public partial class SettingsDialog : Window
             DefaultProjectDirectory = ProjectDirectoryTextBox.Text.Trim(),
             AutosaveSeconds = autosaveSeconds,
             UpdateManifestLocation = string.IsNullOrWhiteSpace(UpdateLocationTextBox.Text) ? null : UpdateLocationTextBox.Text.Trim(),
+            UpdateChannel = UpdateChannelComboBox.SelectedIndex == 1
+                ? FoundryUpdateChannel.Prerelease
+                : FoundryUpdateChannel.Stable,
             AllowNetworkAccess = NetworkAccessCheckBox.IsChecked == true,
             IncludePathsInDiagnosticBundles = IncludePathsCheckBox.IsChecked == true,
             Theme = ThemeComboBox.SelectedIndex switch
