@@ -249,6 +249,8 @@ for first install, custom-location install, upgrade, repair, and uninstall.
 - Stable upgrade identity that retains a previously selected destination.
 - Separate setup and update `.exe` release assets from one verified payload.
 - GitHub Releases as the default manual update source.
+- Explicit Stable and Prerelease channels; prerelease discovery excludes drafts
+  and requires a published `foundry-update.json` asset.
 - Size and SHA-256 verification before an updater can launch.
 - Explicit elevation, running-process protection, and no silent installation.
 - User settings, recovery snapshots, and projects preserved by uninstall.
@@ -258,3 +260,8 @@ Exit gate: a clean machine can install to the default or a custom directory,
 launch Foundry, update in place from the GitHub-backed update dialog, retain its
 chosen location and user data, and uninstall through Windows without executing
 a PowerShell script.
+
+Phase 19C acceptance additionally requires a private-alpha build on the
+Prerelease channel to discover a newer published prerelease through **Check for
+Updates**, stage it with matching size and SHA-256, install it in place, and
+preserve the selected installation directory and user data.

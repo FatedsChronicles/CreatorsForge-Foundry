@@ -27,6 +27,9 @@ public sealed record FoundryUpdateLaunchResult(
 
 public static class FoundryUpdateService
 {
+    private const string OfficialReleasesApiLocation =
+        "https://api.github.com/repos/FatedsChronicles/CreatorsForge-Foundry/releases?per_page=100";
+    private const string UpdateManifestAssetName = "foundry-update.json";
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
     private static readonly HttpClient Client = new() { Timeout = TimeSpan.FromSeconds(30) };
 
@@ -36,12 +39,38 @@ public static class FoundryUpdateService
         bool allowNetworkAccess,
         CancellationToken cancellationToken = default)
     {
+        return await CheckAsync(
+            manifestLocation,
+            currentVersion,
+            allowNetworkAccess,
+            FoundryUpdateChannel.Stable,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    public static async Task<FoundryUpdateCheckResult> CheckAsync(
+        string? manifestLocation,
+        string currentVersion,
+        bool allowNetworkAccess,
+        FoundryUpdateChannel channel,
+        CancellationToken cancellationToken = default)
+    {
         if (string.IsNullOrWhiteSpace(manifestLocation))
             return Failure("CFU1001", "No update manifest is configured.", "Configure a local file or HTTPS update manifest in Settings.");
         try
         {
+            var effectiveManifestLocation = manifestLocation.Trim();
+            if (channel == FoundryUpdateChannel.Prerelease && IsOfficialManifestLocation(effectiveManifestLocation))
+            {
+                if (!allowNetworkAccess)
+                    return Failure("CFU1002", "Network access is disabled.", "Enable network access in Settings or use a local update manifest.");
+                effectiveManifestLocation = await ResolveOfficialPrereleaseManifestLocationAsync(cancellationToken).ConfigureAwait(false)
+                    ?? string.Empty;
+                if (effectiveManifestLocation.Length == 0)
+                    return Failure("CFU1006", "No published Foundry release with an update manifest is available on the Prerelease channel.", "Publish a non-draft GitHub Release containing foundry-update.json, then try again.");
+            }
+
             string json;
-            if (Uri.TryCreate(manifestLocation, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https")
+            if (Uri.TryCreate(effectiveManifestLocation, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https")
             {
                 if (!allowNetworkAccess)
                     return Failure("CFU1002", "Network access is disabled.", "Enable network access in Settings or use a local update manifest.");
@@ -59,12 +88,12 @@ public static class FoundryUpdateService
             {
                 manifest = manifest with
                 {
-                    PackageUrl = Uri.TryCreate(manifestLocation, UriKind.Absolute, out var manifestUri) && manifestUri.Scheme is "http" or "https"
+                    PackageUrl = Uri.TryCreate(effectiveManifestLocation, UriKind.Absolute, out var manifestUri) && manifestUri.Scheme is "http" or "https"
                         ? new Uri(manifestUri, manifest.PackageUrl).ToString()
-                        : Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(manifestLocation))!, manifest.PackageUrl)),
+                        : Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(effectiveManifestLocation))!, manifest.PackageUrl)),
                 };
             }
-            var diagnostics = Validate(manifest, manifestLocation);
+            var diagnostics = Validate(manifest, effectiveManifestLocation);
             if (manifest is null || diagnostics.Any(item => item.IsError))
                 return new(false, false, manifest, diagnostics);
             var available = TryCompareVersions(manifest.Version, currentVersion, out var comparison) && comparison > 0;
@@ -75,6 +104,64 @@ public static class FoundryUpdateService
         {
             return Failure("CFU1004", $"The update manifest could not be read: {exception.Message}", "Check the location and try again.");
         }
+    }
+
+    public static string? SelectOfficialPrereleaseManifestLocation(string releasesJson)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(releasesJson);
+        using var document = JsonDocument.Parse(releasesJson);
+        if (document.RootElement.ValueKind != JsonValueKind.Array)
+            return null;
+
+        string? selectedVersion = null;
+        string? selectedLocation = null;
+        foreach (var release in document.RootElement.EnumerateArray())
+        {
+            if (release.ValueKind != JsonValueKind.Object ||
+                !release.TryGetProperty("draft", out var draft) ||
+                draft.ValueKind != JsonValueKind.False ||
+                !release.TryGetProperty("prerelease", out var prerelease) ||
+                prerelease.ValueKind is not (JsonValueKind.True or JsonValueKind.False) ||
+                !release.TryGetProperty("published_at", out var publishedAt) ||
+                publishedAt.ValueKind != JsonValueKind.String ||
+                !release.TryGetProperty("tag_name", out var tagNameElement) ||
+                tagNameElement.GetString() is not { } tagName ||
+                !release.TryGetProperty("assets", out var assets) ||
+                assets.ValueKind != JsonValueKind.Array)
+                continue;
+
+            var version = tagName.StartsWith('v') ? tagName[1..] : tagName;
+            if (!TryParseVersion(version, out _))
+                continue;
+
+            string? location = null;
+            foreach (var asset in assets.EnumerateArray())
+            {
+                if (!asset.TryGetProperty("name", out var name) ||
+                    !string.Equals(name.GetString(), UpdateManifestAssetName, StringComparison.Ordinal) ||
+                    !asset.TryGetProperty("state", out var state) ||
+                    !string.Equals(state.GetString(), "uploaded", StringComparison.OrdinalIgnoreCase) ||
+                    !asset.TryGetProperty("browser_download_url", out var downloadUrl) ||
+                    downloadUrl.GetString() is not { } candidateLocation ||
+                    !Uri.TryCreate(candidateLocation, UriKind.Absolute, out var candidateUri) ||
+                    candidateUri.Scheme != Uri.UriSchemeHttps ||
+                    !string.Equals(candidateUri.Host, "github.com", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                location = candidateUri.ToString();
+                break;
+            }
+
+            if (location is null ||
+                selectedVersion is not null &&
+                (!TryCompareVersions(version, selectedVersion, out var comparison) || comparison <= 0))
+                continue;
+
+            selectedVersion = version;
+            selectedLocation = location;
+        }
+
+        return selectedLocation;
     }
 
     public static async Task<(string? PackagePath, IReadOnlyList<FoundryDiagnostic> Diagnostics)> StageAsync(
@@ -222,5 +309,24 @@ public static class FoundryUpdateService
         if (parts.Length == 2 && (preRelease.Length == 0 || preRelease.Any(item => !item.All(character => char.IsAsciiLetterOrDigit(character) || character == '-')))) return false;
         version = (core, preRelease);
         return true;
+    }
+
+    private static bool IsOfficialManifestLocation(string location) =>
+        string.Equals(
+            location,
+            FoundryUserSettings.DefaultUpdateManifestLocation,
+            StringComparison.OrdinalIgnoreCase);
+
+    private static async Task<string?> ResolveOfficialPrereleaseManifestLocationAsync(
+        CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, OfficialReleasesApiLocation);
+        request.Headers.Accept.ParseAdd("application/vnd.github+json");
+        request.Headers.UserAgent.ParseAdd("CreatorsForge-Foundry");
+        request.Headers.Add("X-GitHub-Api-Version", "2026-03-10");
+        using var response = await Client.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        return SelectOfficialPrereleaseManifestLocation(json);
     }
 }

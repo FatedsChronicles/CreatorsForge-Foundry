@@ -493,7 +493,10 @@ public sealed class WorkspaceServicesTests
         var settings = new FoundryUserSettings(
             temporary.Path,
             1,
-            new ShellLayout(WindowWidth: 100, BottomPanelHeight: 5000));
+            new ShellLayout(WindowWidth: 100, BottomPanelHeight: 5000)) with
+        {
+            UpdateChannel = FoundryUpdateChannel.Prerelease,
+        };
 
         await store.SaveAsync(settings, CancellationToken.None);
         var loaded = await store.LoadAsync(CancellationToken.None);
@@ -501,6 +504,7 @@ public sealed class WorkspaceServicesTests
         Assert.Equal(10, loaded.Value.AutosaveSeconds);
         Assert.Equal(900, loaded.Value.Layout.WindowWidth);
         Assert.Equal(600, loaded.Value.Layout.BottomPanelHeight);
+        Assert.Equal(FoundryUpdateChannel.Prerelease, loaded.Value.UpdateChannel);
 
         await File.WriteAllTextAsync(settingsPath, "[]", CancellationToken.None);
         var broken = await store.LoadAsync(CancellationToken.None);
@@ -578,7 +582,11 @@ public sealed class WorkspaceServicesTests
             publishedAtUtc = DateTimeOffset.UtcNow,
         }, ManifestOptions));
 
-        var check = await FoundryUpdateService.CheckAsync(manifestPath, "1.0.0", allowNetworkAccess: false);
+        var check = await FoundryUpdateService.CheckAsync(
+            manifestPath,
+            "1.0.0",
+            allowNetworkAccess: false,
+            FoundryUpdateChannel.Prerelease);
         Assert.True(check.IsSuccess);
         Assert.True(check.IsUpdateAvailable);
         Assert.Equal(package, check.Manifest!.PackageUrl);
@@ -625,6 +633,124 @@ public sealed class WorkspaceServicesTests
             "https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases/latest/download/foundry-update.json",
             settings.UpdateManifestLocation);
         Assert.False(settings.AllowNetworkAccess);
+        Assert.Equal(FoundryUpdateChannel.Stable, settings.UpdateChannel);
+    }
+
+    [Fact]
+    public async Task PrereleaseChannelStillRequiresExplicitNetworkAccess()
+    {
+        var result = await FoundryUpdateService.CheckAsync(
+            FoundryUserSettings.DefaultUpdateManifestLocation,
+            "0.19.0-alpha.4",
+            allowNetworkAccess: false,
+            FoundryUpdateChannel.Prerelease);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("CFU1002", Assert.Single(result.Diagnostics).Code);
+    }
+
+    [Fact]
+    public void PrereleaseChannelSelectsHighestPublishedGitHubManifestAndExcludesDrafts()
+    {
+        const string releasesJson = """
+            [
+              {
+                "tag_name": "v0.21.0-alpha.1",
+                "draft": true,
+                "prerelease": true,
+                "published_at": "2026-08-04T12:00:00Z",
+                "assets": [
+                  {
+                    "name": "foundry-update.json",
+                    "state": "uploaded",
+                    "browser_download_url": "https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases/download/v0.21.0-alpha.1/foundry-update.json"
+                  }
+                ]
+              },
+              {
+                "tag_name": "v0.20.0-alpha.2",
+                "draft": false,
+                "prerelease": true,
+                "published_at": "2026-08-03T12:00:00Z",
+                "assets": [
+                  {
+                    "name": "foundry-update.json",
+                    "state": "uploaded",
+                    "browser_download_url": "https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases/download/v0.20.0-alpha.2/foundry-update.json"
+                  }
+                ]
+              },
+              {
+                "tag_name": "v0.20.0-alpha.1",
+                "draft": false,
+                "prerelease": true,
+                "published_at": "2026-08-04T12:00:00Z",
+                "assets": [
+                  {
+                    "name": "foundry-update.json",
+                    "state": "uploaded",
+                    "browser_download_url": "https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases/download/v0.20.0-alpha.1/foundry-update.json"
+                  }
+                ]
+              },
+              {
+                "tag_name": "v0.22.0-alpha.1",
+                "draft": false,
+                "prerelease": true,
+                "published_at": "2026-08-04T12:00:00Z",
+                "assets": [
+                  {
+                    "name": "foundry-update.json",
+                    "state": "uploaded",
+                    "browser_download_url": "https://example.invalid/foundry-update.json"
+                  }
+                ]
+              }
+            ]
+            """;
+
+        var location = FoundryUpdateService.SelectOfficialPrereleaseManifestLocation(releasesJson);
+
+        Assert.Equal(
+            "https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases/download/v0.20.0-alpha.2/foundry-update.json",
+            location);
+    }
+
+    [Fact]
+    public void PrereleaseChannelIncludesAStableReleaseAtTheSameCoreVersion()
+    {
+        const string releasesJson = """
+            [
+              {
+                "tag_name": "v0.20.0-alpha.9",
+                "draft": false,
+                "prerelease": true,
+                "published_at": "2026-08-03T12:00:00Z",
+                "assets": [{
+                  "name": "foundry-update.json",
+                  "state": "uploaded",
+                  "browser_download_url": "https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases/download/v0.20.0-alpha.9/foundry-update.json"
+                }]
+              },
+              {
+                "tag_name": "v0.20.0",
+                "draft": false,
+                "prerelease": false,
+                "published_at": "2026-08-02T12:00:00Z",
+                "assets": [{
+                  "name": "foundry-update.json",
+                  "state": "uploaded",
+                  "browser_download_url": "https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases/download/v0.20.0/foundry-update.json"
+                }]
+              }
+            ]
+            """;
+
+        var location = FoundryUpdateService.SelectOfficialPrereleaseManifestLocation(releasesJson);
+
+        Assert.Equal(
+            "https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases/download/v0.20.0/foundry-update.json",
+            location);
     }
 
     [Fact]

@@ -21,6 +21,12 @@ allowing the stable URL below to resolve both files from the same release:
 https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases/latest/download/foundry-update.json
 ```
 
+Foundry's **Stable** channel uses that URL. **Prerelease (includes stable)**
+queries GitHub's public releases API, ignores drafts, considers only published
+releases with an uploaded `foundry-update.json`, and selects the highest semantic
+version. The selected manifest's relative updater path resolves within the same
+immutable GitHub Release before the existing size and SHA-256 checks run.
+
 ## Running the workflow
 
 After the workflow is merged into `main`:

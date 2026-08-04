@@ -114,6 +114,12 @@ public static class FoundryThemePalettes
         Error: "#B42318");
 }
 
+public enum FoundryUpdateChannel
+{
+    Stable,
+    Prerelease,
+}
+
 public sealed record FoundryUserSettings(
     string DefaultProjectDirectory,
     int AutosaveSeconds,
@@ -124,7 +130,8 @@ public sealed record FoundryUserSettings(
     string? UpdateManifestLocation = "https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases/latest/download/foundry-update.json",
     bool AllowNetworkAccess = false,
     bool IncludePathsInDiagnosticBundles = false,
-    FoundryThemePreference Theme = FoundryThemePreference.System)
+    FoundryThemePreference Theme = FoundryThemePreference.System,
+    FoundryUpdateChannel UpdateChannel = FoundryUpdateChannel.Stable)
 {
     public const string DefaultUpdateManifestLocation =
         "https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases/latest/download/foundry-update.json";
@@ -141,5 +148,6 @@ public sealed record FoundryUserSettings(
         DefaultUpdateManifestLocation,
         false,
         false,
-        FoundryThemePreference.System);
+        FoundryThemePreference.System,
+        FoundryUpdateChannel.Stable);
 }

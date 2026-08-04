@@ -58,6 +58,11 @@ GitHub Release creation and upload of the setup, updater, and update manifest
 are automated by the guarded manual workflow documented in
 [github-release-automation.md](github-release-automation.md).
 
+The Phase 19C channel increment passes 223 automated tests with zero build
+warnings or errors. Its remaining product-owner exit check is a published
+prerelease discovered and installed entirely through Foundry's Prerelease
+channel.
+
 ## First-run and toolchain health
 
 First launch checks supported Windows, .NET 10, writable local storage, CMake,
@@ -71,8 +76,11 @@ can be downloaded explicitly or installed from an offline archive folder.
 ## Updates, recovery, accessibility, and performance
 
 Settings separates workspace, update, and privacy options. Update checks are
-manual, default to the official GitHub Releases manifest, support local
-manifests, require opt-in for HTTPS, and never install silently. **Tools >
+manual, default to the official GitHub Releases manifest, support explicit
+Stable and Prerelease channels plus channel-neutral local/custom manifests,
+require opt-in for HTTPS, and never install silently. Stable follows GitHub's
+latest stable release. Prerelease includes published alpha, beta, release
+candidate, and stable releases but excludes drafts. **Tools >
 Recovery and Diagnostics** lists local recovery/failure
 evidence and creates a reviewable bundle.
 
