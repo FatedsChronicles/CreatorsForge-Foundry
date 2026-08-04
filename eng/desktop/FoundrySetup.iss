@@ -19,7 +19,7 @@ AppPublisher=Fated's Chronicles
 AppPublisherURL=https://github.com/FatedsChronicles/CreatorsForge-Foundry
 AppSupportURL=https://github.com/FatedsChronicles/CreatorsForge-Foundry/issues
 AppUpdatesURL=https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases
-DefaultDirName={autopf}\Creators Forge\Foundry
+DefaultDirName={code:GetDefaultInstallDir}
 DefaultGroupName=Creators Forge
 AllowNoIcons=yes
 ArchitecturesAllowed=x64compatible
@@ -67,6 +67,18 @@ Filename: "{app}\CreatorsForge.Foundry.exe"; Description: "Launch Creators Forge
 Type: files; Name: "{app}\install-receipt.json"
 
 [Code]
+function GetDefaultInstallDir(Param: String): String;
+var
+  LegacyInstallDir: String;
+begin
+  LegacyInstallDir := ExpandConstant('{localappdata}\Programs\Creators Forge Foundry');
+  if FileExists(AddBackslash(LegacyInstallDir) + 'install-receipt.json') and
+     FileExists(AddBackslash(LegacyInstallDir) + 'CreatorsForge.Foundry.exe') then
+    Result := LegacyInstallDir
+  else
+    Result := ExpandConstant('{autopf}\Creators Forge\Foundry');
+end;
+
 function JsonEscape(Value: String): String;
 begin
   Result := Value;

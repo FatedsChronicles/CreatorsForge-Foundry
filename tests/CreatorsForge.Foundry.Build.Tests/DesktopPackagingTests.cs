@@ -8,7 +8,10 @@ public sealed class DesktopPackagingTests
         var root = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Desktop");
         var installer = File.ReadAllText(Path.Combine(root, "FoundrySetup.iss"));
         Assert.Contains("AppId={{D9786586-E859-4A81-B8AB-906A99E00510}", installer, StringComparison.Ordinal);
-        Assert.Contains("DefaultDirName={autopf}\\Creators Forge\\Foundry", installer, StringComparison.Ordinal);
+        Assert.Contains("DefaultDirName={code:GetDefaultInstallDir}", installer, StringComparison.Ordinal);
+        Assert.Contains("Result := ExpandConstant('{autopf}\\Creators Forge\\Foundry')", installer, StringComparison.Ordinal);
+        Assert.Contains("{localappdata}\\Programs\\Creators Forge Foundry", installer, StringComparison.Ordinal);
+        Assert.Contains("FileExists(AddBackslash(LegacyInstallDir) + 'install-receipt.json')", installer, StringComparison.Ordinal);
         Assert.Contains("PrivilegesRequired=admin", installer, StringComparison.Ordinal);
         Assert.Contains("UsePreviousAppDir=yes", installer, StringComparison.Ordinal);
         Assert.Contains("CloseApplications=yes", installer, StringComparison.Ordinal);

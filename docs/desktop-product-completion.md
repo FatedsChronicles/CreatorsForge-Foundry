@@ -20,6 +20,11 @@ and blocks uninstall while Foundry is running. The native uninstaller removes
 only installer-owned application files; projects, settings, and recovery data
 remain untouched.
 
+When setup detects the receipt-backed Phase 14 installation at the old default
+per-user location, it adopts that directory instead of creating a duplicate or
+deleting it. Clean installations still default to Program Files. All later
+native updates retain whichever directory the user selected or migrated from.
+
 Packaging emits separate `CreatorsForge-Foundry-<version>-Setup.exe` and
 `CreatorsForge-Foundry-<version>-Update.exe` assets from the same payload, plus
 `foundry-update.json`. The manifest contains the updater location, size,
