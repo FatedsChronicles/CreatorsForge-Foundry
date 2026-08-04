@@ -1,19 +1,14 @@
 # Creators Forge Foundry
 
-Creators Forge Foundry is a Windows development environment for creating,
-testing, packaging, and maintaining Streamer.bot extensions and native OBS
-Studio plugins. The v1 candidate includes the Windows-x64 OBS SDK workflow,
-native designer, package model, safe deployment, unified testing, publishing,
-desktop installation, recovery, and final-acceptance process.
+Creators Forge Foundry is a local-first Windows development environment for content creators and developers building extensions for Streamer.bot and native plugins for OBS Studio.
+
+Foundry brings project creation, source editing, code intelligence, testing, packaging, publishing, deployment, health monitoring, repair, rollback, and uninstall into one integrated desktop workspace. It is designed to make creator-tool development more approachable while retaining the structured, deterministic workflows expected from a professional software-development environment.
 
 The repository includes a WPF desktop workspace and CLI. It contains the
 versioned source-first project model, project creation and persistence, a
 Roslyn-backed C# editor, managed builds, deterministic bridge generation,
 structured diagnostics, Streamer.bot compatibility experiments, tests, and
 architecture records.
-
-The current implementation sequence and authoritative phase numbering are in
-[docs/roadmap.md](docs/roadmap.md).
 
 ## Prerequisites
 
@@ -22,279 +17,500 @@ The current implementation sequence and authoritative phase numbering are in
 - PowerShell 5.1 or later.
 - CMake 3.20 or later and the Visual Studio C++ x64 toolchain for OBS projects.
 
-## Restore, build, and test
+## Why Foundry?
 
-From the repository root:
+Streamer.bot and OBS Studio are powerful platforms, but developing extensions for them normally requires knowledge spread across several tools and workflows:
+
+- C# and native C development
+- Provider-specific APIs and lifecycle requirements
+- Streamer.bot import/export formats
+- OBS SDK and compiler configuration
+- Manual DLL installation
+- Runtime compatibility testing
+- Package construction
+- Version management
+- Deployment recovery and rollback
+
+Foundry combines these concerns into a source-first project system with guided desktop workflows, structured diagnostics, repeatable builds, and safety controls around installed files.
+
+It does not hide the source code or replace the underlying platforms. Instead, it provides a consistent development environment around them.
+
+## Core capabilities
+
+### Unified project system
+
+Foundry uses versioned `.foundryproj` manifests to describe:
+
+- Project identity and semantic version
+- Target provider and compatibility profile
+- Managed or native build inputs
+- Streamer.bot package definitions
+- OBS plugin metadata and component design
+- Generated CPHInline bridge configuration
+- Test definitions and compatibility profiles
+- Reusable components
+- Publishing and signing configuration
+- Expected release outputs
+
+Projects remain reviewable, portable, and suitable for source control.
+
+Foundry validates manifests before building and reports structured diagnostics with stable error codes and actionable source locations.
+
+### Streamer.bot extension development
+
+Foundry supports creating and maintaining managed Streamer.bot extensions with:
+
+- Streamer.bot extension and command-workflow templates
+- Deterministic managed builds
+- Generated `CPHInline` bridge code
+- Structured actions, commands, queues, triggers, and sub-actions
+- Stable version-23 package encoding and decoding
+- Deterministic package IDs
+- Import-code generation
+- Package inspection and round-trip validation
+- Compiler-reference guidance
+- Runtime deployment health checks
+
+The generated managed libraries target the compatibility requirements of the supported Streamer.bot installations rather than the framework used by the Foundry desktop application.
+
+### OBS Studio plugin development
+
+Foundry provides a pinned native development workflow for OBS Studio plugins, including:
+
+- OBS module templates
+- Passthrough video-filter templates
+- Configurable video-filter templates
+- Video input-source templates
+- Encoded-output templates
+- Lifecycle-safe create and destroy callbacks
+- Pinned OBS SDK management
+- CMake and MSVC toolchain integration
+- Native build diagnostics
+- Plugin ABI inspection
+- Module-load verification
+- Source registration and lifecycle testing
+- OBS log inspection
+
+The OBS Plugin Designer provides a structured interface for module and component metadata while keeping the generated C source visible and reviewable.
+
+## Integrated editors
+
+### Roslyn-powered C# editor
+
+The managed editor provides:
+
+- C# syntax highlighting
+- Roslyn diagnostics
+- Source formatting
+- Definition navigation
+- Profile-aware `CPH` completion
+- Signature and parameter help
+- Local API documentation
+- Streamer.bot compatibility diagnostics
+- Guided snippet insertion
+- Placeholder navigation
+
+The bundled catalogue includes verified method snippets and defensive workflow snippets for common creator automation scenarios.
+
+### Native OBS editor
+
+The native editor provides:
+
+- C and header-file editing
+- Pinned libobs API completion
+- Function signature help
+- OBS constant and symbol completion
+- Definition navigation into verified SDK headers
+- Read-only SDK reference tabs
+- Native compiler diagnostics
+- Searchable offline OBS API documentation
+
+## Testing and debugging
+
+Foundry uses a provider-neutral testing system so Streamer.bot extensions and OBS plugins can be tested through a consistent workflow.
+
+### Streamer.bot testing
+
+The Streamer.bot mock runtime supports:
+
+- Simulated commands, rewards, and test events
+- CPH argument injection
+- Captured log calls
+- Captured CPH method calls
+- Return-value assertions
+- Log-content assertions
+- Argument assertions
+- CPH call-count assertions
+- Compatibility matrices across supported profiles
+
+Mock-runtime testing does not replace real Streamer.bot acceptance. Foundry separately documents and tracks runtime installation, import, compilation, and execution in each supported host.
+
+### OBS testing
+
+Native OBS testing includes:
+
+- PE and ABI inspection
+- Required module-export verification
+- Crash-isolated module loading
+- Source registration checks
+- Source creation and destruction
+- Timeout-controlled helper processes
+- Abnormal-exit and native-crash reporting
+- Compatibility-matrix results
+
+Native modules are loaded in a separate test process so a plugin crash cannot terminate the Foundry editor.
+
+### Desktop Test Explorer
+
+The Test Explorer can:
+
+- Run individual project tests
+- Run complete compatibility matrices
+- Select disposable OBS installations
+- Filter cases by name or outcome
+- Display event arguments
+- Inspect assertions and actual values
+- Show captured logs and CPH calls
+- Navigate diagnostics back into source files
+- Retain structured JSON test results
+
+## Deterministic builds and packages
+
+Foundry treats reproducibility as a first-class feature.
+
+Build outputs use deterministic directory layouts and include:
+
+- Managed or native binaries
+- Generated bridge source
+- Provider-specific package artifacts
+- Package intermediate representation
+- Relative artifact paths
+- SHA-256 hashes
+- Build and publishing diagnostics
+
+The regression suite compares reviewed semantic package snapshots and verifies that repeated builds from identical inputs produce identical artifact sets. Fixed-time release tests verify byte-identical archives.
+
+## Safe deployment
+
+Foundry provides reviewed deployment workflows for both providers.
+
+Before changing an installation, Foundry produces a preview showing the proposed operation and affected files. Applying the operation requires explicit confirmation.
+
+### Streamer.bot deployment
+
+Foundry can:
+
+- Discover or select Streamer.bot installations
+- Preview DLL installation and updates
+- Install the managed extension DLL
+- Generate and copy import code
+- Record installation ownership
+- Track compiler-reference and runtime-verification steps
+- Compare installed and project versions
+- Detect missing or modified DLLs
+- Repair or redeploy owned files
+- Roll back to the previous receipt
+- Uninstall Foundry-owned files
+
+### OBS deployment
+
+Foundry can:
+
+- Discover or select OBS installations
+- Verify the supported OBS version
+- Preview DLL and plugin-data changes
+- Install native module files
+- Record ownership receipts
+- Create recoverable backups
+- Compare installed and project versions
+- Detect missing or modified files
+- Inspect post-install OBS logs
+- Repair, update, roll back, or uninstall
+- Block changes while OBS is running
+
+### Ownership protection
+
+Deployment operations are receipt-based. Foundry refuses to silently delete or overwrite a file that no longer matches the file it installed.
+
+User-owned configuration, Streamer.bot actions, OBS scenes, and unrelated installation files remain outside Foundry’s ownership boundary.
+
+## Project templates and reusable components
+
+Foundry includes seven versioned project templates spanning both providers.
+
+Template creation supports guided parameters such as:
+
+- Project identity
+- Author
+- Description
+- Target provider
+- Compatibility profile
+- OBS component name and ID
+
+Reusable managed and native components can be installed as explicit source build inputs. Component provenance is recorded in the project manifest, and collision checks prevent existing project files from being silently replaced.
+
+Users can also create and import custom snippet catalogues. Project-specific catalogues under `.foundry/snippets` are combined with the built-in catalogue.
+
+## Multi-project workspaces
+
+Portable `.foundryworkspace` files can group Streamer.bot and OBS projects together.
+
+The desktop supports:
+
+- Mixed-provider workspaces
+- Active-project switching
+- Startup-project selection
+- Workspace-wide validation
+- Workspace-wide builds
+- Shared project navigation
+- Portable relative project paths
+
+## Template interchange and migration
+
+Source-only `.foundrytemplate` packages can be exported, reviewed, shared, and imported with guided parameters.
+
+Older project manifests can be upgraded through an explicit migration workflow that provides:
+
+- Migration inspection
+- Planned-change previews
+- Backup-first replacement
+- Schema validation
+- Unknown-field preservation
+- Atomic project replacement
+
+## Publishing and distribution
+
+Foundry includes publishing workflows for release-ready provider packages.
+
+Publishing metadata can describe:
+
+- Package identity
+- Semantic version
+- Summary and authors
+- Licence file
+- Changelog
+- Tags
+- Homepage and repository
+- Runtime, library, and tool dependencies
+- Optional Windows code-signing settings
+
+Publishing validation checks the project build, provider archive, legal files, changelog version, dependency inventory, compatibility evidence, and signing configuration.
+
+Successful publishing produces:
+
+- Provider distribution archive
+- Package manifest
+- Dependency inventory
+- Signing evidence
+- Reproducibility report
+- SHA-256 hashes
+- Release checklist results
+
+A public Foundry marketplace is a possible future extension, not a dependency of v1.
+
+## Desktop product features
+
+The WPF desktop application includes:
+
+- First-run setup and dependency checks
+- Recent-project history
+- Configurable project locations
+- Tabbed source editing
+- Project and workspace trees
+- Problems, build-output, and console panels
+- Searchable snippet and API browsers
+- Package viewer
+- Streamer.bot Designer
+- OBS Plugin Designer
+- Test Explorer
+- Deployment management
+- Publishing metadata editor
+- Toolchain management
+- Keyboard navigation
+- High-contrast and accessibility support
+- Recovery snapshots for unsaved documents
+- Local diagnostic and failure bundles
+- Manual, verified application updates
+- Receipt-guarded installation and uninstall
+
+The self-contained desktop package installs per user and does not require administrative installation into system directories.
+
+## Privacy and offline operation
+
+Foundry is designed to operate locally.
+
+It has:
+
+- No telemetry
+- No advertising identifiers
+- No analytics
+- No account requirement
+- No automatic diagnostic upload
+- No automatic source-code upload
+
+Projects, settings, build output, recovery snapshots, deployment receipts, test results, update packages, and failure reports remain on the local computer.
+
+Network access is disabled by default. It is used only after the user enables it and explicitly starts an operation such as an OBS SDK download or update check.
+
+Diagnostic bundles are created only on request and can be reviewed before sharing. Project source and recovery text are not automatically included.
+
+Uninstall preserves local settings and recovery information by default. User data is removed only when the explicit removal option is supplied.
+
+## Supported v1 hosts
+
+Foundry v1 has been developed and verified against these exact hosts:
+
+| Provider | Supported host |
+|---|---|
+| Streamer.bot | 1.0.4 Stable |
+| Streamer.bot | 1.0.5-alpha.34 |
+| Streamer.bot | 1.0.5-beta.1 |
+| OBS Studio | 32.1.2 on Windows x64 |
+
+Important compatibility boundaries:
+
+- OBS Studio 32.1.2 Windows x64 is the only exact OBS release currently included in the v1 support matrix.
+- The internal `32.x-windows-x64` profile does not imply support for every OBS 32.x release.
+- Streamer.bot prerelease compatibility applies to the exact tested alpha and beta builds.
+- Foundry emits the stable version-23 Streamer.bot package contract.
+- Automated compatibility tests supplement rather than replace real-host runtime verification.
+
+See the repository compatibility matrix for the distinction between automated and real-host evidence.
+
+## Prerequisites
+
+Building Foundry from source requires:
+
+- Windows 10 or later, x64
+- .NET SDK 10.0.302 or a permitted later .NET 10 patch
+- PowerShell 5.1 or later
+- CMake 3.20 or later for OBS projects
+- Visual Studio C++ x64 Build Tools for OBS projects
+
+The pinned OBS SDK can be managed through Foundry’s toolchain interface and supports reviewed offline archives.
+
+## Build from source
+
+Clone the repository and run:
 
 ```powershell
 .\build.ps1
 ```
 
-The command restores dependencies, builds the complete solution in Release
-configuration, and runs all tests. Use `.\build.ps1 -Configuration Debug` for
-a Debug build. Restore uses the repository-owned `NuGet.config`, so it does not
-depend on machine-specific package-source configuration.
+This restores repository-defined dependencies, builds the complete solution in Release configuration, and runs the automated test suite.
 
-Validate or build the sample project through the CLI:
+For a Debug build:
 
 ```powershell
-dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
-  validate .\samples\HelloFoundry\HelloFoundry.foundryproj
-
-dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
-  build .\samples\HelloFoundry\HelloFoundry.foundryproj
-
-dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
-  build .\samples\ObsCompatibilityProbe\ObsCompatibilityProbe.foundryproj
-
-dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
-  sdk install obsstudio
-
-dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
-  build .\samples\ObsPassthroughFilter\ObsPassthroughFilter.foundryproj
-
-dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
-  release .\samples\HelloFoundry\HelloFoundry.foundryproj
-
-dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
-  publish validate .\MyExtension\MyExtension.foundryproj
-
-dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
-  version .\MyExtension\MyExtension.foundryproj patch
-
-dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
-  publish .\MyExtension\MyExtension.foundryproj
-
-dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
-  test .\samples\HelloFoundry\HelloFoundry.foundryproj
-
-dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
-  test .\samples\ObsPassthroughFilter\ObsPassthroughFilter.foundryproj `
-  --obs "F:\OBS-Studio-32.1.2-Creator_Forge_Foundry"
-
-dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
-  test-matrix .\samples\HelloFoundry\HelloFoundry.foundryproj
-
-dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
-  test-matrix .\samples\ObsPassthroughFilter\ObsPassthroughFilter.foundryproj `
-  --obs "F:\OBS-Studio-32.1.2-Creator_Forge_Foundry"
+.\build.ps1 -Configuration Debug
 ```
 
-The build command compiles the declared sources into `build/managed`, generates
-`build/bridge/CPHInline.cs`, emits a verified stable-v23 import code under
-`build/streamerbot`, and writes `build/package-ir.json` with relative artifact
-paths and SHA-256 hashes. Commands exit with `0` for success, `1` when an
-operation reports an error, `2` for invalid command usage, and `130` when
-cancelled.
-
-The `test` command performs a fresh build, simulates declared Streamer.bot
-events and CPH arguments through the mock runtime, evaluates structured
-assertions, and writes `build/test-results/latest.json`. See
-[docs/testing-and-debugging.md](docs/testing-and-debugging.md).
-
-OBS tests additionally inspect the native DLL ABI and run module load plus
-source create/destroy callbacks inside a timeout-controlled helper process, so
-a native crash cannot terminate Foundry.
-
-The `test-matrix` command runs every declared compatibility profile through
-the same provider-neutral orchestration, retains one result per runtime cell,
-and writes `build/test-results/compatibility-matrix.json`.
-
-In the desktop, **Build > Test Explorer** (`Ctrl+T`) runs the same single-test
-and compatibility-matrix workflows. It filters results by text or outcome,
-shows event arguments, assertions, logs and CPH calls, and navigates actionable
-diagnostics back into the editor. OBS projects can select one or more saved
-disposable installations before running.
-
-The regression suite also compares reviewed Streamer.bot and OBS
-package snapshots and proves unchanged package/release builds are byte
-identical. See
-[docs/golden-package-regressions.md](docs/golden-package-regressions.md).
-
-Launch the desktop workspace:
+Launch the desktop application:
 
 ```powershell
 dotnet run --project .\src\CreatorsForge.Foundry.App
 ```
 
-For a complete action-by-action guide to the desktop, including editor,
-designer, testing, publishing, deployment, recovery, and update workflows, see
-[the user training manual](docs/user-training-manual.md).
+## Command-line interface
 
-Create the self-contained Windows desktop package and update manifest:
+The Foundry CLI supports validation, builds, testing, compatibility matrices, releases, publishing, version updates, and OBS SDK management.
+
+Examples:
 
 ```powershell
-.\eng\desktop\package-desktop.ps1 -Version 1.0.0
+dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
+  validate .\samples\HelloFoundry\HelloFoundry.foundryproj
 ```
 
-First launch performs local dependency checks. **Tools > Development
-Toolchain** manages CMake/MSVC/OBS SDK readiness and supports offline SDK
-archives. **Help > Check for Updates** uses a configured local or opt-in HTTPS
-manifest, and **Tools > Recovery and Diagnostics** creates local reviewable
-failure bundles. See [docs/desktop-product-completion.md](docs/desktop-product-completion.md)
-and [docs/privacy-and-offline.md](docs/privacy-and-offline.md).
+```powershell
+dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
+  build .\samples\HelloFoundry\HelloFoundry.foundryproj
+```
 
-The desktop can create or open `.foundryproj` workspaces, edit syntax-highlighted
-C# and native OBS sources in tabs, report live language diagnostics, format C# documents, navigate to source
-definitions, run the existing build pipeline, remember recent projects and
-layout, preserve dirty documents as recovery snapshots, edit Streamer.bot
-actions/commands/queues structurally, and inspect decoded build packages.
+```powershell
+dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
+  test-matrix .\samples\HelloFoundry\HelloFoundry.foundryproj
+```
 
-New Project offers seven versioned provider templates with guided author and
-description fields, including Streamer.bot extension/command starters and OBS
-module, filter, input, and encoded-output starters. See
-[docs/project-templates.md](docs/project-templates.md).
+```powershell
+dotnet run --project .\src\CreatorsForge.Foundry.Cli -- `
+  publish .\samples\HelloFoundry\HelloFoundry.foundryproj
+```
 
-**Tools > Reusable Components** adds reviewed managed or native source modules
-as deterministic project build inputs. The snippet browser also imports
-user-created catalogues and automatically combines project catalogues from
-`.foundry/snippets`; see
-[docs/reusable-components.md](docs/reusable-components.md).
-
-Open multiple Streamer.bot and OBS projects together with a portable
-`.foundryworkspace`, switch the active project from the tree, or build every
-member with **Build > Build Workspace**. See
-[docs/multi-project-workspaces.md](docs/multi-project-workspaces.md).
-
-Export or import reviewable source-only `.foundrytemplate` packages from the
-File menu, and migrate schema-0 projects through an explicit backup-first flow.
-See [docs/template-interchange-and-migration.md](docs/template-interchange-and-migration.md).
-
-Editor shortcuts:
-
-- `F12`: go to the source definition under the caret;
-- `Ctrl+Alt+F`: format the current C# document;
-- `Ctrl+Space` after `CPH.`: open profile-filtered CPH completion;
-- `Ctrl+Space` after an `obs_` or `OBS_` prefix: open pinned libobs completion;
-- `Ctrl+Shift+I`: open the searchable guided snippet browser;
-- type a lowercase `cph.` prefix to open built-in snippet completion;
-- `Tab` / `Shift+Tab`: move through placeholders after inserting a snippet;
-- double-click a C#, C, or header diagnostic in Problems: navigate to its location.
-
-Typing `CPH.` opens completion automatically. Typing `(` after a CPH method
-opens signature and parameter help. **Code > CPH Method Reference** opens the
-searchable local catalogue for the selected project profile.
-
-In OBS projects, typing `obs_` or `OBS_` opens the pinned 32.1.2 native
-catalogue. Function calls show signature and parameter help, `F12` opens the
-verified SDK declaration in a read-only header tab, and **Code > OBS Native API
-Reference** opens the searchable offline reference. See
-[docs/native-editor.md](docs/native-editor.md).
-
-**Build > OBS Plugin Designer** edits module and component metadata and can
-generate a module starter, passthrough filter, configurable filter, or video
-input source. It shows current and generated C side by side and requires an
-explicit replacement confirmation. See
-[docs/obs-plugin-designer.md](docs/obs-plugin-designer.md).
-
-**Build > Build Release Package** performs a fresh validated build and creates
-a provider-specific installation README, hashed build manifest, copied package
-IR, verified payload directory, and ZIP under `build/release`. The same flow is
-available as `foundry release`. See
-[docs/release-workflow.md](docs/release-workflow.md).
-
-**Build > Publishing Metadata** edits distribution identity, authors, legal
-files, dependencies, version, and optional signing. **Validate Publishing**
-shows the checklist; **Publish Release** creates the provider archive,
-dependency inventory, signing evidence, and reproducibility report. See
-[docs/publishing-and-distribution.md](docs/publishing-and-distribution.md).
-
-**Code > Snippet Browser** searches compatible built-ins, validates guided
-values, previews the resulting C#, and inserts it into the active document.
-The bundled revision currently contains 20 method snippets and 10 defensive
-workflow snippets.
-
-**Build > Streamer.bot Designer** edits the target definition. **Build >
-Package Viewer** inspects package IR artifacts and decodes the generated
-Streamer.bot envelope after a build.
-
-**Build > Deploy / Manage Installation** opens the provider-specific safe
-deployment workflow. Streamer.bot projects manage their hashed extension DLL;
-OBS projects manage the verified module DLL and package data files. Both use
-reviewed plans, explicit confirmation, ownership receipts, recoverable backups,
-update, repair, rollback, and uninstall, and both refuse to remove modified
-files. OBS mutations are additionally blocked while the selected OBS instance
-is running.
-
-The same dialog automatically checks deployment health: installed and project
-versions, receipt validity, missing or modified DLLs, package drift, host
-version changes, and the per-installation import/reference/compile/runtime
-completion checklist. Health findings lead directly to reviewed repair,
-redeploy, update, rollback, or uninstall actions.
-
-For OBS projects, health also inspects installed and project versions, package
-drift, the OBS executable version, and the newest post-install OBS log. See
-[docs/safe-obs-deployment.md](docs/safe-obs-deployment.md).
-
-## Repository layout
+## Repository structure
 
 ```text
-src/                         Product source
-tests/                       Automated tests
+src/                         Application and library source
+tests/                       Automated test projects
 samples/                     Reviewable example projects
 schemas/                     Published JSON schemas
+eng/                         Build, packaging, acceptance, and release tooling
+experiments/                 Compatibility investigations and probes
+docs/                        Product and engineering documentation
 docs/architecture/decisions/ Architecture decision records
-docs/glossary.md             Shared product vocabulary
 ```
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before making a change. The product and
-engineering direction is described in the repository documentation.
+## Documentation
 
-## v1 final acceptance
+The repository includes documentation covering:
 
-Foundry is at the v1 release-candidate gate. Start with the
-[final-acceptance guide](docs/final-acceptance/README.md), complete the
-[acceptance checklist](docs/final-acceptance/acceptance-checklist.md), and use
-the [v1 release runbook](docs/release/v1-release.md). The exact supported hosts
-and the distinction between automated and real-host evidence are published in
-the [v1 compatibility matrix](docs/compatibility/v1-matrix.md).
+- Project manifest format
+- Desktop workspace
+- Managed C# editor
+- CPH API catalogue
+- Native OBS editor
+- Snippet system
+- Streamer.bot designer and exporter
+- OBS Plugin Designer
+- Testing and debugging
+- Safe Streamer.bot deployment
+- Safe OBS deployment
+- Project templates
+- Reusable components
+- Multi-project workspaces
+- Template import, export, and migration
+- Publishing and distribution
+- Offline behaviour and privacy
+- Compatibility evidence
+- Final acceptance
+- Release procedures
+- User training
 
-The Phase 16 automation entry points are
-`eng/release/invoke-final-acceptance.ps1`, `eng/release/package-v1.ps1`, and
-`eng/release/verify-v1-release.ps1`. Their structured outputs follow the final
-acceptance and v1 release-manifest schemas under `schemas/product`.
+## Project status
 
-The private-alpha documents remain as historical acceptance evidence, not as
-the current distribution instructions.
+The planned v1 engineering phases are implemented. Foundry is currently undergoing the final clean-machine acceptance process covering:
 
-## Compatibility note
+- Installation and first-run setup
+- Application updates
+- Streamer.bot creation, build, deployment, and execution
+- OBS plugin creation, build, deployment, persistence, and shutdown
+- Deployment update, repair, rollback, and uninstall
+- Modified-file protection
+- Recovery behaviour
+- User-data preservation
+- Reproducible release artifacts
+- Final licence and publisher-trust decisions
 
-The Foundry application toolchain currently targets .NET 10. This does not
-decide the target framework of extension DLLs loaded by Streamer.bot. The
-inspected executables configure .NET Framework 4.7.2, while their
-plugin-interface assemblies target .NET Framework 4.8.1. The bridge and
-extension runtime strategy has now been proven across the supplied stable,
-alpha, and beta installations. Representative package exports from all three
-versions were also accepted by all three importers; Streamer.bot 1.0.4 displays
-a confirmation warning before importing prerelease-origin exports.
+Until these release-owner gates are complete, repository builds should be treated as release candidates rather than the final stable v1 release.
 
-The original compatibility spike and its manual verification gate are documented
-in
-[docs/compatibility/streamerbot-phase-1-spike.md](docs/compatibility/streamerbot-phase-1-spike.md).
+## Contributing
 
-The import/export envelope, captured schema versions, and package-adapter
-constraints are documented in
-[docs/compatibility/streamerbot-import-export-format.md](docs/compatibility/streamerbot-import-export-format.md).
+Please read `CONTRIBUTING.md` before submitting a change.
 
-The `.foundryproj` v1 contract and validation command are documented in
-[docs/project-format.md](docs/project-format.md).
+Contributions should preserve Foundry’s core principles:
 
-The Phase 3 desktop workflow and local state contract are documented in
-[docs/desktop-workspace.md](docs/desktop-workspace.md).
+- Source-first and reviewable projects
+- Explicit compatibility profiles
+- Deterministic builds
+- Structured diagnostics
+- Safe deployment boundaries
+- Lifecycle-correct native code
+- Offline-capable workflows
+- User-controlled data and diagnostics
+- No silent modification of unowned files
 
-The Phase 4A C# editor architecture and behavior are documented in
-[docs/csharp-editor.md](docs/csharp-editor.md).
+## Creators Forge
 
-The Phase 4B catalogue, profile filtering, and CPH diagnostics are documented
-in [docs/cph-catalogue.md](docs/cph-catalogue.md).
+Creators Forge Foundry is built to help creators move from an automation idea to a tested, deployable extension without losing visibility or control over the underlying code.
 
-The Phase 5A snippet manifest, built-in library, expansion behavior, and
-verification rules are documented in [docs/snippets.md](docs/snippets.md).
-
-The Phase 6 structured model, stable-v23 exporter, deterministic ID contract,
-and desktop tools are documented in
-[docs/streamerbot-designer-exporter.md](docs/streamerbot-designer-exporter.md).
-
-The Phase 7A deployment trust boundary, receipts, backups, rollback, and
-uninstall behavior are documented in
-[docs/safe-deployment.md](docs/safe-deployment.md).
+Whether the target is a Streamer.bot workflow, a managed extension library, an OBS video filter, a native input source, or a reusable creator-development component, Foundry provides one structured path from project creation to runtime verification.

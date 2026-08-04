@@ -2,19 +2,20 @@
 
 All notable changes to Creators Forge Foundry are documented in this file.
 
-## [Unreleased] — changes since 1.0.0-rc.1
-
-No later release-candidate number has been assigned yet. This section describes
-the current development build relative to the packaged `1.0.0-rc.1` baseline.
+## [Unreleased] - v0.1.0-beta.1
 
 ### Added
 
-- Creator Forge SVG branding rendered as vector geometry in the window and
-  workspace header, with a multi-resolution SVG-derived executable icon.
-- Persisted Dark, Light, and System application themes with immediate switching
-  and live Windows app-theme preference handling.
-- WCAG normal-text contrast regression tests for primary, muted, accent, error,
-  editor, button, and selection colour combinations.
+- Dark / Light / System mode 
+- Branding Logo
+
+## [Unreleased] — changes since 0.1.0-rc.1
+
+No later release-candidate number has been assigned yet. This section describes
+the current development build relative to the packaged `0.1.0-rc.1` baseline.
+
+### Added
+
 - Exact Streamer.bot `1.0.5-beta.6` project, schema, editor catalogue, snippet,
   test-matrix, build, package, and deployment support.
 - Exact-version Streamer.bot host probing and CPH catalogue generation across
@@ -31,14 +32,6 @@ the current development build relative to the packaged `1.0.0-rc.1` baseline.
 
 ### Changed
 
-- All WPF views now consume live semantic theme brushes; Windows High Contrast
-  overrides Foundry palettes and restores the selected preference when disabled.
-- Menus, buttons, tabs, project trees, lists, combo-box popups, grids, inputs,
-  and tooltips now use explicit readable hover, selection, focus, pressed, and
-  disabled states in both fixed themes.
-- Dark mode now applies its window foreground/background to every pop-out,
-  uses an owned tab template, maps stock control resources into the active
-  palette, and applies a readable dark C/C++/C# syntax-highlighting definition.
 - Streamer.bot installation discovery now reads and matches the executable's
   exact product version, including prerelease suffixes, instead of relying on a
   folder name or choosing another `1.0.5` prerelease.
@@ -51,12 +44,6 @@ the current development build relative to the packaged `1.0.0-rc.1` baseline.
 
 ### Fixed
 
-- Opening a C, C++, or C# file in Dark mode no longer triggers a deferred
-  AvalonEdit `XamlParseException`; unsupported XSHD attributes were removed,
-  malformed syntax resources now fall back safely, and the smoke gate verifies
-  the dark definition before passing.
-- Dark-theme ComboBox selected values and popup items now use a fully owned
-  palette-aware template, eliminating the remaining white-on-white state.
 - New acceptance projects now include a test definition, preventing `CFT2002`
   when they are first opened in Test Explorer.
 - Generated OBS filter projects register the source correctly so installed
@@ -92,7 +79,7 @@ the current development build relative to the packaged `1.0.0-rc.1` baseline.
 
 ### Validation
 
-- The complete automated solution regression suite passes: 216 tests.
+- The complete automated solution regression suite passes: 213 tests.
 - Streamer.bot beta.6 and OBS 32.2.1 were tested in separate disposable host
   installations; existing stable, alpha, beta.1, and OBS 32.1.2 evidence was
   retained rather than relabelled.
@@ -100,7 +87,7 @@ the current development build relative to the packaged `1.0.0-rc.1` baseline.
   rollback, modified-file protection, and uninstall on both newly supported
   host versions.
 
-## [1.0.0-rc.1] — 2026-07-29
+## [0.1.0-rc.1] — 2026-07-29
 
 ### Added
 
@@ -137,9 +124,9 @@ the current development build relative to the packaged `1.0.0-rc.1` baseline.
 
 ### Release status
 
-RC1 established the Phase 16 regression baseline. Stable `1.0.0` remains
+RC1 established the Phase 16 regression baseline. Stable `0.1.0` remains
 unreleased until the remaining stabilization increments and release gates are
 completed.
 
 [Unreleased]: docs/roadmap.md#phase-17--v1-stabilization-increments
-[1.0.0-rc.1]: docs/release/v1-release.md
+[0.1.0-rc.1]: docs/release/v0.1.0-release.md
