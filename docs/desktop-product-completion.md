@@ -59,9 +59,10 @@ are automated by the guarded manual workflow documented in
 [github-release-automation.md](github-release-automation.md).
 
 The Phase 19C channel increment passes 223 automated tests with zero build
-warnings or errors. Its remaining product-owner exit check is a published
-prerelease discovered and installed entirely through Foundry's Prerelease
-channel.
+warnings or errors. Product-owner acceptance also passed: alpha.5 discovered,
+verified, and installed the published alpha.6 release entirely through Foundry's
+Prerelease channel, then reported alpha.6 up to date. Settings provides a
+one-click action to restore the canonical GitHub source after local/offline use.
 
 ## First-run and toolchain health
 

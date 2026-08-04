@@ -26,7 +26,12 @@
           <ComboBoxItem Content="Stable" ToolTip="Install only published stable releases."/>
           <ComboBoxItem Content="Prerelease (includes stable)" ToolTip="Install the newest published release, including alpha, beta, and release-candidate builds."/>
         </ComboBox>
-        <TextBlock FontWeight="SemiBold" Text="Update manifest location"/><TextBox x:Name="UpdateLocationTextBox" Margin="0,6,0,12" Padding="7" AutomationProperties.Name="Update manifest location"/>
+        <TextBlock FontWeight="SemiBold" Text="Update manifest location"/>
+        <Grid Margin="0,6,0,12">
+          <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+          <TextBox x:Name="UpdateLocationTextBox" Padding="7" AutomationProperties.Name="Update manifest location"/>
+          <Button Grid.Column="1" MinWidth="190" Margin="8,0,0,0" Content="Restore Official GitHub Source" Click="RestoreOfficialUpdateSource_Click" AutomationProperties.Name="Restore official GitHub update source"/>
+        </Grid>
         <CheckBox x:Name="NetworkAccessCheckBox" Content="Allow explicit HTTPS update checks and SDK downloads"/>
         <TextBlock Margin="0,12,0,0" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap" Text="Stable uses the official latest-release manifest. Prerelease safely discovers published alpha, beta, and release-candidate builds; drafts are never offered. Custom and local manifests remain channel-neutral. Foundry never checks automatically."/>
       </StackPanel></TabItem>
