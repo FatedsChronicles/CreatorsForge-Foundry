@@ -1,0 +1,825 @@
+{
+  "schemaVersion": 1,
+  "revision": "1.2.0",
+  "snippets": [
+    {
+      "id": "creatorsforge.streamerbot.chat.send-message",
+      "name": "Send a Twitch chat message",
+      "version": "1.0.0",
+      "author": "Creators Forge Foundry",
+      "target": "streamerbot",
+      "language": "csharp",
+      "kind": "method",
+      "description": "Sends a Twitch chat message with configurable bot-account and fallback behavior.",
+      "source": "built-in",
+      "prefixes": ["cph.sendmessage"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["chat", "twitch"],
+      "requiredMethods": ["SendMessage"],
+      "body": [
+        "CPH.SendMessage(\"${1:message}\", ${2:true}, ${3:true});$0"
+      ],
+      "security": {
+        "fileAccess": false,
+        "networkAccess": false,
+        "processExecution": false
+      },
+      "guide": {
+        "fields": [
+          {
+            "index": 1,
+            "label": "Message",
+            "description": "The Twitch chat message to send.",
+            "valueKind": "string",
+            "options": []
+          },
+          {
+            "index": 2,
+            "label": "Use bot account",
+            "description": "Send from the configured bot account when true.",
+            "valueKind": "boolean",
+            "options": ["true", "false"]
+          },
+          {
+            "index": 3,
+            "label": "Fallback",
+            "description": "Fall back to the broadcaster account if needed.",
+            "valueKind": "boolean",
+            "options": ["true", "false"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "creatorsforge.streamerbot.arguments.try-get",
+      "name": "Read a required argument",
+      "version": "1.0.0",
+      "author": "Creators Forge Foundry",
+      "target": "streamerbot",
+      "language": "csharp",
+      "kind": "workflow",
+      "description": "Reads a typed argument and safely stops execution when it is unavailable.",
+      "source": "built-in",
+      "prefixes": ["cph.trygetarg"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["arguments", "validation"],
+      "requiredMethods": ["TryGetArg", "LogWarn"],
+      "body": [
+        "if (!CPH.TryGetArg(\"${1:argumentName}\", out ${2:string} ${3:value}))",
+        "{",
+        "    CPH.LogWarn(\"A required argument was not supplied.\");",
+        "    return false;",
+        "}",
+        "$0"
+      ],
+      "security": {
+        "fileAccess": false,
+        "networkAccess": false,
+        "processExecution": false
+      },
+      "guide": {
+        "fields": [
+          {
+            "index": 1,
+            "label": "Argument name",
+            "description": "The Streamer.bot argument key to read.",
+            "valueKind": "string",
+            "options": []
+          },
+          {
+            "index": 2,
+            "label": "Value type",
+            "description": "The C# type expected from the argument.",
+            "valueKind": "type",
+            "options": ["string", "int", "bool", "object"]
+          },
+          {
+            "index": 3,
+            "label": "Variable name",
+            "description": "The local C# variable that receives the value.",
+            "valueKind": "identifier",
+            "options": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "creatorsforge.streamerbot.globals.get",
+      "name": "Read a persisted global",
+      "version": "1.0.0",
+      "author": "Creators Forge Foundry",
+      "target": "streamerbot",
+      "language": "csharp",
+      "kind": "method",
+      "description": "Reads a typed global variable and defaults to persisted storage.",
+      "source": "built-in",
+      "prefixes": ["cph.global.get"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["globals", "persistence"],
+      "requiredMethods": ["GetGlobalVar"],
+      "body": [
+        "var ${3:value} = CPH.GetGlobalVar<${1:string}>(\"${2:key}\", ${4:true});$0"
+      ],
+      "security": {
+        "fileAccess": false,
+        "networkAccess": false,
+        "processExecution": false
+      },
+      "guide": {
+        "fields": [
+          {
+            "index": 1,
+            "label": "Value type",
+            "description": "The C# type stored in the global.",
+            "valueKind": "type",
+            "options": ["string", "int", "bool", "object"]
+          },
+          {
+            "index": 2,
+            "label": "Global key",
+            "description": "The name of the Streamer.bot global variable.",
+            "valueKind": "string",
+            "options": []
+          },
+          {
+            "index": 3,
+            "label": "Variable name",
+            "description": "The local C# variable that receives the value.",
+            "valueKind": "identifier",
+            "options": []
+          },
+          {
+            "index": 4,
+            "label": "Persisted",
+            "description": "Read from persisted storage when true.",
+            "valueKind": "boolean",
+            "options": ["true", "false"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "creatorsforge.streamerbot.globals.set",
+      "name": "Write a persisted global",
+      "version": "1.0.0",
+      "author": "Creators Forge Foundry",
+      "target": "streamerbot",
+      "language": "csharp",
+      "kind": "method",
+      "description": "Writes a value to a global variable and defaults to persisted storage.",
+      "source": "built-in",
+      "prefixes": ["cph.global.set"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["globals", "persistence"],
+      "requiredMethods": ["SetGlobalVar"],
+      "body": [
+        "CPH.SetGlobalVar(\"${1:key}\", ${2:null}, ${3:true});$0"
+      ],
+      "security": {
+        "fileAccess": false,
+        "networkAccess": false,
+        "processExecution": false
+      },
+      "guide": {
+        "fields": [
+          {
+            "index": 1,
+            "label": "Global key",
+            "description": "The name of the Streamer.bot global variable.",
+            "valueKind": "string",
+            "options": []
+          },
+          {
+            "index": 2,
+            "label": "Value expression",
+            "description": "The C# expression to store, such as a variable or literal.",
+            "valueKind": "code",
+            "options": []
+          },
+          {
+            "index": 3,
+            "label": "Persisted",
+            "description": "Write to persisted storage when true.",
+            "valueKind": "boolean",
+            "options": ["true", "false"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "creatorsforge.streamerbot.actions.run",
+      "name": "Run an action with failure handling",
+      "version": "1.0.0",
+      "author": "Creators Forge Foundry",
+      "target": "streamerbot",
+      "language": "csharp",
+      "kind": "workflow",
+      "description": "Runs a named action and logs a warning if Streamer.bot cannot start it.",
+      "source": "built-in",
+      "prefixes": ["cph.action.run"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["actions", "validation"],
+      "requiredMethods": ["RunAction", "LogWarn"],
+      "body": [
+        "if (!CPH.RunAction(\"${1:actionName}\", ${2:true}))",
+        "{",
+        "    CPH.LogWarn(\"${3:The requested action could not be started.}\");",
+        "}",
+        "$0"
+      ],
+      "security": {
+        "fileAccess": false,
+        "networkAccess": false,
+        "processExecution": false
+      },
+      "guide": {
+        "fields": [
+          {
+            "index": 1,
+            "label": "Action name",
+            "description": "The exact name of the Streamer.bot action to run.",
+            "valueKind": "string",
+            "options": []
+          },
+          {
+            "index": 2,
+            "label": "Run immediately",
+            "description": "Wait for the action result when true.",
+            "valueKind": "boolean",
+            "options": ["true", "false"]
+          },
+          {
+            "index": 3,
+            "label": "Failure message",
+            "description": "The warning written if the action cannot start.",
+            "valueKind": "string",
+            "options": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "creatorsforge.streamerbot.logging.information",
+      "name": "Write an information log",
+      "version": "1.0.0",
+      "author": "Creators Forge Foundry",
+      "target": "streamerbot",
+      "language": "csharp",
+      "kind": "method",
+      "description": "Writes an informational message to the Streamer.bot log.",
+      "source": "built-in",
+      "prefixes": ["cph.log.info"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["logging"],
+      "requiredMethods": ["LogInfo"],
+      "body": [
+        "CPH.LogInfo(\"${1:message}\");$0"
+      ],
+      "security": {
+        "fileAccess": false,
+        "networkAccess": false,
+        "processExecution": false
+      },
+      "guide": {
+        "fields": [
+          {
+            "index": 1,
+            "label": "Message",
+            "description": "The informational text written to the Streamer.bot log.",
+            "valueKind": "string",
+            "options": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "creatorsforge.streamerbot.logging.warning",
+      "name": "Write a warning log",
+      "version": "1.0.0",
+      "author": "Creators Forge Foundry",
+      "target": "streamerbot",
+      "language": "csharp",
+      "kind": "method",
+      "description": "Writes a warning message to the Streamer.bot log.",
+      "source": "built-in",
+      "prefixes": ["cph.log.warn"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["logging"],
+      "requiredMethods": ["LogWarn"],
+      "body": [
+        "CPH.LogWarn(\"${1:message}\");$0"
+      ],
+      "security": {
+        "fileAccess": false,
+        "networkAccess": false,
+        "processExecution": false
+      },
+      "guide": {
+        "fields": [
+          {
+            "index": 1,
+            "label": "Message",
+            "description": "The warning text written to the Streamer.bot log.",
+            "valueKind": "string",
+            "options": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "creatorsforge.streamerbot.obs.set-scene",
+      "name": "Change the OBS scene",
+      "version": "1.0.0",
+      "author": "Creators Forge Foundry",
+      "target": "streamerbot",
+      "language": "csharp",
+      "kind": "method",
+      "description": "Changes the active OBS scene on the selected connection.",
+      "source": "built-in",
+      "prefixes": ["cph.obs.scene"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["obs", "scenes"],
+      "requiredMethods": ["ObsSetScene"],
+      "body": [
+        "CPH.ObsSetScene(\"${1:sceneName}\", ${2:0});$0"
+      ],
+      "security": {
+        "fileAccess": false,
+        "networkAccess": false,
+        "processExecution": false
+      },
+      "guide": {
+        "fields": [
+          {
+            "index": 1,
+            "label": "Scene name",
+            "description": "The exact OBS scene name to activate.",
+            "valueKind": "string",
+            "options": []
+          },
+          {
+            "index": 2,
+            "label": "Connection",
+            "description": "The zero-based OBS connection number.",
+            "valueKind": "integer",
+            "options": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "creatorsforge.streamerbot.logging.error",
+      "name": "Write an error log",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "method",
+      "description": "Writes an error message to the Streamer.bot log.",
+      "source": "built-in", "prefixes": ["cph.log.error"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["logging"], "requiredMethods": ["LogError"],
+      "body": ["CPH.LogError(\"${1:message}\");$0"],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Message", "description": "The error text written to the Streamer.bot log.", "valueKind": "string", "options": []}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.logging.debug",
+      "name": "Write a debug log",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "method",
+      "description": "Writes diagnostic text to the Streamer.bot debug log.",
+      "source": "built-in", "prefixes": ["cph.log.debug"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["logging"], "requiredMethods": ["LogDebug"],
+      "body": ["CPH.LogDebug(\"${1:message}\");$0"],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Message", "description": "The diagnostic text to write.", "valueKind": "string", "options": []}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.arguments.set",
+      "name": "Set an action argument",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "method",
+      "description": "Adds or replaces an argument for downstream sub-actions.",
+      "source": "built-in", "prefixes": ["cph.argument.set"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["arguments"], "requiredMethods": ["SetArgument"],
+      "body": ["CPH.SetArgument(\"${1:variableName}\", ${2:null});$0"],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Argument name", "description": "The downstream argument key.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Value expression", "description": "The C# value or expression to assign.", "valueKind": "code", "options": []}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.globals.unset",
+      "name": "Remove a global variable",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "method",
+      "description": "Removes a named global variable from the selected storage.",
+      "source": "built-in", "prefixes": ["cph.global.unset"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["globals", "persistence"], "requiredMethods": ["UnsetGlobalVar"],
+      "body": ["CPH.UnsetGlobalVar(\"${1:key}\", ${2:true});$0"],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Global key", "description": "The global variable to remove.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Persisted", "description": "Remove it from persisted storage when true.", "valueKind": "boolean", "options": ["true", "false"]}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.actions.exists",
+      "name": "Check whether an action exists",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "method",
+      "description": "Checks for a named Streamer.bot action.",
+      "source": "built-in", "prefixes": ["cph.action.exists"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["actions"], "requiredMethods": ["ActionExists"],
+      "body": ["bool ${2:actionExists} = CPH.ActionExists(\"${1:actionName}\");$0"],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Action name", "description": "The exact action name to locate.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Result variable", "description": "The C# variable that receives the result.", "valueKind": "identifier", "options": []}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.actions.run-by-id",
+      "name": "Run an action by ID",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "method",
+      "description": "Runs a Streamer.bot action using its stable identifier.",
+      "source": "built-in", "prefixes": ["cph.action.run.id"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["actions"], "requiredMethods": ["RunActionById"],
+      "body": ["bool ${3:started} = CPH.RunActionById(\"${1:actionId}\", ${2:true});$0"],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Action ID", "description": "The Streamer.bot action identifier.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Run immediately", "description": "Wait for the action result when true.", "valueKind": "boolean", "options": ["true", "false"]},
+        {"index": 3, "label": "Result variable", "description": "The C# variable that receives the result.", "valueKind": "identifier", "options": []}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.twitch.whisper",
+      "name": "Send a Twitch whisper",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "method",
+      "description": "Sends a private Twitch whisper and captures whether it succeeded.",
+      "source": "built-in", "prefixes": ["cph.twitch.whisper"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["twitch", "chat"], "requiredMethods": ["SendWhisper"],
+      "body": ["bool ${4:sent} = CPH.SendWhisper(\"${1:userName}\", \"${2:message}\", ${3:true});$0"],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "User name", "description": "The Twitch login that receives the whisper.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Message", "description": "The private message to send.", "valueKind": "string", "options": []},
+        {"index": 3, "label": "Use bot account", "description": "Send from the bot account when true.", "valueKind": "boolean", "options": ["true", "false"]},
+        {"index": 4, "label": "Result variable", "description": "The C# variable that receives the result.", "valueKind": "identifier", "options": []}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.twitch.reply",
+      "name": "Reply to a Twitch message",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "method",
+      "description": "Sends a threaded reply to a Twitch chat message.",
+      "source": "built-in", "prefixes": ["cph.twitch.reply"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["twitch", "chat"], "requiredMethods": ["TwitchReplyToMessage"],
+      "body": ["CPH.TwitchReplyToMessage(\"${1:message}\", \"${2:replyId}\", ${3:true}, ${4:true});$0"],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Message", "description": "The reply text.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Reply ID", "description": "The parent Twitch message identifier.", "valueKind": "string", "options": []},
+        {"index": 3, "label": "Use bot account", "description": "Send from the bot account when true.", "valueKind": "boolean", "options": ["true", "false"]},
+        {"index": 4, "label": "Fallback", "description": "Use the broadcaster account if needed.", "valueKind": "boolean", "options": ["true", "false"]}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.youtube.send-message",
+      "name": "Send a YouTube chat message",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "method",
+      "description": "Sends a message to a YouTube broadcast chat.",
+      "source": "built-in", "prefixes": ["cph.youtube.message"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["youtube", "chat"], "requiredMethods": ["SendYouTubeMessage"],
+      "body": ["CPH.SendYouTubeMessage(\"${1:message}\", ${2:true}, ${3:true}, ${4:null});$0"],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Message", "description": "The YouTube chat message.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Use bot account", "description": "Send from the bot account when true.", "valueKind": "boolean", "options": ["true", "false"]},
+        {"index": 3, "label": "Fallback", "description": "Use the broadcaster account if needed.", "valueKind": "boolean", "options": ["true", "false"]},
+        {"index": 4, "label": "Broadcast expression", "description": "A broadcast ID string expression, or null for the current broadcast.", "valueKind": "code", "options": []}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.obs.source-visibility",
+      "name": "Set OBS source visibility",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "method",
+      "description": "Shows or hides a source in an OBS scene.",
+      "source": "built-in", "prefixes": ["cph.obs.source.visibility"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["obs", "sources"], "requiredMethods": ["ObsSetSourceVisibility"],
+      "body": ["CPH.ObsSetSourceVisibility(\"${1:sceneName}\", \"${2:sourceName}\", ${3:true}, ${4:0});$0"],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Scene name", "description": "The OBS scene containing the source.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Source name", "description": "The OBS source to update.", "valueKind": "string", "options": []},
+        {"index": 3, "label": "Visible", "description": "Show the source when true.", "valueKind": "boolean", "options": ["true", "false"]},
+        {"index": 4, "label": "Connection", "description": "The zero-based OBS connection number.", "valueKind": "integer", "options": []}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.obs.source-mute",
+      "name": "Mute an OBS source",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "method",
+      "description": "Mutes an audio source in an OBS scene.",
+      "source": "built-in", "prefixes": ["cph.obs.source.mute"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["obs", "audio"], "requiredMethods": ["ObsSourceMute"],
+      "body": ["CPH.ObsSourceMute(\"${1:sceneName}\", \"${2:sourceName}\", ${3:0});$0"],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Scene name", "description": "The OBS scene containing the source.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Source name", "description": "The OBS source to mute.", "valueKind": "string", "options": []},
+        {"index": 3, "label": "Connection", "description": "The zero-based OBS connection number.", "valueKind": "integer", "options": []}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.obs.set-text",
+      "name": "Set OBS text source content",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "method",
+      "description": "Updates the text displayed by an OBS GDI text source.",
+      "source": "built-in", "prefixes": ["cph.obs.text.set"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["obs", "text"], "requiredMethods": ["ObsSetGdiText"],
+      "body": ["CPH.ObsSetGdiText(\"${1:sceneName}\", \"${2:sourceName}\", \"${3:text}\", ${4:0});$0"],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Scene name", "description": "The OBS scene containing the text source.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Source name", "description": "The OBS GDI text source.", "valueKind": "string", "options": []},
+        {"index": 3, "label": "Text", "description": "The text to display.", "valueKind": "string", "options": []},
+        {"index": 4, "label": "Connection", "description": "The zero-based OBS connection number.", "valueKind": "integer", "options": []}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.obs.current-scene",
+      "name": "Read the current OBS scene",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "method",
+      "description": "Reads the active scene name from an OBS connection.",
+      "source": "built-in", "prefixes": ["cph.obs.scene.current"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["obs", "scenes"], "requiredMethods": ["ObsGetCurrentScene"],
+      "body": ["string ${2:sceneName} = CPH.ObsGetCurrentScene(${1:0});$0"],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Connection", "description": "The zero-based OBS connection number.", "valueKind": "integer", "options": []},
+        {"index": 2, "label": "Variable name", "description": "The C# variable that receives the scene name.", "valueKind": "identifier", "options": []}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.core.wait",
+      "name": "Wait before continuing",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "method",
+      "description": "Blocks the current action for a specified number of milliseconds.",
+      "source": "built-in", "prefixes": ["cph.wait"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["core", "timing"], "requiredMethods": ["Wait"],
+      "body": ["CPH.Wait(${1:1000});$0"],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Milliseconds", "description": "The blocking delay in milliseconds.", "valueKind": "integer", "options": []}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.workflow.counter-increment",
+      "name": "Increment a persisted counter",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "workflow",
+      "description": "Reads, increments, persists, and logs an integer global counter.",
+      "source": "built-in", "prefixes": ["cph.workflow.counter"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["globals", "persistence", "workflow"],
+      "requiredMethods": ["GetGlobalVar", "SetGlobalVar", "LogInfo"],
+      "body": [
+        "string counterKey = \"${1:counterName}\";",
+        "int counterValue = CPH.GetGlobalVar<int>(counterKey, ${2:true});",
+        "counterValue++;",
+        "CPH.SetGlobalVar(counterKey, counterValue, ${3:true});",
+        "CPH.LogInfo(\"Counter updated to \" + counterValue + \".\");",
+        "$0"
+      ],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Counter key", "description": "The global variable used for the counter.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Read persisted", "description": "Read persisted storage when true.", "valueKind": "boolean", "options": ["true", "false"]},
+        {"index": 3, "label": "Write persisted", "description": "Write persisted storage when true.", "valueKind": "boolean", "options": ["true", "false"]}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.workflow.twitch-timeout",
+      "name": "Timeout a Twitch user defensively",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "workflow",
+      "description": "Reads a user name argument, applies a timeout, and handles missing input or API failure.",
+      "source": "built-in", "prefixes": ["cph.workflow.twitch.timeout"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["twitch", "moderation", "workflow"],
+      "requiredMethods": ["TryGetArg", "TwitchTimeoutUser", "LogWarn"],
+      "body": [
+        "if (!CPH.TryGetArg(\"${1:userName}\", out string timeoutUserName))",
+        "{",
+        "    CPH.LogWarn(\"A Twitch user name was not supplied.\");",
+        "    return false;",
+        "}",
+        "if (!CPH.TwitchTimeoutUser(timeoutUserName, ${2:60}, \"${3:Moderation action}\", ${4:false}))",
+        "{",
+        "    CPH.LogWarn(\"The Twitch timeout request failed.\");",
+        "    return false;",
+        "}",
+        "$0"
+      ],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "User argument", "description": "The argument containing the Twitch login.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Duration", "description": "Timeout duration in seconds.", "valueKind": "integer", "options": []},
+        {"index": 3, "label": "Reason", "description": "The moderation reason sent to Twitch.", "valueKind": "string", "options": []},
+        {"index": 4, "label": "Use bot account", "description": "Perform the request as the bot account.", "valueKind": "boolean", "options": ["true", "false"]}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.workflow.redemption-fulfill",
+      "name": "Fulfill a Twitch redemption",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "workflow",
+      "description": "Reads reward and redemption identifiers and fulfills the redemption with failure handling.",
+      "source": "built-in", "prefixes": ["cph.workflow.redemption.fulfill"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["twitch", "rewards", "workflow"],
+      "requiredMethods": ["TryGetArg", "TwitchRedemptionFulfill", "LogWarn"],
+      "body": [
+        "if (!CPH.TryGetArg(\"${1:rewardId}\", out string rewardId) ||",
+        "    !CPH.TryGetArg(\"${2:redemptionId}\", out string redemptionId))",
+        "{",
+        "    CPH.LogWarn(\"Reward or redemption data was not supplied.\");",
+        "    return false;",
+        "}",
+        "if (!CPH.TwitchRedemptionFulfill(rewardId, redemptionId))",
+        "{",
+        "    CPH.LogWarn(\"The redemption could not be fulfilled.\");",
+        "    return false;",
+        "}",
+        "$0"
+      ],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Reward ID argument", "description": "The argument containing the reward ID.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Redemption ID argument", "description": "The argument containing the redemption ID.", "valueKind": "string", "options": []}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.workflow.obs-scene-guarded",
+      "name": "Change OBS scene when connected",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "workflow",
+      "description": "Checks the OBS connection before changing scene and logs a clear failure.",
+      "source": "built-in", "prefixes": ["cph.workflow.obs.scene"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["obs", "scenes", "workflow"],
+      "requiredMethods": ["ObsIsConnected", "ObsSetScene", "LogWarn"],
+      "body": [
+        "if (!CPH.ObsIsConnected(${1:0}))",
+        "{",
+        "    CPH.LogWarn(\"${2:OBS is not connected.}\");",
+        "    return false;",
+        "}",
+        "CPH.ObsSetScene(\"${3:sceneName}\", ${4:0});",
+        "$0"
+      ],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Connection to check", "description": "The zero-based OBS connection number to verify.", "valueKind": "integer", "options": []},
+        {"index": 2, "label": "Failure message", "description": "The warning written when OBS is disconnected.", "valueKind": "string", "options": []},
+        {"index": 3, "label": "Scene name", "description": "The OBS scene to activate.", "valueKind": "string", "options": []},
+        {"index": 4, "label": "Scene connection", "description": "The OBS connection used for the scene change.", "valueKind": "integer", "options": []}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.workflow.whisper-checked",
+      "name": "Send a Twitch whisper with failure handling",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "workflow",
+      "description": "Sends a private message and logs a warning when Twitch rejects it.",
+      "source": "built-in", "prefixes": ["cph.workflow.twitch.whisper"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["twitch", "chat", "workflow"],
+      "requiredMethods": ["SendWhisper", "LogWarn"],
+      "body": [
+        "if (!CPH.SendWhisper(\"${1:userName}\", \"${2:message}\", ${3:true}))",
+        "{",
+        "    CPH.LogWarn(\"${4:The Twitch whisper could not be sent.}\");",
+        "}",
+        "$0"
+      ],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "User name", "description": "The Twitch login that receives the whisper.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Message", "description": "The private message to send.", "valueKind": "string", "options": []},
+        {"index": 3, "label": "Use bot account", "description": "Send from the bot account when true.", "valueKind": "boolean", "options": ["true", "false"]},
+        {"index": 4, "label": "Failure message", "description": "The warning written when sending fails.", "valueKind": "string", "options": []}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.workflow.command-cooldown",
+      "name": "Apply a command user cooldown",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "workflow",
+      "description": "Reads a numeric user ID and applies a command-specific cooldown.",
+      "source": "built-in", "prefixes": ["cph.workflow.command.cooldown"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["commands", "cooldowns", "workflow"],
+      "requiredMethods": ["TryGetArg", "CommandAddToUserCooldown", "LogWarn"],
+      "body": [
+        "if (!CPH.TryGetArg(\"${1:userId}\", out int cooldownUserId))",
+        "{",
+        "    CPH.LogWarn(\"A numeric user ID was not supplied.\");",
+        "    return false;",
+        "}",
+        "CPH.CommandAddToUserCooldown(\"${2:commandId}\", cooldownUserId, ${3:30});",
+        "$0"
+      ],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "User ID argument", "description": "The argument containing the numeric user ID.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Command ID", "description": "The Streamer.bot command identifier.", "valueKind": "string", "options": []},
+        {"index": 3, "label": "Cooldown seconds", "description": "The cooldown duration in seconds.", "valueKind": "integer", "options": []}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.workflow.action-guarded",
+      "name": "Validate and run an action",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "workflow",
+      "description": "Confirms an action exists before running it and handles both failure paths.",
+      "source": "built-in", "prefixes": ["cph.workflow.action.run"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["actions", "validation", "workflow"],
+      "requiredMethods": ["ActionExists", "RunAction", "LogWarn"],
+      "body": [
+        "string guardedActionName = \"${1:actionName}\";",
+        "if (!CPH.ActionExists(guardedActionName))",
+        "{",
+        "    CPH.LogWarn(\"The requested action does not exist.\");",
+        "    return false;",
+        "}",
+        "if (!CPH.RunAction(guardedActionName, ${2:true}))",
+        "{",
+        "    CPH.LogWarn(\"The requested action could not be started.\");",
+        "    return false;",
+        "}",
+        "$0"
+      ],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Action name", "description": "The exact Streamer.bot action name.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Run immediately", "description": "Wait for the action result when true.", "valueKind": "boolean", "options": ["true", "false"]}
+      ]}
+    },
+    {
+      "id": "creatorsforge.streamerbot.workflow.youtube-argument-message",
+      "name": "Send a YouTube message from an argument",
+      "version": "1.0.0", "author": "Creators Forge Foundry",
+      "target": "streamerbot", "language": "csharp", "kind": "workflow",
+      "description": "Reads a required message argument before sending it to YouTube chat.",
+      "source": "built-in", "prefixes": ["cph.workflow.youtube.message"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+      "categories": ["youtube", "chat", "arguments", "workflow"],
+      "requiredMethods": ["TryGetArg", "SendYouTubeMessage", "LogWarn"],
+      "body": [
+        "if (!CPH.TryGetArg(\"${1:message}\", out string youtubeMessage))",
+        "{",
+        "    CPH.LogWarn(\"A YouTube message was not supplied.\");",
+        "    return false;",
+        "}",
+        "CPH.SendYouTubeMessage(youtubeMessage, ${2:true}, ${3:true}, ${4:null});",
+        "$0"
+      ],
+      "security": {"fileAccess": false, "networkAccess": false, "processExecution": false},
+      "guide": {"fields": [
+        {"index": 1, "label": "Message argument", "description": "The argument containing the YouTube message.", "valueKind": "string", "options": []},
+        {"index": 2, "label": "Use bot account", "description": "Send from the bot account when true.", "valueKind": "boolean", "options": ["true", "false"]},
+        {"index": 3, "label": "Fallback", "description": "Use the broadcaster account if needed.", "valueKind": "boolean", "options": ["true", "false"]},
+        {"index": 4, "label": "Broadcast expression", "description": "A broadcast ID string expression, or null for the current broadcast.", "valueKind": "code", "options": []}
+      ]}
+    }
+  ]
+}

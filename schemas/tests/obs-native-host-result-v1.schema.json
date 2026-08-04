@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/tests/obs-native-host-result/v1",
+  "title": "Creators Forge Foundry OBS native host result",
+  "type": "object",
+  "required": [
+    "schemaVersion", "moduleOpened", "moduleLoadSucceeded",
+    "registeredSourceIds", "sourceLifecycleAttempted", "sourceCreated",
+    "sourceDestroyed"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "moduleOpened": { "type": "boolean" },
+    "moduleLoadSucceeded": { "type": "boolean" },
+    "registeredSourceIds": { "type": "array", "items": { "type": "string" } },
+    "sourceLifecycleAttempted": { "type": "boolean" },
+    "sourceCreated": { "type": "boolean" },
+    "sourceDestroyed": { "type": "boolean" },
+    "error": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false
+}

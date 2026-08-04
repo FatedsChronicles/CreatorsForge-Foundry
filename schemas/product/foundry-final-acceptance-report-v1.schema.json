@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/product/final-acceptance-report/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "productVersion", "createdAtUtc", "machine", "outcome", "automatedChecks", "manualChecks"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "productVersion": { "type": "string", "minLength": 1 },
+    "createdAtUtc": { "type": "string", "format": "date-time" },
+    "machine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operatingSystem", "architecture", "cleanMachineAttested"],
+      "properties": {
+        "operatingSystem": { "type": "string", "minLength": 1 },
+        "architecture": { "type": "string", "minLength": 1 },
+        "cleanMachineAttested": { "type": "boolean" }
+      }
+    },
+    "outcome": { "enum": ["passed", "failed", "pending-manual"] },
+    "automatedChecks": { "$ref": "#/$defs/checks" },
+    "manualChecks": { "$ref": "#/$defs/checks" }
+  },
+  "$defs": {
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "outcome", "details", "evidence"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "outcome": { "enum": ["passed", "failed", "pending"] },
+          "details": { "type": "string" },
+          "evidence": { "type": ["string", "null"], "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).*$" }
+        }
+      }
+    }
+  }
+}

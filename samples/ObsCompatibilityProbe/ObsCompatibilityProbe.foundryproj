@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "OBS Compatibility Probe",
+  "id": "dev.creatorsforge.obs-compatibility-probe",
+  "version": "0.1.0",
+  "target": {
+    "provider": "obsstudio",
+    "profile": "32.x-windows-x64"
+  },
+  "nativeBuild": {
+    "language": "c17",
+    "architecture": "x64",
+    "toolchain": "cmake-msvc",
+    "sources": [
+      "src/plugin.c"
+    ]
+  },
+  "obsPlugin": {
+    "contract": "module-load-v1",
+    "moduleName": "creators-forge-compatibility-probe",
+    "entrySymbol": "foundry_obs_plugin_load",
+    "displayName": "Creators Forge Compatibility Probe",
+    "author": "Creators Forge",
+    "description": "Minimal native module used to verify the Foundry OBS plugin ABI.",
+    "apiVersion": "32.1.1"
+  },
+  "outputs": [
+    "obsPlugin",
+    "obsPluginPackage"
+  ]
+}

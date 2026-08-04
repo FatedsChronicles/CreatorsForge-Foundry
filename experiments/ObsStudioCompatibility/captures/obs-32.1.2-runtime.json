@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "profile": "32.x-windows-x64",
+  "obsVersion": "32.1.2",
+  "moduleName": "creators-forge-compatibility-probe",
+  "moduleApiVersion": "32.1.1",
+  "verificationMethod": "disposable-obs-gui-log",
+  "verifiedOn": "2026-07-26",
+  "moduleLoadFailurePresent": false,
+  "result": "passed",
+  "evidenceSource": "user-confirmed runtime observation"
+}

@@ -1,0 +1,95 @@
+{
+  "data": {
+    "actions": [
+      {
+        "alwaysRun": false,
+        "collapsedGroups": [],
+        "concurrent": false,
+        "enabled": true,
+        "excludeFromHistory": false,
+        "excludeFromPending": false,
+        "group": "",
+        "id": "\u003Cguid:1\u003E",
+        "name": "Hello Foundry",
+        "queue": "\u003Cguid:2\u003E",
+        "randomAction": false,
+        "subActions": [
+          {
+            "byteCode": "\u003Cbyte-code length=784 sha256=9250C882E131FF5C51A00E75926BC5F4364774A346826579942D548A5D382EF1\u003E",
+            "delayStart": false,
+            "description": null,
+            "enabled": true,
+            "id": "\u003Cguid:3\u003E",
+            "index": 0,
+            "name": null,
+            "parentId": null,
+            "precompile": false,
+            "references": [
+              "\u003Cabsolute-path\u003E",
+              ".\\CreatorsForge.Samples.HelloFoundry.dll"
+            ],
+            "saveResultToVariable": false,
+            "saveToVariable": null,
+            "type": 99999,
+            "weight": 0.0
+          }
+        ],
+        "triggers": [
+          {
+            "commandId": "\u003Cguid:4\u003E",
+            "enabled": true,
+            "exclusions": [],
+            "id": "\u003Cguid:5\u003E",
+            "type": 401
+          }
+        ]
+      }
+    ],
+    "commands": [
+      {
+        "_5os804k7jQqm86pqB82BBQirtkb": [],
+        "_IHcr1n4iKSihSEMR1P4Br9YvjfA": "!hellofoundry, !foundryhello",
+        "_RAXCtEWF372ZX1udX40UijiR7Dt": false,
+        "_Usb2aYqdIAc7YPgP0Vlg3BoYPLe": false,
+        "_uoR9CfbFdHEKo3ncYktAnziUhWn": [],
+        "caseSensitive": false,
+        "command": "!hellofoundry\r\n!foundryhello",
+        "enabled": false,
+        "globalCooldown": 5,
+        "grantType": 0,
+        "group": null,
+        "id": "\u003Cguid:4\u003E",
+        "ignoreBotAccount": true,
+        "include": false,
+        "location": 0,
+        "mode": 0,
+        "name": "Hello Foundry",
+        "persistCounter": false,
+        "persistUserCounter": false,
+        "sources": 1,
+        "userCooldown": 10
+      }
+    ],
+    "queues": [
+      {
+        "blocking": false,
+        "id": "\u003Cguid:2\u003E",
+        "name": "Hello Foundry"
+      }
+    ],
+    "timers": [],
+    "websocketClients": [],
+    "websocketServers": []
+  },
+  "exportedFrom": "1.0.5-beta.6",
+  "meta": {
+    "author": "",
+    "autoRunAction": null,
+    "description": "",
+    "minimumVersion": null,
+    "name": "My Export",
+    "version": "1.0.0"
+  },
+  "minimumVersion": "1.0.0-alpha.1",
+  "version": 24
+}

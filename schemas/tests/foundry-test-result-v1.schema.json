@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/tests/result/v1",
+  "title": "Creators Forge Foundry structured test result",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "projectId",
+    "projectVersion",
+    "provider",
+    "profile",
+    "startedAtUtc",
+    "finishedAtUtc",
+    "outcome",
+    "cases",
+    "diagnostics"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "projectId": { "type": "string", "minLength": 1 },
+    "projectVersion": { "type": "string", "minLength": 1 },
+    "provider": { "enum": ["streamerbot", "obsstudio"] },
+    "profile": { "type": "string", "minLength": 1 },
+    "startedAtUtc": { "type": "string", "format": "date-time" },
+    "finishedAtUtc": { "type": "string", "format": "date-time" },
+    "outcome": { "enum": ["passed", "failed", "error", "skipped"] },
+    "resultPath": { "type": ["string", "null"] },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id", "name", "event", "outcome", "durationMilliseconds",
+          "logs", "cphCalls", "assertions", "diagnostics"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "event": { "type": "object" },
+          "outcome": { "enum": ["passed", "failed", "error", "skipped"] },
+          "durationMilliseconds": { "type": "integer", "minimum": 0 },
+          "returnValue": { "type": ["boolean", "null"] },
+          "logs": { "type": "array", "items": { "type": "string" } },
+          "cphCalls": { "type": "array", "items": { "type": "object" } },
+          "assertions": { "type": "array", "items": { "type": "object" } },
+          "diagnostics": { "type": "array", "items": { "type": "object" } }
+        },
+        "additionalProperties": false
+      }
+    },
+    "diagnostics": { "type": "array", "items": { "type": "object" } }
+  },
+  "additionalProperties": false
+}

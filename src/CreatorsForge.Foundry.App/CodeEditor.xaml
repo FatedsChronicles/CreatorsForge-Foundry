@@ -1,0 +1,22 @@
+<UserControl
+    x:Class="CreatorsForge.Foundry.App.CodeEditor"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+    DataContextChanged="CodeEditor_DataContextChanged"
+    Loaded="CodeEditor_Loaded"
+    Unloaded="CodeEditor_Unloaded">
+  <avalonEdit:TextEditor
+      x:Name="Editor"
+      Background="{DynamicResource EditorBackgroundBrush}"
+      Foreground="{DynamicResource TextBrush}"
+      FontFamily="Cascadia Mono, Consolas"
+      FontSize="14"
+      HorizontalScrollBarVisibility="Auto"
+      LineNumbersForeground="{DynamicResource MutedTextBrush}"
+      PreviewKeyDown="Editor_PreviewKeyDown"
+      ShowLineNumbers="True"
+      SyntaxHighlighting="C#"
+      TextChanged="Editor_TextChanged"
+      VerticalScrollBarVisibility="Auto" />
+</UserControl>

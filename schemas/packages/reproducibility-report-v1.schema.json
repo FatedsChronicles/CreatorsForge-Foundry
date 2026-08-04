@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/reproducibility-report/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "projectId", "version", "archive", "archiveSize", "archiveSha256", "buildManifestSha256", "reproductionCommand"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "projectId": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "minLength": 1 },
+    "archive": { "type": "string", "minLength": 1 },
+    "archiveSize": { "type": "integer", "minimum": 0 },
+    "archiveSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "buildManifestSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "reproductionCommand": { "type": "string", "minLength": 1 }
+  }
+}

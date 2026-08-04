@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "provider": "streamerbot",
+  "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+  "cases": [
+    { "id": "welcome", "name": "Welcomes a named chatter", "event": { "kind": "command", "name": "!welcome", "arguments": { "workflow": "welcome", "user": "Avery" } }, "assertions": [{ "kind": "returnEquals", "expected": true }, { "kind": "logContains", "expected": "Welcome, Avery!" }, { "kind": "cphCallCount", "key": "CPH.LogInfo", "expected": 1 }] },
+    { "id": "shoutout", "name": "Queues a shout-out", "event": { "kind": "command", "name": "!so", "arguments": { "workflow": "shoutout", "user": "Morgan" } }, "assertions": [{ "kind": "returnEquals", "expected": true }, { "kind": "logContains", "expected": "Shout-out queued for Morgan" }] },
+    { "id": "milestone", "name": "Celebrates a milestone", "event": { "kind": "channel-reward", "name": "Milestone", "arguments": { "workflow": "milestone", "user": "Riley", "sequence": 25 } }, "assertions": [{ "kind": "returnEquals", "expected": true }, { "kind": "logContains", "expected": "Milestone celebrated with Riley" }, { "kind": "logContains", "expected": "Event #25" }] },
+    { "id": "defensive-defaults", "name": "Uses safe defaults for incomplete events", "event": { "kind": "test", "name": "Incomplete event", "arguments": {} }, "assertions": [{ "kind": "returnEquals", "expected": true }, { "kind": "logContains", "expected": "Welcome, creator!" }] }
+  ]
+}

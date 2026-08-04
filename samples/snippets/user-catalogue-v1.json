@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "revision": "1.0.0",
+  "snippets": [
+    {
+      "id": "example.streamerbot.log-section",
+      "name": "Log section",
+      "version": "1.0.0",
+      "author": "Your name",
+      "target": "streamerbot",
+      "language": "csharp",
+      "kind": "workflow",
+      "description": "Writes a labelled informational log entry.",
+      "source": "user",
+      "prefixes": ["mine.log.section"],
+      "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1"],
+      "categories": ["logging"],
+      "requiredMethods": ["LogInfo"],
+      "body": ["CPH.LogInfo(\"[${1:section}] ${2:message}\");", "$0"],
+      "security": { "fileAccess": false, "networkAccess": false, "processExecution": false },
+      "guide": {
+        "fields": [
+          { "index": 1, "label": "Section", "description": "Short log category.", "valueKind": "string", "options": [] },
+          { "index": 2, "label": "Message", "description": "Message to write.", "valueKind": "string", "options": [] }
+        ]
+      }
+    }
+  ]
+}

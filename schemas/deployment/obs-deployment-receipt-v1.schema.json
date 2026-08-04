@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/deployment/obs-receipt/v1",
+  "title": "Creators Forge Foundry OBS Studio deployment receipt",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "deploymentId",
+    "projectId",
+    "projectName",
+    "projectVersion",
+    "targetProfile",
+    "moduleName",
+    "installationVersion",
+    "installedAtUtc",
+    "packageSha256",
+    "files"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "deploymentId": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+    "projectId": { "type": "string", "minLength": 1 },
+    "projectName": { "type": "string", "minLength": 1 },
+    "projectVersion": { "type": "string", "minLength": 1 },
+    "targetProfile": { "type": "string", "minLength": 1 },
+    "moduleName": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "installationVersion": { "type": "string", "minLength": 1 },
+    "installedAtUtc": { "type": "string", "format": "date-time" },
+    "previousReceiptBackup": {
+      "type": ["string", "null"],
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"
+    },
+    "packageSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "destinationRelativePath",
+          "isInstalled",
+          "installedSha256",
+          "size",
+          "originalBackup",
+          "rollbackBackup",
+          "changedDuringDeployment"
+        ],
+        "properties": {
+          "destinationRelativePath": {
+            "type": "string",
+            "pattern": "^(?:obs-plugins/64bit/[A-Za-z0-9._-]+\\.dll|data/obs-plugins/[A-Za-z0-9._-]+/.+)$"
+          },
+          "isInstalled": { "type": "boolean" },
+          "installedSha256": {
+            "type": ["string", "null"],
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "size": { "type": "integer", "minimum": 0 },
+          "originalBackup": {
+            "type": ["string", "null"],
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"
+          },
+          "rollbackBackup": {
+            "type": ["string", "null"],
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"
+          },
+          "changedDuringDeployment": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

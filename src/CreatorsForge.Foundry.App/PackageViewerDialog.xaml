@@ -1,0 +1,61 @@
+<Window Style="{StaticResource FoundryWindowStyle}"
+    x:Class="CreatorsForge.Foundry.App.PackageViewerDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Package Viewer"
+    Width="980"
+    Height="680"
+    MinWidth="760"
+    MinHeight="500"
+    WindowStartupLocation="CenterOwner">
+  <Grid Margin="12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="2*" />
+      <RowDefinition Height="8" />
+      <RowDefinition Height="3*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <TextBlock
+        x:Name="SummaryText"
+        Margin="0,0,0,8"
+        FontSize="15"
+        FontWeight="SemiBold" />
+    <DataGrid
+        x:Name="ArtifactsGrid"
+        Grid.Row="1"
+        AutoGenerateColumns="False"
+        CanUserAddRows="False"
+        IsReadOnly="True"
+        SelectionChanged="ArtifactsGrid_SelectionChanged">
+      <DataGrid.Columns>
+        <DataGridTextColumn Width="*" Header="Kind" Binding="{Binding Kind}" />
+        <DataGridTextColumn Width="2*" Header="Path" Binding="{Binding Path}" />
+        <DataGridTextColumn Header="Size" Binding="{Binding Size}" />
+        <DataGridTextColumn Width="2*" Header="SHA-256" Binding="{Binding Sha256}" />
+      </DataGrid.Columns>
+    </DataGrid>
+    <GridSplitter
+        Grid.Row="2"
+        Height="8"
+        HorizontalAlignment="Stretch"
+        ResizeDirection="Rows" />
+    <TextBox
+        x:Name="ContentsTextBox"
+        Grid.Row="3"
+        AcceptsReturn="True"
+        AcceptsTab="True"
+        FontFamily="Consolas"
+        HorizontalScrollBarVisibility="Auto"
+        IsReadOnly="True"
+        TextWrapping="NoWrap"
+        VerticalScrollBarVisibility="Auto" />
+    <Button
+        Grid.Row="4"
+        MinWidth="90"
+        Margin="0,10,0,0"
+        HorizontalAlignment="Right"
+        Content="Close"
+        IsCancel="True" />
+  </Grid>
+</Window>

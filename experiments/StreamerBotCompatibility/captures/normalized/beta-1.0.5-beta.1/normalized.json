@@ -1,0 +1,77 @@
+{
+  "data": {
+    "actions": [
+      {
+        "alwaysRun": false,
+        "collapsedGroups": [],
+        "concurrent": false,
+        "enabled": true,
+        "excludeFromHistory": false,
+        "excludeFromPending": false,
+        "group": "",
+        "id": "\u003Cguid:1\u003E",
+        "name": "Creators Forge Foundry Compatibility Probe",
+        "queue": "\u003Cguid:2\u003E",
+        "randomAction": false,
+        "subActions": [
+          {
+            "autoType": false,
+            "enabled": true,
+            "id": "\u003Cguid:3\u003E",
+            "index": 0,
+            "parentId": null,
+            "type": 123,
+            "value": "foundry-probe",
+            "variableName": "foundryProbeInput",
+            "weight": 0.0
+          },
+          {
+            "byteCode": "\u003Cbyte-code length=1200 sha256=56A27055733CB2E887EE71CB2EDDC556DF759D0DD3B6D166851298CFF6ABEFAF\u003E",
+            "delayStart": false,
+            "description": null,
+            "enabled": true,
+            "id": "\u003Cguid:4\u003E",
+            "index": 1,
+            "name": null,
+            "parentId": null,
+            "precompile": false,
+            "references": [
+              "\u003Cabsolute-path\u003E",
+              ".\\Streamer.bot.Plugin.Interface.dll",
+              ".\\CreatorsForge.Foundry.StreamerBot.CompatibilityProbe.dll"
+            ],
+            "saveResultToVariable": false,
+            "saveToVariable": null,
+            "type": 99999,
+            "weight": 0.0
+          }
+        ],
+        "triggers": [
+          {
+            "enabled": true,
+            "exclusions": [],
+            "id": "\u003Cguid:5\u003E",
+            "type": 702,
+            "variables": {}
+          }
+        ]
+      }
+    ],
+    "commands": [],
+    "queues": [],
+    "timers": [],
+    "websocketClients": [],
+    "websocketServers": []
+  },
+  "exportedFrom": "1.0.5-beta.1",
+  "meta": {
+    "author": "Creators Forge Foundry",
+    "autoRunAction": null,
+    "description": "Representative Phase 1 export for Streamer.bot v1.0.5-Beta",
+    "minimumVersion": null,
+    "name": "Creators Forge Foundry Phase 1 Probe",
+    "version": "0.1.0"
+  },
+  "minimumVersion": "1.0.0-alpha.1",
+  "version": 24
+}

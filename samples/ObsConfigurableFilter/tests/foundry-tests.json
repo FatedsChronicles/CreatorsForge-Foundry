@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "provider": "obsstudio",
+  "profiles": ["32.x-windows-x64"],
+  "cases": [{
+    "id": "configurable-filter-lifecycle",
+    "name": "Loads the module and completes the configurable filter lifecycle",
+    "event": { "kind": "obs-source-lifecycle", "name": "dev.creatorsforge.configurable-filter", "arguments": {} },
+    "assertions": [
+      { "kind": "abiExport", "key": "obs_module_ver", "expected": true },
+      { "kind": "abiExport", "key": "obs_module_set_pointer", "expected": true },
+      { "kind": "abiExport", "key": "obs_module_load", "expected": true },
+      { "kind": "moduleLoadSucceeded", "expected": true },
+      { "kind": "sourceRegistered", "key": "dev.creatorsforge.configurable-filter", "expected": true },
+      { "kind": "sourceCreated", "expected": true },
+      { "kind": "sourceDestroyed", "expected": true }
+    ]
+  }]
+}
+

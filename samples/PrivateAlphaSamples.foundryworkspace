@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "name": "Foundry Private Alpha Samples",
+  "projects": [
+    "StreamerBotCreatorToolkit/StreamerBotCreatorToolkit.foundryproj",
+    "ObsConfigurableFilter/ObsConfigurableFilter.foundryproj"
+  ],
+  "startupProject": "StreamerBotCreatorToolkit/StreamerBotCreatorToolkit.foundryproj"
+}

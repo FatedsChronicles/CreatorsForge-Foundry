@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CreatorsForge.Foundry.Build\CreatorsForge.Foundry.Build.csproj" />
+    <ProjectReference Include="..\..\src\CreatorsForge.Foundry.Cli\CreatorsForge.Foundry.Cli.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\samples\HelloFoundry\HelloFoundry.foundryproj"
+          Link="Fixtures\HelloFoundry.foundryproj"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\samples\HelloFoundry\src\HelloExtension.cs"
+          Link="Fixtures\src\HelloExtension.cs"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\samples\HelloFoundry\streamerbot\streamerbot.json"
+          Link="Fixtures\streamerbot\streamerbot.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\samples\HelloFoundry\tests\foundry-tests.json"
+          Link="Fixtures\tests\foundry-tests.json"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

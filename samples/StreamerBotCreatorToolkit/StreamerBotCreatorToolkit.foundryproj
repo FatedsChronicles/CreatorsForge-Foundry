@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "name": "Streamer.bot Creator Toolkit",
+  "id": "dev.creatorsforge.samples.creator-toolkit",
+  "version": "1.0.1",
+  "target": {
+    "provider": "streamerbot",
+    "profile": "1.0.4-stable",
+    "releaseChannel": "stable"
+  },
+  "template": {
+    "id": "streamerbot-command-v1",
+    "revision": "1",
+    "parameters": {
+      "author": "Creators Forge",
+      "description": "A tested multi-command creator workflow."
+    }
+  },
+  "components": [],
+  "publishing": {
+    "packageName": "dev.creatorsforge.samples.creator-toolkit",
+    "summary": "A release-ready Streamer.bot command and reward workflow sample.",
+    "authors": [
+      "Creators Forge"
+    ],
+    "licenseFile": "LICENSE.txt",
+    "changelogFile": "CHANGELOG.md",
+    "tags": [
+      "sample",
+      "streamerbot",
+      "workflow"
+    ],
+    "dependencies": [
+      {
+        "name": "Streamer.bot",
+        "version": "1.0.4 or compatible verified host",
+        "kind": "runtime",
+        "license": "Proprietary",
+        "source": "https://streamer.bot"
+      }
+    ],
+    "signing": {
+      "enabled": false,
+      "toolPath": "",
+      "certificateThumbprint": "",
+      "timestampUrl": ""
+    }
+  },
+  "features": {
+    "winForms": false,
+    "mockRuntime": true
+  },
+  "managedBuild": {
+    "targetFramework": "net481",
+    "languageVersion": "7.3",
+    "assemblyName": "CreatorsForge.Samples.CreatorToolkit",
+    "sources": [
+      "src/CreatorToolkit.cs"
+    ]
+  },
+  "cphInlineBridge": {
+    "contract": "args-log-v1",
+    "entryType": "CreatorsForge.Samples.CreatorToolkit.CreatorToolkit",
+    "entryMethod": "Execute"
+  },
+  "targetDefinition": "streamerbot/streamerbot.json",
+  "testDefinition": "tests/foundry-tests.json",
+  "outputs": [
+    "managedLibrary",
+    "cphInlineBridge",
+    "streamerBotPackage"
+  ]
+}

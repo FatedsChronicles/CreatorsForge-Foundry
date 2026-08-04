@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/tests/compatibility-matrix/v1",
+  "title": "Creators Forge Foundry compatibility regression matrix",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "projectId",
+    "projectVersion",
+    "startedAtUtc",
+    "finishedAtUtc",
+    "outcome",
+    "cells",
+    "diagnostics"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "projectId": { "type": "string", "minLength": 1 },
+    "projectVersion": { "type": "string", "minLength": 1 },
+    "startedAtUtc": { "type": "string", "format": "date-time" },
+    "finishedAtUtc": { "type": "string", "format": "date-time" },
+    "outcome": { "enum": ["passed", "failed", "error", "skipped"] },
+    "resultPath": { "type": ["string", "null"] },
+    "cells": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id", "provider", "profile", "runtimeVersion", "outcome", "result"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "provider": { "enum": ["streamerbot", "obsstudio"] },
+          "profile": { "type": "string", "minLength": 1 },
+          "runtimeVersion": { "type": "string", "minLength": 1 },
+          "runtimePath": { "type": ["string", "null"] },
+          "outcome": { "enum": ["passed", "failed", "error", "skipped"] },
+          "result": { "type": "object" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "diagnostics": { "type": "array", "items": { "type": "object" } }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/tests/definition/v1",
+  "title": "Creators Forge Foundry test definition",
+  "type": "object",
+  "required": ["schemaVersion", "provider", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "provider": { "enum": ["streamerbot", "obsstudio"] },
+    "profiles": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "1.0.4-stable",
+          "1.0.5-alpha.34",
+          "1.0.5-beta.1",
+          "1.0.5-beta.6",
+          "32.x-windows-x64"
+        ]
+      }
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "event", "assertions"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "name": { "type": "string", "minLength": 1 },
+          "event": {
+            "type": "object",
+            "required": ["kind", "arguments"],
+            "properties": {
+              "kind": { "type": "string", "minLength": 1 },
+              "name": { "type": ["string", "null"] },
+              "arguments": { "type": "object" }
+            },
+            "additionalProperties": false
+          },
+          "assertions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["kind", "expected"],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "returnEquals",
+                    "logContains",
+                    "logEquals",
+                    "argumentEquals",
+                    "cphCallCount",
+                    "abiExport",
+                    "moduleLoadSucceeded",
+                    "sourceRegistered",
+                    "sourceCreated",
+                    "sourceDestroyed"
+                  ]
+                },
+                "key": { "type": "string", "minLength": 1 },
+                "expected": true
+              },
+              "additionalProperties": false,
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "kind": { "enum": ["argumentEquals", "cphCallCount", "abiExport", "sourceRegistered"] }
+                    },
+                    "required": ["kind"]
+                  },
+                  "then": { "required": ["key"] }
+                }
+              ]
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

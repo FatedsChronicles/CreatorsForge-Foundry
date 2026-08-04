@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);EXTERNAL_EDITOR</DefineConstants>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>7.3</LangVersion>
+    <NoWarn>$(NoWarn);CA1050</NoWarn>
+    <Nullable>disable</Nullable>
+    <TargetFramework>net481</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference
+      Include="Microsoft.NETFramework.ReferenceAssemblies"
+      Version="1.0.3"
+      PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference
+      Include="..\CreatorsForge.Foundry.StreamerBot.CompatibilityProbe\CreatorsForge.Foundry.StreamerBot.CompatibilityProbe.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Streamer.bot.Plugin.Interface">
+      <HintPath>$(StreamerBotPath)\Streamer.bot.Plugin.Interface.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Streamer.bot.Common">
+      <HintPath>$(StreamerBotPath)\Streamer.bot.Common.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Twitch.Common">
+      <HintPath>$(StreamerBotPath)\Twitch.Common.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <Target Name="ValidateStreamerBotPath" BeforeTargets="ResolveReferences">
+    <Error
+      Condition="'$(StreamerBotPath)' == ''"
+      Text="Set StreamerBotPath to the Streamer.bot installation directory." />
+    <Error
+      Condition="!Exists('$(StreamerBotPath)\Streamer.bot.exe')"
+      Text="StreamerBotPath does not contain Streamer.bot.exe: $(StreamerBotPath)" />
+    <Error
+      Condition="!Exists('$(StreamerBotPath)\Streamer.bot.Plugin.Interface.dll')"
+      Text="StreamerBotPath does not contain Streamer.bot.Plugin.Interface.dll: $(StreamerBotPath)" />
+  </Target>
+</Project>

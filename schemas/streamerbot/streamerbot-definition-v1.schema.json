@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/streamerbot/definition/v1",
+  "title": "Creators Forge Foundry Streamer.bot definition",
+  "type": "object",
+  "required": ["schemaVersion", "metadata", "queues", "commands", "actions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "metadata": {
+      "type": "object",
+      "required": ["author", "description"],
+      "properties": {
+        "author": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "queues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "blocking"],
+        "properties": {
+          "id": { "$ref": "#/$defs/logicalId" },
+          "name": { "$ref": "#/$defs/name" },
+          "blocking": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "commands", "enabled", "caseSensitive", "globalCooldown", "userCooldown"],
+        "properties": {
+          "id": { "$ref": "#/$defs/logicalId" },
+          "name": { "$ref": "#/$defs/name" },
+          "commands": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "enabled": { "type": "boolean" },
+          "caseSensitive": { "type": "boolean" },
+          "globalCooldown": { "type": "integer", "minimum": 0 },
+          "userCooldown": { "type": "integer", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "enabled", "queueId", "concurrent", "alwaysRun", "triggers", "subActions"],
+        "properties": {
+          "id": { "$ref": "#/$defs/logicalId" },
+          "name": { "$ref": "#/$defs/name" },
+          "enabled": { "type": "boolean" },
+          "queueId": { "oneOf": [{ "$ref": "#/$defs/logicalId" }, { "type": "null" }] },
+          "concurrent": { "type": "boolean" },
+          "alwaysRun": { "type": "boolean" },
+          "triggers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "kind", "enabled", "commandId"],
+              "properties": {
+                "id": { "$ref": "#/$defs/logicalId" },
+                "kind": { "enum": ["command", "test"] },
+                "enabled": { "type": "boolean" },
+                "commandId": { "oneOf": [{ "$ref": "#/$defs/logicalId" }, { "type": "null" }] }
+              },
+              "additionalProperties": false
+            }
+          },
+          "subActions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "kind", "enabled", "variableName", "value", "autoType"],
+              "properties": {
+                "id": { "$ref": "#/$defs/logicalId" },
+                "kind": { "enum": ["setArgument", "executeBridge"] },
+                "enabled": { "type": "boolean" },
+                "variableName": { "type": ["string", "null"] },
+                "value": { "type": ["string", "null"] },
+                "autoType": { "type": "boolean" }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "$defs": {
+    "logicalId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}

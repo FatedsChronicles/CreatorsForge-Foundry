@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "metadata": {
+    "author": "Creators Forge",
+    "description": "A minimal Foundry action that calls the generated CPHInline bridge."
+  },
+  "queues": [
+    {
+      "id": "default",
+      "name": "Hello Foundry",
+      "blocking": false
+    }
+  ],
+  "commands": [
+    {
+      "id": "hello",
+      "name": "Hello Foundry",
+      "commands": ["!hellofoundry", "!foundryhello"],
+      "enabled": true,
+      "caseSensitive": false,
+      "globalCooldown": 5,
+      "userCooldown": 10
+    }
+  ],
+  "actions": [
+    {
+      "id": "hello",
+      "name": "Hello Foundry",
+      "enabled": true,
+      "queueId": "default",
+      "concurrent": false,
+      "alwaysRun": false,
+      "triggers": [
+        {
+          "id": "command",
+          "kind": "command",
+          "enabled": true,
+          "commandId": "hello"
+        }
+      ],
+      "subActions": [
+        {
+          "id": "bridge",
+          "kind": "executeBridge",
+          "enabled": true,
+          "variableName": null,
+          "value": null,
+          "autoType": false
+        }
+      ]
+    }
+  ]
+}

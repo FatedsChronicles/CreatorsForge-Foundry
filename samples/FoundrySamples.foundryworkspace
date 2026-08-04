@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "name": "Foundry Samples",
+  "projects": [
+    "HelloFoundry/HelloFoundry.foundryproj",
+    "ObsPassthroughFilter/ObsPassthroughFilter.foundryproj"
+  ],
+  "startupProject": "HelloFoundry/HelloFoundry.foundryproj"
+}

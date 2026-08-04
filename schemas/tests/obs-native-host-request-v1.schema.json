@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/tests/obs-native-host-request/v1",
+  "title": "Creators Forge Foundry OBS native host request",
+  "type": "object",
+  "required": ["schemaVersion", "pluginPath", "obsRoot", "mode"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "pluginPath": { "type": "string", "minLength": 1 },
+    "obsRoot": { "type": "string", "minLength": 1 },
+    "expectedSourceId": { "type": ["string", "null"] },
+    "mode": { "enum": ["obs-lifecycle", "self-success", "self-crash", "self-hang"] }
+  },
+  "additionalProperties": false
+}

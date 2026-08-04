@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "provider": "obsstudio",
+  "version": "32.1.2",
+  "profile": "32.x-windows-x64",
+  "sourceArchive": {
+    "url": "https://github.com/obsproject/obs-studio/releases/download/32.1.2/OBS-Studio-32.1.2-Sources.tar.gz",
+    "sha256": "c6532380c68a75327fe8b551461adeca8f184dcbe4015096251a6de76362a554"
+  },
+  "windowsArchive": {
+    "url": "https://github.com/obsproject/obs-studio/releases/download/32.1.2/OBS-Studio-32.1.2-Windows-x64.zip",
+    "sha256": "8d97e4563bd8d22d03e63042aa7dccede1d555c9bd35ce8a9e5019b0d0201bf6"
+  },
+  "buildContract": {
+    "language": "c17",
+    "architecture": "x64",
+    "toolchain": "cmake-msvc",
+    "cmakePackage": "libobs",
+    "cmakeTarget": "OBS::libobs"
+  }
+}

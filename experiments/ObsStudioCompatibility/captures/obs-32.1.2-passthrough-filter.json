@@ -1,0 +1,26 @@
+{
+    "schemaVersion":  1,
+    "profile":  "32.x-windows-x64",
+    "obsRoot":  "C:\\Program Files\\obs-studio",
+    "obsVersion":  "32.1.1",
+    "pluginPath":  "J:\\Creators Forge\\Creators Forge Foundry\\samples\\ObsPassthroughFilter\\build\\obs\\bin\\foundry-passthrough-filter.dll",
+    "moduleApiVersion":  "32.1.2",
+    "moduleApiEncoded":  536936450,
+    "requiredExports":  [
+                            "obs_module_ver",
+                            "obs_module_set_pointer",
+                            "obs_module_load"
+                        ],
+    "loadCallbackSucceeded":  null,
+    "obsOpenResult":  0,
+    "obsInitSucceeded":  true,
+    "registeredSourceIds":  [
+                                "scene",
+                                "group",
+                                "audio_line",
+                                "dev.creatorsforge.passthrough-filter"
+                            ],
+    "expectedSourceId":  "dev.creatorsforge.passthrough-filter",
+    "expectedSourceRegistered":  true,
+    "inObsRuntimeVerificationRequired":  true
+}

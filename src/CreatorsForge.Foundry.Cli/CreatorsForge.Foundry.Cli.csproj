@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CreatorsForge.Foundry.Build\CreatorsForge.Foundry.Build.csproj" />
+    <ProjectReference Include="..\CreatorsForge.Foundry.Core\CreatorsForge.Foundry.Core.csproj" />
+    <ProjectReference Include="..\CreatorsForge.Foundry.Testing\CreatorsForge.Foundry.Testing.csproj" />
+    <ProjectReference Include="..\CreatorsForge.Foundry.NativeTestHost\CreatorsForge.Foundry.NativeTestHost.csproj" />
+    <ProjectReference Include="..\CreatorsForge.Foundry.Workspaces\CreatorsForge.Foundry.Workspaces.csproj" />
+  </ItemGroup>
+
+</Project>
