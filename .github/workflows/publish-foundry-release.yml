@@ -37,12 +37,12 @@ jobs:
 
     steps:
       - name: Check out release source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Set up .NET from global.json
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
@@ -100,7 +100,7 @@ jobs:
             -ReleaseDirectory $env:RELEASE_OUTPUT
 
       - name: Retain verified workflow artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: creators-forge-foundry-${{ steps.release.outputs.version }}
           if-no-files-found: error
