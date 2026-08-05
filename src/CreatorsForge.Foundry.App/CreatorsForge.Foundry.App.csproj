@@ -23,6 +23,7 @@
     <ProjectReference Include="..\CreatorsForge.Foundry.Core\CreatorsForge.Foundry.Core.csproj" />
     <ProjectReference Include="..\CreatorsForge.Foundry.Editor\CreatorsForge.Foundry.Editor.csproj" />
     <ProjectReference Include="..\CreatorsForge.Foundry.NativeTestHost\CreatorsForge.Foundry.NativeTestHost.csproj" />
+    <ProjectReference Include="..\CreatorsForge.Foundry.PreviewHost\CreatorsForge.Foundry.PreviewHost.csproj" />
     <ProjectReference Include="..\CreatorsForge.Foundry.Testing\CreatorsForge.Foundry.Testing.csproj" />
     <ProjectReference Include="..\CreatorsForge.Foundry.Workspaces\CreatorsForge.Foundry.Workspaces.csproj" />
   </ItemGroup>

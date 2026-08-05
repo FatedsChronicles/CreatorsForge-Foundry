@@ -94,12 +94,16 @@ Foundry provides a pinned native development workflow for OBS Studio plugins, in
 
 The OBS Plugin Designer provides a structured interface for module and component metadata while keeping the generated C source visible and reviewable.
 
-### Safe structural design preview
+### Crash-isolated design preview
 
-The Phase 22A Design Preview provides viewport-aware structural feedback for
-static HTML, WinForms source, and declared OBS components. It reads one bounded
-project source and never executes project assemblies, scripts, or plugins.
-Interactive runtime fidelity is reserved for a later crash-isolated host.
+The Design Preview provides viewport-aware feedback for static HTML, WinForms
+source, and declared OBS components. Phase 22A safely extracts a bounded,
+hashed structural frame. Phase 22B sends only that sanitized frame to a
+separate preview-host process for richer role-aware rendering. The desktop can
+stop or restart the host, contains crashes and eight-second timeouts, exposes
+bounded logs, and refreshes automatically when the selected source is saved.
+Project assemblies, scripts, and plugins remain unexecuted until the explicit
+provider adapters planned for Phase 22C.
 
 ## Integrated editors
 

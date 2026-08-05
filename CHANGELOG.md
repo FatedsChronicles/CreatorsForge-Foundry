@@ -6,6 +6,11 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 22B crash-isolated runtime preview hosting with explicit lifecycle
+  states, an eight-second timeout, stop/restart recovery, bounded logs, and
+  cleanup of per-run request/result files.
+- Role-aware visual frames and debounced automatic refresh when the selected
+  preview source is saved, while retaining an explicit manual refresh action.
 - Phase 22A non-executing design preview foundation with optional project
   metadata, provider-aware eligibility, HD/Full HD/Compact/Portrait/custom
   viewports, source hashing, and structural surfaces for static HTML, WinForms,
@@ -97,6 +102,10 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Security
 
+- Phase 22B sends only bounded visual-frame data to a separate process, never a
+  project binary path or complete source text. The host is time-limited,
+  process-tree isolated, output-bounded, and removes its protocol files after
+  every run.
 - Design preview source resolution is project-confined and limited to 1 MiB and
   48 bounded elements. Phase 22A never loads a project assembly, hosts a browser,
   executes JavaScript, invokes native code, builds, or deploys.
@@ -124,6 +133,14 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 22B product-owner acceptance passed on 2026-08-05, including runtime
+  lifecycle transitions, retained frames after Stop, restart generations,
+  automatic/manual refresh, bounded logs, responsive close, and readable
+  deployment installation selectors.
+- Phase 22B passes all 271 automated tests and all seven project/workspace
+  desktop smoke cases with a zero-warning solution build. Focused coverage
+  executes the real isolated host, verifies restart generations, contains a
+  forced timeout, and reports a missing host through stable diagnostics.
 - Phase 22A passes all 267 automated tests and six desktop smoke cases with a
   zero-warning solution build. Focused coverage verifies preview eligibility,
   bounded UTF-8 source reads, HTML script exclusion, WinForms layout extraction,
@@ -225,6 +242,12 @@ the current development build relative to the packaged `0.1.0-rc.1` baseline.
 
 ### Fixed
 
+- The completed PreviewHost can now be explicitly stopped while preserving its
+  last frame, and deployment installation selectors show concise version/path
+  labels instead of generated `InstallationChoice` record text.
+- Preview-host failures and timeouts now remain outside the Foundry desktop and
+  report stable `CFW2310`-`CFW2313` recovery diagnostics while preserving the
+  last safe structural frame.
 - **Ctrl+Shift+P** now opens Design Preview as advertised by the View menu.
 - New acceptance projects now include a test definition, preventing `CFT2002`
   when they are first opened in Test Explorer.

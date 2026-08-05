@@ -12,9 +12,9 @@
     </Grid.RowDefinitions>
 
     <StackPanel>
-      <TextBlock FontSize="20" FontWeight="SemiBold" Text="Preview foundation and design surface"/>
+      <TextBlock FontSize="20" FontWeight="SemiBold" Text="Isolated runtime preview"/>
       <TextBlock Margin="0,6,0,0" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap"
-          Text="Foundry analyzes declared source structure only. Project assemblies, scripts, and browser content are never executed in this Phase 22A design view."/>
+          Text="Foundry analyzes the declared source, then sends only a bounded visual frame to a crash-isolated host. Provider runtime adapters remain disabled until Phase 22C."/>
     </StackPanel>
 
     <Grid Grid.Row="1" Margin="0,14,0,0">
@@ -25,7 +25,7 @@
           <TextBlock Margin="0,16,0,4" Foreground="{DynamicResource MutedTextBrush}" Text="Preview kind"/>
           <ComboBox x:Name="KindComboBox" Padding="7" DisplayMemberPath="DisplayName" SelectionChanged="Kind_SelectionChanged" AutomationProperties.Name="Preview kind"/>
           <TextBlock Margin="0,14,0,4" Foreground="{DynamicResource MutedTextBrush}" Text="Declared source"/>
-          <ComboBox x:Name="SourceComboBox" Padding="7" AutomationProperties.Name="Preview source"/>
+          <ComboBox x:Name="SourceComboBox" Padding="7" SelectionChanged="Source_SelectionChanged" AutomationProperties.Name="Preview source"/>
           <TextBlock Margin="0,14,0,4" Foreground="{DynamicResource MutedTextBrush}" Text="Viewport preset"/>
           <ComboBox x:Name="ViewportComboBox" Padding="7" DisplayMemberPath="DisplayName" SelectionChanged="Viewport_SelectionChanged" AutomationProperties.Name="Preview viewport preset"/>
           <Grid Margin="0,8,0,0">
@@ -33,17 +33,24 @@
             <StackPanel><TextBlock Foreground="{DynamicResource MutedTextBrush}" Text="Width"/><TextBox x:Name="WidthTextBox" Margin="0,4,0,0" Padding="7" Text="1280"/></StackPanel>
             <StackPanel Grid.Column="2"><TextBlock Foreground="{DynamicResource MutedTextBrush}" Text="Height"/><TextBox x:Name="HeightTextBox" Margin="0,4,0,0" Padding="7" Text="720"/></StackPanel>
           </Grid>
-          <Button Margin="0,16,0,0" Content="Refresh structural preview" Click="RefreshPreview_Click"/>
+          <CheckBox x:Name="AutoRefreshCheckBox" Margin="0,14,0,0" IsChecked="True" Content="Refresh automatically when the source is saved" Checked="AutoRefresh_Changed" Unchecked="AutoRefresh_Changed"/>
+          <Button Margin="0,12,0,0" Content="Refresh preview" Click="RefreshPreview_Click"/>
+          <Grid Margin="0,8,0,0">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <Button x:Name="StopRuntimeButton" Content="Stop host" Click="StopRuntime_Click"/>
+            <Button x:Name="RestartRuntimeButton" Grid.Column="2" Content="Restart host" Click="RestartRuntime_Click"/>
+          </Grid>
+          <TextBlock x:Name="RuntimeStateText" Margin="0,10,0,0" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap" Text="Runtime preview is stopped."/>
           <Separator Margin="0,16"/>
           <TextBlock FontWeight="SemiBold" Text="Safety boundary"/>
           <TextBlock Margin="0,6,0,0" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap"
-              Text="Source reads are confined to the project, limited to 1 MiB, hashed for traceability, and parsed without loading a DLL or invoking JavaScript."/>
+              Text="Source reads stay inside the project and are limited to 1 MiB. The isolated host receives sanitized visual data only, has an 8-second timeout, and can be stopped or restarted independently."/>
         </StackPanel>
       </Border>
 
       <Border Grid.Column="2" Padding="12" Background="{DynamicResource EditorBackgroundBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1" CornerRadius="4">
         <Grid>
-          <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+          <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
           <DockPanel Margin="0,0,0,10">
             <TextBlock x:Name="SurfaceTitleText" FontWeight="SemiBold" Text="Design surface"/>
             <TextBlock x:Name="ViewportStatusText" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="{DynamicResource MutedTextBrush}"/>
@@ -55,6 +62,11 @@
           </Border>
           <TextBlock x:Name="PreviewStatusText" Grid.Row="2" Margin="0,10,0,0" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap"
               Text="Choose a supported source and refresh the preview."/>
+          <Expander Grid.Row="3" Margin="0,8,0,0" Header="Runtime log">
+            <TextBox x:Name="RuntimeLogTextBox" Height="86" Margin="0,6,0,0" Padding="8" IsReadOnly="True" AcceptsReturn="True"
+                VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas"
+                Background="{DynamicResource WindowBackgroundBrush}" Foreground="{DynamicResource TextBrush}" Text="No runtime host activity yet."/>
+          </Expander>
         </Grid>
       </Border>
     </Grid>

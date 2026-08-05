@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\CreatorsForge.Foundry.PreviewHost\CreatorsForge.Foundry.PreviewHost.csproj" />
     <ProjectReference Include="..\..\src\CreatorsForge.Foundry.Workspaces\CreatorsForge.Foundry.Workspaces.csproj" />
   </ItemGroup>
 

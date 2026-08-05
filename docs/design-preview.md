@@ -34,7 +34,9 @@ ignore scripts. WinForms previews recognize supported control declarations,
 text, locations, and sizes without compiling them. OBS previews visualize the
 persisted component and template metadata without loading the plugin.
 
-Runtime interaction belongs to the later crash-isolated Phase 22B host.
+Phase 22B now passes this sanitized structural frame to a crash-isolated generic
+renderer. Provider-specific runtime interaction remains reserved for Phase 22C;
+see [runtime-preview.md](runtime-preview.md).
 
 ## Diagnostics
 

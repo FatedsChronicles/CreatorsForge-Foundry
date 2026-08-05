@@ -143,7 +143,8 @@ public partial class MainWindow : Window
             var deploymentDialog = new DeploymentDialog(
                 viewModel.Workspace!,
                 viewModel.Settings);
-            deploymentReady = deploymentDialog.Content is not null;
+            deploymentReady = deploymentDialog.Content is not null &&
+                deploymentDialog.InstallationLabelsReady;
             deploymentDialog.Close();
         }
         else if (string.Equals(
@@ -154,7 +155,8 @@ public partial class MainWindow : Window
             var deploymentDialog = new ObsDeploymentDialog(
                 viewModel.Workspace!,
                 viewModel.Settings);
-            deploymentReady = deploymentDialog.Content is not null;
+            deploymentReady = deploymentDialog.Content is not null &&
+                deploymentDialog.InstallationLabelsReady;
             deploymentDialog.Close();
         }
 
@@ -194,6 +196,11 @@ public partial class MainWindow : Window
                 !previewDesigner.SelectedViewportDisplayText.Contains("ViewportOption", StringComparison.Ordinal) &&
                 previewDesigner.SelectedViewportDisplayText == "HD 1280 x 720" &&
                 (expectedSource is null || previewDesigner.SelectedSourceDisplayText == expectedSource);
+            if (previewDesignerReady)
+            {
+                previewDesignerReady = await previewDesigner.RunRuntimeSmokeTestAsync();
+            }
+            await previewDesigner.DisposeAsync();
             previewDesigner.Close();
         }
 
