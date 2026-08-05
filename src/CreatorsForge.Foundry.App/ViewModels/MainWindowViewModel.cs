@@ -145,7 +145,8 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public async Task<bool> OpenProjectAsync(
         string projectPath,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool recordRecent = true)
     {
         StatusText = "Opening project…";
         var result = await FoundryWorkspaceService.OpenAsync(
@@ -158,14 +159,18 @@ public sealed class MainWindowViewModel : ObservableObject
             return false;
         }
 
+        var workspace = result.Value!;
         WorkspaceSet = null;
-        ApplyWorkspace(result.Value!, clearDocuments: true);
-        await recentProjectsStore.SaveOpenedProjectAsync(
-            result.Value!.ProjectPath,
-            result.Value.Manifest.Name,
-            cancellationToken);
-        await RefreshRecentProjectsAsync(cancellationToken);
-        AppendConsole($"Opened {result.Value.ProjectPath}");
+        ApplyWorkspace(workspace, clearDocuments: true);
+        if (recordRecent)
+        {
+            await recentProjectsStore.SaveOpenedProjectAsync(
+                workspace.ProjectPath,
+                workspace.Manifest.Name,
+                cancellationToken);
+            await RefreshRecentProjectsAsync(cancellationToken);
+        }
+        AppendConsole($"Opened {workspace.ProjectPath}");
         StatusText = "Project opened";
         return true;
     }
@@ -173,7 +178,8 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public async Task<bool> OpenWorkspaceSetAsync(
         string workspacePath,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool recordRecent = true)
     {
         StatusText = "Opening workspace…";
         var result = await FoundryWorkspaceSetService.LoadAsync(workspacePath, cancellationToken);
@@ -187,11 +193,14 @@ public sealed class MainWindowViewModel : ObservableObject
         WorkspaceSet = result.Value;
         ApplyWorkspace(result.Value!.ActiveProject, clearDocuments: true);
         PopulateWorkspaceProjects();
-        await recentProjectsStore.SaveOpenedProjectAsync(
-            result.Value.WorkspacePath,
-            result.Value.Manifest.Name,
-            cancellationToken);
-        await RefreshRecentProjectsAsync(cancellationToken);
+        if (recordRecent)
+        {
+            await recentProjectsStore.SaveOpenedProjectAsync(
+                result.Value.WorkspacePath,
+                result.Value.Manifest.Name,
+                cancellationToken);
+            await RefreshRecentProjectsAsync(cancellationToken);
+        }
         AppendConsole($"Opened workspace {result.Value.WorkspacePath}");
         StatusText = "Workspace opened";
         return true;

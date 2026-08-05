@@ -61,11 +61,15 @@ public partial class MainWindow : Window
     internal async Task<bool> RunSmokeTestAsync(
         CancellationToken cancellationToken)
     {
+        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         await viewModel.InitializeAsync(cancellationToken);
         ApplyLayout(viewModel.Settings.Layout);
 
         if (!string.IsNullOrWhiteSpace(startupProjectPath) &&
-            !await OpenPathAsync(startupProjectPath, cancellationToken))
+            !await OpenPathAsync(
+                startupProjectPath,
+                cancellationToken,
+                recordRecent: false))
         {
             return false;
         }
@@ -166,11 +170,32 @@ public partial class MainWindow : Window
         }
 
         var darkSyntaxHighlightingReady = FoundrySyntaxHighlighting.Dark is not null;
+        var previewShortcutReady = IsPreviewShortcut(
+            Key.P,
+            ModifierKeys.Control | ModifierKeys.Shift);
         var newProjectItemDialog = new NewProjectItemDialog("Folder: src");
         var newProjectItemDialogReady = newProjectItemDialog.Content is not null &&
             newProjectItemDialog.ItemTypes.All(option =>
                 string.Equals(option.ToString(), option.DisplayName, StringComparison.Ordinal));
         newProjectItemDialog.Close();
+
+        var previewDesignerReady = true;
+        if (viewModel.Workspace is not null)
+        {
+            var previewDesigner = new PreviewDesignerDialog(viewModel.Workspace);
+            var expectedSource = string.Equals(
+                viewModel.Workspace.Manifest.Target?.Provider,
+                "obsstudio",
+                StringComparison.OrdinalIgnoreCase)
+                ? viewModel.Workspace.Manifest.ObsPlugin?.Design?.Source
+                : null;
+            previewDesignerReady = previewDesigner.Content is not null &&
+                !previewDesigner.SelectedKindDisplayText.Contains("PreviewKindOption", StringComparison.Ordinal) &&
+                !previewDesigner.SelectedViewportDisplayText.Contains("ViewportOption", StringComparison.Ordinal) &&
+                previewDesigner.SelectedViewportDisplayText == "HD 1280 x 720" &&
+                (expectedSource is null || previewDesigner.SelectedSourceDisplayText == expectedSource);
+            previewDesigner.Close();
+        }
 
         var succeeded = IsVisible &&
             (source is null || FindVisualChild<CodeEditor>(DocumentTabs) is not null) &&
@@ -182,6 +207,8 @@ public partial class MainWindow : Window
             deploymentReady &&
             testExplorerReady &&
             newProjectItemDialogReady &&
+            previewDesignerReady &&
+            previewShortcutReady &&
             darkSyntaxHighlightingReady;
         allowClose = true;
         Close();
@@ -739,6 +766,23 @@ public partial class MainWindow : Window
                 design,
                 generatedSource,
                 lifetimeCancellation.Token));
+        }
+    }
+
+    private async void PreviewDesigner_Click(object sender, RoutedEventArgs e)
+    {
+        var workspace = viewModel.Workspace;
+        if (workspace is null)
+        {
+            MessageBox.Show(this, "Open a project before using Design Preview.", "Design Preview", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+        if (!await viewModel.SaveAllAsync(lifetimeCancellation.Token)) return;
+
+        var dialog = new PreviewDesignerDialog(workspace) { Owner = this };
+        if (dialog.ShowDialog() == true)
+        {
+            await viewModel.RefreshWorkspaceAsync(lifetimeCancellation.Token);
         }
     }
 
@@ -1506,6 +1550,11 @@ public partial class MainWindow : Window
             e.Handled = true;
             SnippetBrowser_Click(sender, e);
         }
+        else if (IsPreviewShortcut(e.Key, Keyboard.Modifiers))
+        {
+            e.Handled = true;
+            PreviewDesigner_Click(sender, e);
+        }
         else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.OemComma)
         {
             e.Handled = true;
@@ -1518,6 +1567,10 @@ public partial class MainWindow : Window
         }
 
     }
+
+    internal static bool IsPreviewShortcut(Key key, ModifierKeys modifiers) =>
+        key == Key.P &&
+        modifiers == (ModifierKeys.Control | ModifierKeys.Shift);
 
     private async Task<bool> NavigateToSourceAsync(EditorSourceLocation location)
     {
@@ -1718,10 +1771,13 @@ public partial class MainWindow : Window
         MessageBox.Show(this, $"{exception.Message}\n\nLocal failure report:\n{report}", "Creators Forge Foundry", MessageBoxButton.OK, MessageBoxImage.Error);
     }
 
-    private Task<bool> OpenPathAsync(string path, CancellationToken cancellationToken) =>
+    private Task<bool> OpenPathAsync(
+        string path,
+        CancellationToken cancellationToken,
+        bool recordRecent = true) =>
         path.EndsWith(".foundryworkspace", StringComparison.OrdinalIgnoreCase)
-            ? viewModel.OpenWorkspaceSetAsync(path, cancellationToken)
-            : viewModel.OpenProjectAsync(path, cancellationToken);
+            ? viewModel.OpenWorkspaceSetAsync(path, cancellationToken, recordRecent)
+            : viewModel.OpenProjectAsync(path, cancellationToken, recordRecent);
 
     private static string? FindCommonDirectory(string[] paths)
     {

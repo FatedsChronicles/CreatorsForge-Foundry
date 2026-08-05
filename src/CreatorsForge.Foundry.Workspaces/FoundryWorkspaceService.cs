@@ -415,6 +415,56 @@ public static class FoundryWorkspaceService
     }
 
     public static async Task<WorkspaceOperationResult<FoundryWorkspace>>
+        SavePreviewAsync(
+            FoundryWorkspace workspace,
+            FoundryPreview? preview,
+            CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(workspace);
+        var current = await FoundryProjectLoader.LoadAsync(
+            workspace.ProjectPath,
+            cancellationToken).ConfigureAwait(false);
+        if (!current.IsSuccess)
+        {
+            return new(null, current.Diagnostics);
+        }
+        var updatedManifest = current.Manifest! with { Preview = preview };
+        var diagnostics = FoundryProjectValidator.Validate(
+            updatedManifest,
+            workspace.ProjectPath);
+        if (diagnostics.Any(item => item.IsError))
+        {
+            return new(null, diagnostics);
+        }
+
+        try
+        {
+            var manifestJson = JsonSerializer.Serialize(
+                updatedManifest,
+                ManifestSerializerOptions);
+            await AtomicFile.WriteTextAsync(
+                workspace.ProjectPath,
+                $"{manifestJson}\n",
+                cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
+        {
+            return Failure(
+                "CFW2306",
+                $"Preview settings could not be saved: {exception.Message}",
+                workspace.ProjectPath);
+        }
+
+        return await OpenAsync(workspace.ProjectPath, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public static async Task<WorkspaceOperationResult<FoundryWorkspace>>
         EnableStreamerBotPackagingAsync(
             FoundryWorkspace workspace,
             CancellationToken cancellationToken = default)

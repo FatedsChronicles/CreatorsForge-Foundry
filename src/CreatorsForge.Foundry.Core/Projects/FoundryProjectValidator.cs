@@ -133,7 +133,57 @@ public static class FoundryProjectValidator
         ValidateTestDefinition(manifest, projectPath, diagnostics);
         ValidateComponents(manifest, projectPath, diagnostics);
         ValidatePublishing(manifest, projectPath, diagnostics);
+        ValidatePreview(manifest, projectPath, diagnostics);
         return diagnostics;
+    }
+
+    private static void ValidatePreview(
+        FoundryProjectManifest manifest,
+        string? projectPath,
+        ICollection<FoundryDiagnostic> diagnostics)
+    {
+        var preview = manifest.Preview;
+        if (preview is null) return;
+
+        if (!FoundryPreview.SupportedKinds.Contains(preview.Kind))
+        {
+            Add(diagnostics, "CFP0068", $"Preview kind '{preview.Kind}' is not supported.", projectPath, "$.preview.kind", $"Use one of: {string.Join(", ", FoundryPreview.SupportedKinds.Order(StringComparer.Ordinal))}.");
+        }
+
+        var expectedExtension = preview.Kind switch
+        {
+            FoundryPreview.StaticWebKind => ".html",
+            FoundryPreview.WinFormsKind => ".cs",
+            FoundryPreview.ObsComponentKind => ".c",
+            _ => null,
+        };
+        if (!IsSafeRelativeProjectPath(preview.Source) ||
+            expectedExtension is not null &&
+            !string.Equals(Path.GetExtension(preview.Source), expectedExtension, StringComparison.OrdinalIgnoreCase))
+        {
+            Add(diagnostics, "CFP0069", "Preview source must be a safe project-relative file matching the selected preview kind.", projectPath, "$.preview.source", "Choose a project .html, .cs, or .c file offered by the preview designer.");
+        }
+
+        if (preview.Width is < 240 or > 3840 || preview.Height is < 180 or > 2160)
+        {
+            Add(diagnostics, "CFP0070", "Preview viewport is outside the supported 240x180 to 3840x2160 range.", projectPath, "$.preview", "Choose a supported viewport size such as 1280x720.");
+        }
+
+        if (string.Equals(preview.Kind, FoundryPreview.WinFormsKind, StringComparison.Ordinal) &&
+            (!string.Equals(manifest.Target?.Provider, "streamerbot", StringComparison.Ordinal) ||
+             !manifest.Features.WinForms ||
+             manifest.ManagedBuild?.Sources.Contains(preview.Source, StringComparer.OrdinalIgnoreCase) != true))
+        {
+            Add(diagnostics, "CFP0071", "WinForms preview requires a Streamer.bot project, features.winForms, and a declared managed source.", projectPath, "$.preview", "Enable WinForms and choose a .cs file listed in managedBuild.sources.");
+        }
+
+        if (string.Equals(preview.Kind, FoundryPreview.ObsComponentKind, StringComparison.Ordinal) &&
+            (!string.Equals(manifest.Target?.Provider, "obsstudio", StringComparison.Ordinal) ||
+             manifest.ObsPlugin?.Design is null ||
+             !string.Equals(manifest.ObsPlugin.Design.Source, preview.Source, StringComparison.OrdinalIgnoreCase)))
+        {
+            Add(diagnostics, "CFP0072", "OBS component preview requires OBS design metadata and its declared source.", projectPath, "$.preview", "Choose the source declared by obsPlugin.design.");
+        }
     }
 
     private static void ValidatePublishing(
@@ -743,6 +793,13 @@ public static class FoundryProjectValidator
         !string.IsNullOrWhiteSpace(path) &&
         string.Equals(Path.GetExtension(path), ".json", StringComparison.OrdinalIgnoreCase) &&
         !Path.IsPathRooted(path) &&
+        !path.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries)
+            .Any(segment => segment == "..");
+
+    private static bool IsSafeRelativeProjectPath(string? path) =>
+        !string.IsNullOrWhiteSpace(path) &&
+        !Path.IsPathRooted(path) &&
+        !path.Contains('\0') &&
         !path.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries)
             .Any(segment => segment == "..");
 

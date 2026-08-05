@@ -130,6 +130,21 @@
       },
       "additionalProperties": true
     },
+    "preview": {
+      "type": "object",
+      "required": ["enabled", "kind", "source", "width", "height"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "kind": { "enum": ["static-web", "winforms", "obs-component"] },
+        "source": {
+          "type": "string",
+          "pattern": "^(?![A-Za-z]:)(?![\\\\/])(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$)).+\\.(?:html|cs|c)$"
+        },
+        "width": { "type": "integer", "minimum": 240, "maximum": 3840 },
+        "height": { "type": "integer", "minimum": 180, "maximum": 2160 }
+      },
+      "additionalProperties": true
+    },
     "managedBuild": {
       "type": "object",
       "required": [
