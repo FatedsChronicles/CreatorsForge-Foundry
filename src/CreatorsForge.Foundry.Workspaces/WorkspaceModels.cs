@@ -45,6 +45,28 @@ public sealed record WorkspaceDocument(
     string Text,
     DateTimeOffset LastWriteUtc);
 
+public enum WorkspaceProjectItemKind
+{
+    Folder,
+    CSharp,
+    Cpp,
+    C,
+    Header,
+    Json,
+    Xml,
+    Html,
+    Css,
+    JavaScript,
+    Markdown,
+    Text,
+    CMake,
+}
+
+public sealed record WorkspaceProjectItem(
+    string FullPath,
+    string RelativePath,
+    bool IsDirectory);
+
 public sealed record RecentProjectEntry(
     string ProjectPath,
     string Name,

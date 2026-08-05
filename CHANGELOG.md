@@ -6,6 +6,12 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 20A Solution Explorer foundation with hierarchical file-type badges,
+  context-aware file/folder creation, automatic extension handling, immediate
+  opening of new editable files, and explicit project-tree refresh.
+- Safe built-in project items for C#, C++, C, headers, JSON, XML, HTML, CSS,
+  JavaScript, Markdown, text, and CMake files, plus folders. Creation is
+  constrained to the active project and never overwrites an existing item.
 - Persisted Dark, Light, and System themes with live Windows-theme handling,
   High Contrast priority, readable interaction states, and SVG branding.
 - A conventional Inno Setup 6 Windows installer with a stable product identity,
@@ -54,6 +60,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 20A product-owner acceptance passed for Solution Explorer presentation,
+  context-aware file and folder creation, automatic extensions, immediate file
+  opening, duplicate protection, refresh, and multi-project targeting.
 - Inno Setup 6.7.3 compiled the native `0.19.0-alpha.1` setup and updater
   executables with matching payload hashes and correct Windows product metadata.
 - Product-owner acceptance passed installation to the default Program Files

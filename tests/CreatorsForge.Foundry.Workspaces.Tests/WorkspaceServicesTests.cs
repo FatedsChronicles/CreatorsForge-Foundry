@@ -12,6 +12,66 @@ public sealed class WorkspaceServicesTests
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
+    [Theory]
+    [InlineData(WorkspaceProjectItemKind.CSharp, "Feature", "Feature.cs")]
+    [InlineData(WorkspaceProjectItemKind.Cpp, "plugin", "plugin.cpp")]
+    [InlineData(WorkspaceProjectItemKind.C, "module.c", "module.c")]
+    [InlineData(WorkspaceProjectItemKind.Header, "module", "module.h")]
+    [InlineData(WorkspaceProjectItemKind.Json, "settings", "settings.json")]
+    [InlineData(WorkspaceProjectItemKind.Xml, "layout", "layout.xml")]
+    [InlineData(WorkspaceProjectItemKind.Html, "panel", "panel.html")]
+    [InlineData(WorkspaceProjectItemKind.Css, "panel", "panel.css")]
+    [InlineData(WorkspaceProjectItemKind.JavaScript, "panel", "panel.js")]
+    [InlineData(WorkspaceProjectItemKind.Markdown, "README", "README.md")]
+    [InlineData(WorkspaceProjectItemKind.Text, "notes", "notes.txt")]
+    [InlineData(WorkspaceProjectItemKind.CMake, "CMakeLists", "CMakeLists.txt")]
+    public async Task ProjectItemCreationAppliesExpectedExtension(
+        WorkspaceProjectItemKind kind,
+        string name,
+        string expectedName)
+    {
+        using var temporary = TemporaryDirectory.Create();
+
+        var result = await WorkspaceProjectItemService.CreateAsync(
+            temporary.Path,
+            temporary.Path,
+            name,
+            kind);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(expectedName, Path.GetFileName(result.Value!.FullPath));
+        Assert.True(File.Exists(result.Value.FullPath));
+    }
+
+    [Fact]
+    public async Task ProjectItemCreationCreatesFolderAndRejectsOverwriteAndTraversal()
+    {
+        using var temporary = TemporaryDirectory.Create();
+        var source = Path.Combine(temporary.Path, "src");
+        Directory.CreateDirectory(source);
+
+        var folder = await WorkspaceProjectItemService.CreateAsync(
+            temporary.Path,
+            source,
+            "Features",
+            WorkspaceProjectItemKind.Folder);
+        var duplicate = await WorkspaceProjectItemService.CreateAsync(
+            temporary.Path,
+            source,
+            "Features",
+            WorkspaceProjectItemKind.Folder);
+        var traversal = await WorkspaceProjectItemService.CreateAsync(
+            temporary.Path,
+            source,
+            "../outside",
+            WorkspaceProjectItemKind.CSharp);
+
+        Assert.True(folder.IsSuccess);
+        Assert.True(Directory.Exists(folder.Value!.FullPath));
+        Assert.Contains(duplicate.Diagnostics, diagnostic => diagnostic.Code == "CFW1103");
+        Assert.Contains(traversal.Diagnostics, diagnostic => diagnostic.Code == "CFW1102");
+    }
+
     [Fact]
     public async Task CreateOpenEditSaveAndReopenProject()
     {

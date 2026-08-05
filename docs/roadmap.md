@@ -274,3 +274,50 @@ without manually entering its URL.
 The alpha.7 installed-build follow-up also passed: **Restore Official GitHub
 Source** was visible and replaced a local/custom manifest location with the
 canonical GitHub Releases manifest URL.
+
+## Phase 20 — Solution Explorer-style project pane
+
+Phase 20 turns the original read-only project listing into a familiar,
+accessible project-management surface while preserving Foundry's source-first
+and provider-neutral workspace model.
+
+### Phase 20A — Explorer foundation and new items
+
+Phase 20A completed on 2026-08-05 after automated validation and product-owner
+manual acceptance passed.
+
+- Hierarchical type badges for managed, native, web, data, metadata, and folder
+  entries.
+- Add and Refresh controls in the pane header.
+- Right-click actions that target the selected project or folder.
+- Safe creation of C#, C++, C, header, JSON, XML, HTML, CSS, JavaScript,
+  Markdown, text, CMake, and folder items.
+- Automatic default extensions, no-overwrite behavior, project-boundary and
+  reparse-point protection, tree synchronization, and immediate opening of new
+  editable files.
+
+Phase 20A automated gate: focused workspace tests, Release desktop build, the
+full repository regression gate, and desktop smoke tests pass with no warnings
+or errors.
+
+Manual acceptance (passed 2026-08-05):
+
+1. Open one Streamer.bot project and one OBS project in turn.
+2. Select the project root, choose **Add**, create a folder, and confirm it
+   appears immediately.
+3. Select that folder and create representative C#, C++, JSON, HTML, and
+   Markdown files without typing extensions.
+4. Confirm every file appears under the selected folder with the correct badge
+   and opens in an editor tab.
+5. Try to create the same item again and confirm Foundry reports `CFW1103`
+   without changing the existing file.
+6. Create a file outside Foundry, choose **Refresh**, and confirm it appears.
+7. In a multi-project workspace, right-click a project/folder and confirm the
+   item is created only in that active project.
+
+Exit gate: all automated checks and the manual acceptance above pass without
+regressing project open, edit, build, test, package, or deployment workflows.
+
+Later Phase 20 increments will add richer item operations and external-project
+onboarding; those changes remain separate so this mutation foundation can be
+accepted first.

@@ -7,8 +7,10 @@ public sealed class ProjectTreeItemViewModel
     private static readonly HashSet<string> EditableExtensions =
         new HashSet<string>(
             [
-                ".cs", ".c", ".h", ".foundryproj", ".json", ".md", ".txt", ".xml",
-                ".props", ".targets", ".resx", ".yml", ".yaml",
+                ".cs", ".cpp", ".cxx", ".cc", ".c", ".h", ".hpp",
+                ".foundryproj", ".json", ".md", ".txt", ".xml", ".html",
+                ".htm", ".css", ".js", ".ts", ".props", ".targets", ".resx",
+                ".yml", ".yaml", ".cmake",
             ],
             StringComparer.OrdinalIgnoreCase);
 
@@ -52,5 +54,33 @@ public sealed class ProjectTreeItemViewModel
     public bool IsEditable =>
         !IsDirectory && EditableExtensions.Contains(Path.GetExtension(FullPath));
 
+    public string IconLabel => GetIconLabel();
+
     public IReadOnlyList<ProjectTreeItemViewModel> Children { get; }
+
+    private string GetIconLabel()
+    {
+        if (IsProjectRoot) return "SLN";
+        if (IsDirectory) return "▸";
+
+        return Path.GetExtension(FullPath).ToLowerInvariant() switch
+        {
+            ".cs" => "C#",
+            ".cpp" or ".cxx" or ".cc" => "C++",
+            ".c" => "C",
+            ".h" or ".hpp" => "H",
+            ".json" => "{ }",
+            ".xml" or ".html" or ".htm" => "<>",
+            ".css" => "CSS",
+            ".js" => "JS",
+            ".ts" => "TS",
+            ".md" => "MD",
+            ".foundryproj" => "CF",
+            ".yml" or ".yaml" => "YML",
+            ".props" or ".targets" or ".cmake" => "⚙",
+            ".txt" when string.Equals(Name, "CMakeLists.txt", StringComparison.OrdinalIgnoreCase) => "CMake",
+            ".txt" => "TXT",
+            _ => "FILE",
+        };
+    }
 }
