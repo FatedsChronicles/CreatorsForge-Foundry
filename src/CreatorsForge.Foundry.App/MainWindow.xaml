@@ -48,6 +48,7 @@
       <MenuItem Header="_File">
         <MenuItem Header="_New Project…" InputGestureText="Ctrl+N" Click="NewProject_Click" />
         <MenuItem Header="_Open Project…" InputGestureText="Ctrl+O" Click="OpenProject_Click" />
+        <MenuItem Header="_Adopt Existing Folder…" Click="AdoptExistingFolder_Click" />
         <MenuItem Header="New _Workspace..." Click="NewWorkspace_Click" />
         <MenuItem Header="Open W_orkspace..." Click="OpenWorkspace_Click" />
         <MenuItem Header="_Add Project to Workspace..." Click="AddProjectToWorkspace_Click" />

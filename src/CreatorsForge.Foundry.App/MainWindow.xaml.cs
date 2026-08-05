@@ -266,6 +266,62 @@ public partial class MainWindow : Window
             viewModel.OpenProjectAsync(dialog.FileName, lifetimeCancellation.Token));
     }
 
+    private async void AdoptExistingFolder_Click(object sender, RoutedEventArgs e)
+    {
+        if (!await ConfirmDiscardOrSaveAsync())
+        {
+            return;
+        }
+
+        var picker = new OpenFolderDialog
+        {
+            InitialDirectory = Directory.Exists(viewModel.Settings.DefaultProjectDirectory)
+                ? viewModel.Settings.DefaultProjectDirectory
+                : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            Multiselect = false,
+            Title = "Select an existing source folder",
+        };
+        if (picker.ShowDialog(this) != true)
+        {
+            return;
+        }
+
+        var analysis = await ExternalProjectAdoptionService.AnalyzeAsync(
+            picker.FolderName,
+            lifetimeCancellation.Token);
+        if (!analysis.IsSuccess)
+        {
+            MessageBox.Show(
+                this,
+                string.Join(Environment.NewLine, analysis.Diagnostics.Select(item => $"{item.Code}: {item.Message}")),
+                "Adopt existing folder",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        if (analysis.Value!.ExistingFoundryProjects.Count > 0)
+        {
+            MessageBox.Show(
+                this,
+                "This folder already contains a Foundry project. Open its .foundryproj file instead; Foundry will not overwrite it.",
+                "Foundry project already present",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        var dialog = new AdoptExistingProjectDialog(analysis.Value) { Owner = this };
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        await RunBusyAsync(() => viewModel.AdoptExternalProjectAsync(
+            dialog.Request!,
+            lifetimeCancellation.Token));
+    }
+
     private async void OpenWorkspace_Click(object sender, RoutedEventArgs e)
     {
         if (!await ConfirmDiscardOrSaveAsync()) return;

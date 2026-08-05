@@ -979,6 +979,114 @@ public sealed class WorkspaceServicesTests
         static int Count(IReadOnlyList<ProjectTreeNode> nodes) => nodes.Count + nodes.Sum(item => Count(item.Children));
     }
 
+    [Fact]
+    public async Task ExternalProjectAnalysisFindsCompatibleSourcesAndSkipsGeneratedFolders()
+    {
+        using var temporary = TemporaryDirectory.Create();
+        Directory.CreateDirectory(Path.Combine(temporary.Path, "src"));
+        Directory.CreateDirectory(Path.Combine(temporary.Path, "bin"));
+        await File.WriteAllTextAsync(Path.Combine(temporary.Path, "src", "Extension.cs"), "public class Extension { }");
+        await File.WriteAllTextAsync(Path.Combine(temporary.Path, "src", "plugin.c"), "bool foundry_obs_plugin_load(void) { return true; }");
+        await File.WriteAllTextAsync(Path.Combine(temporary.Path, "README.md"), "# Existing project");
+        await File.WriteAllTextAsync(Path.Combine(temporary.Path, "bin", "Generated.cs"), "public class Generated { }");
+
+        var result = await ExternalProjectAdoptionService.AnalyzeAsync(temporary.Path);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(["src/Extension.cs"], result.Value!.ManagedSources);
+        Assert.Equal(["src/plugin.c"], result.Value.NativeSources);
+        Assert.Contains("README.md", result.Value.OtherFiles);
+        Assert.Equal(1, result.Value.SkippedDirectoryCount);
+    }
+
+    [Fact]
+    public async Task StreamerBotAdoptionCreatesOnlySidecarAndPreservesExistingFiles()
+    {
+        using var temporary = TemporaryDirectory.Create();
+        Directory.CreateDirectory(Path.Combine(temporary.Path, "src"));
+        var sourcePath = Path.Combine(temporary.Path, "src", "Extension.cs");
+        var original = "public sealed class Extension { }\r\n";
+        await File.WriteAllTextAsync(sourcePath, original);
+        var analysis = await ExternalProjectAdoptionService.AnalyzeAsync(temporary.Path);
+
+        var result = await ExternalProjectAdoptionService.AdoptAsync(new(
+            analysis.Value!,
+            "Existing Extension",
+            "com.example.existing-extension",
+            "1.0.5-beta.6",
+            "streamerbot"));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(original, await File.ReadAllTextAsync(sourcePath));
+        Assert.Equal([FoundryOutputKinds.ManagedLibrary], result.Value!.Manifest.Outputs);
+        Assert.Equal(["src/Extension.cs"], result.Value.Manifest.ManagedBuild!.Sources);
+        Assert.Equal(2, Directory.EnumerateFiles(temporary.Path, "*", SearchOption.AllDirectories).Count());
+    }
+
+    [Fact]
+    public async Task AdoptionNeverOverwritesAnExistingFoundryProject()
+    {
+        using var temporary = TemporaryDirectory.Create();
+        await File.WriteAllTextAsync(Path.Combine(temporary.Path, "Source.cs"), "public class Source { }");
+        var existingPath = Path.Combine(temporary.Path, "Existing.foundryproj");
+        await File.WriteAllTextAsync(existingPath, "do not replace");
+        var analysis = await ExternalProjectAdoptionService.AnalyzeAsync(temporary.Path);
+
+        var result = await ExternalProjectAdoptionService.AdoptAsync(new(
+            analysis.Value!,
+            "Existing",
+            "com.example.existing",
+            "1.0.4-stable",
+            "streamerbot"));
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains(result.Diagnostics, item => item.Code == "CFW0505");
+        Assert.Equal("do not replace", await File.ReadAllTextAsync(existingPath));
+        Assert.Single(Directory.EnumerateFiles(temporary.Path, "*.foundryproj"));
+    }
+
+    [Fact]
+    public async Task AdoptionStopsWhenFolderChangesAfterPreview()
+    {
+        using var temporary = TemporaryDirectory.Create();
+        await File.WriteAllTextAsync(Path.Combine(temporary.Path, "Source.cs"), "public class Source { }");
+        var analysis = await ExternalProjectAdoptionService.AnalyzeAsync(temporary.Path);
+        await File.WriteAllTextAsync(Path.Combine(temporary.Path, "Added.cs"), "public class Added { }");
+
+        var result = await ExternalProjectAdoptionService.AdoptAsync(new(
+            analysis.Value!,
+            "Existing",
+            "com.example.existing",
+            "1.0.4-stable",
+            "streamerbot"));
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains(result.Diagnostics, item => item.Code == "CFW0509");
+        Assert.Empty(Directory.EnumerateFiles(temporary.Path, "*.foundryproj"));
+    }
+
+    [Fact]
+    public async Task ObsAdoptionCreatesMinimalPluginManifestFromExistingCSources()
+    {
+        using var temporary = TemporaryDirectory.Create();
+        await File.WriteAllTextAsync(
+            Path.Combine(temporary.Path, "plugin.c"),
+            "bool foundry_obs_plugin_load(void) { return true; }");
+        var analysis = await ExternalProjectAdoptionService.AnalyzeAsync(temporary.Path);
+
+        var result = await ExternalProjectAdoptionService.AdoptAsync(new(
+            analysis.Value!,
+            "Existing OBS Plugin",
+            "com.example.existing-obs",
+            "32.x-windows-x64",
+            "obsstudio"));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(FoundryObsPlugin.MinimalContract, result.Value!.Manifest.ObsPlugin!.Contract);
+        Assert.Equal("foundry_obs_plugin_load", result.Value.Manifest.ObsPlugin.EntrySymbol);
+        Assert.Equal(["plugin.c"], result.Value.Manifest.NativeBuild!.Sources);
+    }
+
     private sealed class TemporaryDirectory : IDisposable
     {
         private TemporaryDirectory(string path)

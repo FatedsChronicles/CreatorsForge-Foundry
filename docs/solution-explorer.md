@@ -47,9 +47,33 @@ Every open editor tab has a visible close button. Closing an edited document
 uses the same **Save**, **Don't Save**, or **Cancel** protection as **File →
 Close Document**.
 
+## Adopt an existing source folder
+
+Choose **File → Adopt Existing Folder…** to bring a project created outside
+Foundry into the workspace without relocating it. Foundry analyzes the selected
+folder first and shows the exact `.cs` or `.c` files that will become build
+inputs for the selected Streamer.bot or OBS Studio target. Other source, web,
+data, documentation, and asset files remain visible and editable in Solution
+Explorer without being silently added to the provider build.
+
+Adoption creates one new `.foundryproj` sidecar in the selected root. It never
+moves, rewrites, or deletes an existing file. Generated/dependency folders such
+as `.git`, `.vs`, `bin`, `obj`, `build`, and `node_modules` are skipped, as are
+directory links and trees deeper than the safety limit. A folder containing an
+existing `.foundryproj` is refused and should be opened normally. Foundry also
+rechecks the folder after preview and stops if its compatible sources changed,
+so the saved manifest always matches what the user reviewed.
+
+Streamer.bot adoption currently requires at least one `.cs` source and creates
+a managed-library project. OBS adoption requires at least one `.c` source and
+uses the `foundry_obs_plugin_load` adapter entry symbol. Packaging definitions,
+tests, CPHInline bridges, and OBS designer metadata are not inferred from
+arbitrary source; they can be added deliberately after the project opens.
+
 ## Safety
 
 Foundry accepts one file or folder name, not a path. The target must be an
 existing directory inside the active project, cannot traverse a reparse point,
 and cannot escape the project root. Existing files and folders are never
 overwritten. Creation failures appear in Problems with a `CFW11xx` diagnostic.
+External-folder analysis and adoption failures use `CFW05xx` diagnostics.
