@@ -25,7 +25,7 @@
           <TextBlock Margin="0,16,0,4" Foreground="{DynamicResource MutedTextBrush}" Text="Preview kind"/>
           <ComboBox x:Name="KindComboBox" Padding="7" DisplayMemberPath="DisplayName" SelectionChanged="Kind_SelectionChanged" AutomationProperties.Name="Preview kind"/>
           <TextBlock Margin="0,14,0,4" Foreground="{DynamicResource MutedTextBrush}" Text="Declared source"/>
-          <ComboBox x:Name="SourceComboBox" Padding="7" IsEditable="True" AutomationProperties.Name="Preview source"/>
+          <ComboBox x:Name="SourceComboBox" Padding="7" AutomationProperties.Name="Preview source"/>
           <TextBlock Margin="0,14,0,4" Foreground="{DynamicResource MutedTextBrush}" Text="Viewport preset"/>
           <ComboBox x:Name="ViewportComboBox" Padding="7" DisplayMemberPath="DisplayName" SelectionChanged="Viewport_SelectionChanged" AutomationProperties.Name="Preview viewport preset"/>
           <Grid Margin="0,8,0,0">

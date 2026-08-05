@@ -61,11 +61,15 @@ public partial class MainWindow : Window
     internal async Task<bool> RunSmokeTestAsync(
         CancellationToken cancellationToken)
     {
+        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         await viewModel.InitializeAsync(cancellationToken);
         ApplyLayout(viewModel.Settings.Layout);
 
         if (!string.IsNullOrWhiteSpace(startupProjectPath) &&
-            !await OpenPathAsync(startupProjectPath, cancellationToken))
+            !await OpenPathAsync(
+                startupProjectPath,
+                cancellationToken,
+                recordRecent: false))
         {
             return false;
         }
@@ -176,7 +180,17 @@ public partial class MainWindow : Window
         if (viewModel.Workspace is not null)
         {
             var previewDesigner = new PreviewDesignerDialog(viewModel.Workspace);
-            previewDesignerReady = previewDesigner.Content is not null;
+            var expectedSource = string.Equals(
+                viewModel.Workspace.Manifest.Target?.Provider,
+                "obsstudio",
+                StringComparison.OrdinalIgnoreCase)
+                ? viewModel.Workspace.Manifest.ObsPlugin?.Design?.Source
+                : null;
+            previewDesignerReady = previewDesigner.Content is not null &&
+                !previewDesigner.SelectedKindDisplayText.Contains("PreviewKindOption", StringComparison.Ordinal) &&
+                !previewDesigner.SelectedViewportDisplayText.Contains("ViewportOption", StringComparison.Ordinal) &&
+                previewDesigner.SelectedViewportDisplayText == "HD 1280 x 720" &&
+                (expectedSource is null || previewDesigner.SelectedSourceDisplayText == expectedSource);
             previewDesigner.Close();
         }
 
@@ -1744,10 +1758,13 @@ public partial class MainWindow : Window
         MessageBox.Show(this, $"{exception.Message}\n\nLocal failure report:\n{report}", "Creators Forge Foundry", MessageBoxButton.OK, MessageBoxImage.Error);
     }
 
-    private Task<bool> OpenPathAsync(string path, CancellationToken cancellationToken) =>
+    private Task<bool> OpenPathAsync(
+        string path,
+        CancellationToken cancellationToken,
+        bool recordRecent = true) =>
         path.EndsWith(".foundryworkspace", StringComparison.OrdinalIgnoreCase)
-            ? viewModel.OpenWorkspaceSetAsync(path, cancellationToken)
-            : viewModel.OpenProjectAsync(path, cancellationToken);
+            ? viewModel.OpenWorkspaceSetAsync(path, cancellationToken, recordRecent)
+            : viewModel.OpenProjectAsync(path, cancellationToken, recordRecent);
 
     private static string? FindCommonDirectory(string[] paths)
     {

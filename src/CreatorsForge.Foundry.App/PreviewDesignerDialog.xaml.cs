@@ -34,10 +34,12 @@ public partial class PreviewDesignerDialog : Window
         var configured = workspace.Manifest.Preview;
         EnabledCheckBox.IsChecked = configured?.Enabled ?? true;
         KindComboBox.SelectedItem = KindOptions.First(item => item.Id == InferKind(workspace, configured));
-        WidthTextBox.Text = (configured?.Width ?? 1280).ToString(System.Globalization.CultureInfo.InvariantCulture);
-        HeightTextBox.Text = (configured?.Height ?? 720).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var configuredWidth = configured?.Width ?? 1280;
+        var configuredHeight = configured?.Height ?? 720;
+        WidthTextBox.Text = configuredWidth.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        HeightTextBox.Text = configuredHeight.ToString(System.Globalization.CultureInfo.InvariantCulture);
         ViewportComboBox.SelectedItem = ViewportOptions.FirstOrDefault(item =>
-            item.Width == configured?.Width && item.Height == configured?.Height) ?? ViewportOptions[^1];
+            item.Width == configuredWidth && item.Height == configuredHeight) ?? ViewportOptions[^1];
         RefreshSources(configured?.Source);
         initialized = true;
         SetConfigurationControlsEnabled();
@@ -45,6 +47,12 @@ public partial class PreviewDesignerDialog : Window
     }
 
     public FoundryWorkspace? UpdatedWorkspace { get; private set; }
+
+    internal string SelectedKindDisplayText => KindComboBox.Text;
+
+    internal string SelectedSourceDisplayText => SourceComboBox.Text;
+
+    internal string SelectedViewportDisplayText => ViewportComboBox.Text;
 
     private static string InferKind(FoundryWorkspace workspace, FoundryPreview? configured)
     {
@@ -69,10 +77,9 @@ public partial class PreviewDesignerDialog : Window
         if (KindComboBox.SelectedItem is not PreviewKindOption kind) return;
         var sources = PreviewDesignService.GetCandidateSources(workspace, kind.Id);
         SourceComboBox.ItemsSource = sources;
-        SourceComboBox.Text = !string.IsNullOrWhiteSpace(preferred) &&
-            sources.Contains(preferred, StringComparer.OrdinalIgnoreCase)
-                ? preferred
-                : sources.Count > 0 ? sources[0] : preferred ?? string.Empty;
+        SourceComboBox.SelectedItem = !string.IsNullOrWhiteSpace(preferred)
+            ? sources.FirstOrDefault(source => string.Equals(source, preferred, StringComparison.OrdinalIgnoreCase))
+            : sources.Count > 0 ? sources[0] : null;
     }
 
     private async Task RefreshPreviewAsync(bool showErrors)
@@ -132,7 +139,7 @@ public partial class PreviewDesignerDialog : Window
     {
         configuration = new();
         if (KindComboBox.SelectedItem is not PreviewKindOption kind ||
-            string.IsNullOrWhiteSpace(SourceComboBox.Text) ||
+            SourceComboBox.SelectedItem is not string source ||
             !int.TryParse(WidthTextBox.Text, out var width) ||
             !int.TryParse(HeightTextBox.Text, out var height))
         {
@@ -146,7 +153,7 @@ public partial class PreviewDesignerDialog : Window
         {
             Enabled = EnabledCheckBox.IsChecked == true,
             Kind = kind.Id,
-            Source = SourceComboBox.Text.Trim().Replace('\\', '/'),
+            Source = source.Replace('\\', '/'),
             Width = width,
             Height = height,
         };
@@ -200,6 +207,13 @@ public partial class PreviewDesignerDialog : Window
         DialogResult = true;
     }
 
-    private sealed record PreviewKindOption(string Id, string DisplayName);
-    private sealed record ViewportOption(string DisplayName, int Width, int Height);
+    private sealed record PreviewKindOption(string Id, string DisplayName)
+    {
+        public override string ToString() => DisplayName;
+    }
+
+    private sealed record ViewportOption(string DisplayName, int Width, int Height)
+    {
+        public override string ToString() => DisplayName;
+    }
 }

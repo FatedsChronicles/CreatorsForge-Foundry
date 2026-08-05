@@ -63,6 +63,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Changed
 
+- Design Preview selectors now show concise kind and viewport names, select the
+  inferred source visibly, and choose the HD preset for a new 1280x720 preview
+  instead of displaying generated record representations or a blank source.
 - Disposable native verification now locates the exact probe DLL throughout
   CMake's owned build tree, including configuration-specific `Release`
   subdirectories, and uses ASCII result separators to prevent mojibake in the
