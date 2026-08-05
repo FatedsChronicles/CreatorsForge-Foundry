@@ -91,6 +91,10 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 21A product-owner acceptance passed with Visual Studio Community 2022
+  and 2026: discovery, manual selection, persistence, invalid-root refusal,
+  setup health, OBS build integration, unchanged PATH, and readable selector
+  labels were confirmed.
 - Phase 21A passes all 250 automated tests and six desktop smoke cases with a
   zero-warning build; a real auto-discovered Visual Studio/CMake build produced
   the representative OBS plugin DLL, package ZIP, and package IR.

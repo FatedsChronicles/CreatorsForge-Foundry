@@ -417,7 +417,8 @@ accepted before broader remediation and SDK management changes.
 
 ### Phase 21A — Visual Studio C++ discovery and selection
 
-Phase 21A is implemented and awaiting product-owner manual acceptance.
+Phase 21A completed on 2026-08-05 after the automated gate and product-owner
+manual acceptance passed, including the corrected readable toolchain selector.
 
 - Discover installations through `vswhere` using the C++ x64 workload ID.
 - Fall back to dynamically enumerated Visual Studio roots under both Program

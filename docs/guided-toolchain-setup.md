@@ -40,6 +40,11 @@ directs the user back to the toolchain manager.
 
 ## Phase 21A manual acceptance
 
+Passed on 2026-08-05 with Visual Studio Community 2022 and 2026. Automatic and
+manual selection, persistence, invalid-root refusal, setup health, a real OBS
+build, unchanged global PATH values, and the final readable dropdown label were
+confirmed.
+
 1. Launch Foundry and open **Tools → Development Toolchain…**.
 2. Confirm installed Visual Studio instances with the C++ workload appear by
    product name and MSVC version, and that one reports **READY**.
