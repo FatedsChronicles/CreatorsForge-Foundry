@@ -23,10 +23,16 @@ active project while keeping current editor documents open.
 
 ## Item operations
 
-Right-click an item to rename it, move it to the Windows Recycle Bin, reveal it
-in File Explorer, or copy its project-relative path. The keyboard equivalents
-are `F2`, `Delete`, and `Ctrl+C`. Right-click selection follows the pointer, so
-the menu always acts on the item that was clicked.
+Right-click an item to rename it, delete it to the Windows Recycle Bin, reveal
+it in File Explorer, or copy its project-relative or full Windows path. The
+keyboard equivalents are `F2`, `Delete`, and `Ctrl+C` for the relative path.
+Right-click selection follows the pointer, so the menu always acts on the item
+that was clicked.
+
+Drag a file or folder onto another folder to move it. Moves stay within the
+active project, never overwrite a destination item, and cannot place a folder
+inside itself or one of its descendants. Declared project inputs and open
+documents retain the same protection used by rename and delete.
 
 Rename never overwrites another item. Removal always asks for confirmation and
 uses the Recycle Bin so an accidentally removed item can be restored. Foundry

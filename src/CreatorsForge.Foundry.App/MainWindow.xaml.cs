@@ -19,6 +19,7 @@ namespace CreatorsForge.Foundry.App;
     Justification = "WPF owns the window lifetime; OnClosed cancels and disposes the token source.")]
 public partial class MainWindow : Window
 {
+    private const string ProjectTreeItemDataFormat = "CreatorsForge.Foundry.ProjectTreeItem";
     private readonly AppServices services;
     private readonly MainWindowViewModel viewModel;
     private readonly string? startupProjectPath;
@@ -26,6 +27,8 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer autosaveTimer = new();
     private bool allowClose;
     private bool isBusy;
+    private Point projectTreeDragStart;
+    private ProjectTreeItemViewModel? projectTreeDragItem;
 
     public MainWindow(
         AppServices services,
@@ -163,6 +166,11 @@ public partial class MainWindow : Window
         }
 
         var darkSyntaxHighlightingReady = FoundrySyntaxHighlighting.Dark is not null;
+        var newProjectItemDialog = new NewProjectItemDialog("Folder: src");
+        var newProjectItemDialogReady = newProjectItemDialog.Content is not null &&
+            newProjectItemDialog.ItemTypes.All(option =>
+                string.Equals(option.ToString(), option.DisplayName, StringComparison.Ordinal));
+        newProjectItemDialog.Close();
 
         var succeeded = IsVisible &&
             (source is null || FindVisualChild<CodeEditor>(DocumentTabs) is not null) &&
@@ -173,6 +181,7 @@ public partial class MainWindow : Window
             obsDesignerReady &&
             deploymentReady &&
             testExplorerReady &&
+            newProjectItemDialogReady &&
             darkSyntaxHighlightingReady;
         allowClose = true;
         Close();
@@ -1140,6 +1149,107 @@ public partial class MainWindow : Window
         }
     }
 
+    private void ProjectTree_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        projectTreeDragStart = e.GetPosition(ProjectTree);
+        projectTreeDragItem = FindVisualParent<TreeViewItem>(e.OriginalSource as DependencyObject)
+            ?.DataContext as ProjectTreeItemViewModel;
+    }
+
+    private void ProjectTree_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed ||
+            projectTreeDragItem is null ||
+            projectTreeDragItem.IsProjectRoot)
+        {
+            return;
+        }
+
+        var position = e.GetPosition(ProjectTree);
+        if (Math.Abs(position.X - projectTreeDragStart.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(position.Y - projectTreeDragStart.Y) < SystemParameters.MinimumVerticalDragDistance)
+        {
+            return;
+        }
+
+        var item = projectTreeDragItem;
+        projectTreeDragItem = null;
+        if (item.ProjectPath is { } projectPath &&
+            !string.Equals(projectPath, viewModel.Workspace?.ProjectPath, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var data = new DataObject(ProjectTreeItemDataFormat, item);
+        DragDrop.DoDragDrop(ProjectTree, data, DragDropEffects.Move);
+    }
+
+    private void ProjectTree_DragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = TryGetProjectTreeDrop(e, out _, out _)
+            ? DragDropEffects.Move
+            : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private async void ProjectTree_Drop(object sender, DragEventArgs e)
+    {
+        e.Handled = true;
+        if (!TryGetProjectTreeDrop(e, out var source, out var destination))
+        {
+            return;
+        }
+
+        var blocker = viewModel.GetProjectItemMutationBlocker(source!.FullPath);
+        if (blocker is not null)
+        {
+            MessageBox.Show(
+                this,
+                blocker,
+                "Project item protected",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        await RunBusyAsync(() => viewModel.MoveProjectItemAsync(
+            source.FullPath,
+            destination!.FullPath,
+            lifetimeCancellation.Token));
+    }
+
+    private bool TryGetProjectTreeDrop(
+        DragEventArgs e,
+        out ProjectTreeItemViewModel? source,
+        out ProjectTreeItemViewModel? destination)
+    {
+        source = e.Data.GetData(ProjectTreeItemDataFormat) as ProjectTreeItemViewModel;
+        destination = FindVisualParent<TreeViewItem>(e.OriginalSource as DependencyObject)
+            ?.DataContext as ProjectTreeItemViewModel;
+        if (source is null || destination is not { IsDirectory: true })
+        {
+            return false;
+        }
+
+        if (string.Equals(
+                Path.GetDirectoryName(source.FullPath),
+                destination.FullPath,
+                StringComparison.OrdinalIgnoreCase) ||
+            (source.IsDirectory &&
+             (string.Equals(source.FullPath, destination.FullPath, StringComparison.OrdinalIgnoreCase) ||
+              destination.FullPath.StartsWith(
+                  $"{Path.TrimEndingDirectorySeparator(source.FullPath)}{Path.DirectorySeparatorChar}",
+                  StringComparison.OrdinalIgnoreCase))))
+        {
+            return false;
+        }
+
+        var sourceProject = source.ProjectPath ?? viewModel.Workspace?.ProjectPath;
+        var destinationProject = destination.ProjectPath ?? viewModel.Workspace?.ProjectPath;
+        return string.Equals(sourceProject, destinationProject, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(sourceProject, viewModel.Workspace?.ProjectPath, StringComparison.OrdinalIgnoreCase);
+    }
+
     private void ProjectTree_PreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (Keyboard.Modifiers == ModifierKeys.None && e.Key == Key.F2)
@@ -1203,6 +1313,14 @@ public partial class MainWindow : Window
         if (ProjectTree.SelectedItem is ProjectTreeItemViewModel item)
         {
             Clipboard.SetText(item.RelativePath);
+        }
+    }
+
+    private void CopyProjectItemFullPath_Click(object sender, RoutedEventArgs e)
+    {
+        if (ProjectTree.SelectedItem is ProjectTreeItemViewModel item)
+        {
+            Clipboard.SetText(item.FullPath);
         }
     }
 

@@ -321,17 +321,19 @@ regressing project open, edit, build, test, package, or deployment workflows.
 ### Phase 20B — Explorer operations and document-tab closing
 
 - Rename files and folders from the context menu or with `F2`.
+- Move unreferenced files and folders by dragging them onto another folder in
+  the active project.
 - Move unreferenced items to the Windows Recycle Bin after confirmation from
   the context menu or with `Delete`.
-- Reveal items in Windows File Explorer and copy project-relative paths with
-  `Ctrl+C`.
+- Reveal items in Windows File Explorer and copy project-relative (`Ctrl+C`) or
+  full Windows paths.
 - Protect the project manifest, declared sources/definitions/publishing files,
   containing folders, and items with open documents from unsafe mutation.
 - Display a close button on each editor tab and retain dirty-document
   save/discard/cancel protection.
 
 Phase 20B automated gate: the Release build passes with no warnings or errors,
-all 238 tests pass, and managed, native, and multi-project desktop smoke tests
+all 239 tests pass, and managed, native, and multi-project desktop smoke tests
 pass.
 
 Manual acceptance:
@@ -344,16 +346,21 @@ Manual acceptance:
    folder containing a declared source; confirm Foundry blocks each operation.
 4. Open an unreferenced file and confirm rename/removal is blocked until its tab
    is closed.
-5. Remove an unreferenced item using `Delete`, confirm it disappears, then
+5. Drag unreferenced files and folders into another folder and confirm the tree
+   refreshes; confirm declared/open items, cross-project moves, self/descendant
+   folder moves, and destination collisions are refused.
+6. Delete an unreferenced item using `Delete`, confirm it disappears, then
    restore it from Windows Recycle Bin and refresh the tree.
-6. Confirm **Show in File Explorer** selects a file and opens a selected folder,
-   and **Copy Relative Path**/`Ctrl+C` copies the expected project path.
-7. Close clean and dirty tabs using their visible close buttons; exercise Save,
+7. Confirm **Show in File Explorer** selects a file and opens a selected folder;
+   verify both **Copy Relative Path** and **Copy Full Path**.
+8. Confirm Add Project Item shows only readable type names and its complete
+   automatic-extension/no-overwrite guidance is visible.
+9. Close clean and dirty tabs using their visible close buttons; exercise Save,
    Don't Save, and Cancel and confirm each result.
-8. Repeat representative checks in Dark, Light, and System themes and in a
+10. Repeat representative checks in Dark, Light, and System themes and in a
    multi-project workspace.
 
-Exit gate: the complete automated gate and all eight manual checks pass without
+Exit gate: the complete automated gate and all ten manual checks pass without
 regressing build inputs, document recovery, or multi-project targeting.
 
 External-project onboarding remains a later staged increment so it can reuse

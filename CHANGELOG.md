@@ -12,9 +12,10 @@ All notable changes to Creators Forge Foundry are documented in this file.
 - Safe built-in project items for C#, C++, C, headers, JSON, XML, HTML, CSS,
   JavaScript, Markdown, text, and CMake files, plus folders. Creation is
   constrained to the active project and never overwrites an existing item.
-- Phase 20B Solution Explorer operations: rename (`F2`), confirmed recoverable
-  removal (`Delete`), reveal in Windows File Explorer, copy relative path
-  (`Ctrl+C`), and visible close buttons on every editor tab.
+- Phase 20B Solution Explorer operations: rename (`F2`), protected drag-and-drop
+  moves, confirmed recoverable deletion (`Delete`), reveal in Windows File
+  Explorer, copy relative/full paths, and visible close buttons on every editor
+  tab.
 - Persisted Dark, Light, and System themes with live Windows-theme handling,
   High Contrast priority, readable interaction states, and SVG branding.
 - A conventional Inno Setup 6 Windows installer with a stable product identity,
@@ -41,6 +42,8 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Changed
 
+- The Add Project Item dialog now renders plain item-type names and provides
+  enough space for its complete automatic-extension and no-overwrite guidance.
 - Windows installation, upgrade, and uninstall now use a registered native
   setup workflow instead of requiring end users to run PowerShell scripts.
 - Clean installations default to Program Files, while native upgrades retain
@@ -54,7 +57,7 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Security
 
-- Solution Explorer blocks rename/removal of the project manifest, declared
+- Solution Explorer blocks rename/move/deletion of the project manifest, declared
   build/package/test inputs, folders containing those inputs, and items with
   open editor documents. Removal uses the Windows Recycle Bin rather than
   permanent deletion.
@@ -67,7 +70,7 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
-- The Phase 20B Release gate passes all 238 automated tests and managed, native,
+- The Phase 20B Release gate passes all 239 automated tests and managed, native,
   and multi-project desktop smoke tests with zero build warnings or errors.
 - Phase 20A product-owner acceptance passed for Solution Explorer presentation,
   context-aware file and folder creation, automatic extensions, immediate file

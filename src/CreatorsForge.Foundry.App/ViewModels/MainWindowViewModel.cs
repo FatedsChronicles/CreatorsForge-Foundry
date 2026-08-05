@@ -416,6 +416,34 @@ public sealed class MainWindowViewModel : ObservableObject
         return true;
     }
 
+    public async Task<bool> MoveProjectItemAsync(
+        string itemPath,
+        string destinationDirectory,
+        CancellationToken cancellationToken)
+    {
+        if (Workspace is null || GetProjectItemMutationBlocker(itemPath) is not null)
+        {
+            return false;
+        }
+
+        var result = await WorkspaceProjectItemService.MoveAsync(
+            Workspace.ProjectRoot,
+            itemPath,
+            destinationDirectory,
+            cancellationToken);
+        AddDiagnostics(result.Diagnostics);
+        if (!result.IsSuccess)
+        {
+            StatusText = "Project item move failed";
+            return false;
+        }
+
+        await RefreshProjectTreeAsync(cancellationToken);
+        AppendConsole($"Moved project item to {result.Value!.RelativePath}");
+        StatusText = $"Moved to {result.Value.RelativePath}";
+        return true;
+    }
+
     public async Task<bool> RecycleProjectItemAsync(
         string itemPath,
         CancellationToken cancellationToken)

@@ -188,6 +188,90 @@ public static class WorkspaceProjectItemService
         }
     }
 
+    public static Task<WorkspaceOperationResult<WorkspaceProjectItem>> MoveAsync(
+        string projectRoot,
+        string itemPath,
+        string destinationDirectory,
+        CancellationToken cancellationToken = default)
+    {
+        var inspected = InspectMutable(projectRoot, itemPath);
+        if (!inspected.IsSuccess)
+        {
+            return Task.FromResult(inspected);
+        }
+
+        if (!TryResolveParent(
+                projectRoot,
+                destinationDirectory,
+                out var fullRoot,
+                out var fullDestinationDirectory))
+        {
+            return Task.FromResult(Failure(
+                "CFW1116",
+                "The destination must be an existing folder inside the project.",
+                destinationDirectory));
+        }
+
+        var item = inspected.Value!;
+        if (item.IsDirectory &&
+            (string.Equals(item.FullPath, fullDestinationDirectory, StringComparison.OrdinalIgnoreCase) ||
+             IsWithin(item.FullPath, fullDestinationDirectory)))
+        {
+            return Task.FromResult(Failure(
+                "CFW1117",
+                "A folder cannot be moved into itself or one of its descendants.",
+                fullDestinationDirectory));
+        }
+
+        var destination = Path.Combine(fullDestinationDirectory, Path.GetFileName(item.FullPath));
+        if (string.Equals(item.FullPath, destination, StringComparison.OrdinalIgnoreCase))
+        {
+            return Task.FromResult(Failure(
+                "CFW1118",
+                "The item is already in the selected folder.",
+                destination));
+        }
+
+        if (File.Exists(destination) || Directory.Exists(destination))
+        {
+            return Task.FromResult(Failure(
+                "CFW1114",
+                "A file or folder with that name already exists in the destination.",
+                destination));
+        }
+
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (item.IsDirectory)
+            {
+                Directory.Move(item.FullPath, destination);
+            }
+            else
+            {
+                File.Move(item.FullPath, destination);
+            }
+
+            return Task.FromResult<WorkspaceOperationResult<WorkspaceProjectItem>>(new(
+                new(
+                    destination,
+                    Path.GetRelativePath(fullRoot, destination).Replace('\\', '/'),
+                    item.IsDirectory),
+                []));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return Task.FromResult(Failure(
+                "CFW1119",
+                $"The project item could not be moved: {exception.Message}",
+                item.FullPath));
+        }
+    }
+
     public static WorkspaceOperationResult<WorkspaceProjectItem> InspectMutable(
         string projectRoot,
         string itemPath)

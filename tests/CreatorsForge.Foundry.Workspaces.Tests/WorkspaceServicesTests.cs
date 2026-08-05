@@ -123,6 +123,39 @@ public sealed class WorkspaceServicesTests
     }
 
     [Fact]
+    public async Task ProjectItemMoveMovesIntoFolderAndRejectsUnsafeDestinations()
+    {
+        using var temporary = TemporaryDirectory.Create();
+        using var outside = TemporaryDirectory.Create();
+        var source = Path.Combine(temporary.Path, "notes.txt");
+        var destination = Path.Combine(temporary.Path, "Docs");
+        var tree = Path.Combine(temporary.Path, "Tree");
+        var descendant = Path.Combine(tree, "Nested");
+        await File.WriteAllTextAsync(source, "preserved");
+        Directory.CreateDirectory(destination);
+        Directory.CreateDirectory(descendant);
+
+        var moved = await WorkspaceProjectItemService.MoveAsync(
+            temporary.Path,
+            source,
+            destination);
+        var outsideMove = await WorkspaceProjectItemService.MoveAsync(
+            temporary.Path,
+            moved.Value!.FullPath,
+            outside.Path);
+        var descendantMove = await WorkspaceProjectItemService.MoveAsync(
+            temporary.Path,
+            tree,
+            descendant);
+
+        Assert.True(moved.IsSuccess);
+        Assert.Equal("Docs/notes.txt", moved.Value.RelativePath);
+        Assert.Equal("preserved", await File.ReadAllTextAsync(moved.Value.FullPath));
+        Assert.Contains(outsideMove.Diagnostics, diagnostic => diagnostic.Code == "CFW1116");
+        Assert.Contains(descendantMove.Diagnostics, diagnostic => diagnostic.Code == "CFW1117");
+    }
+
+    [Fact]
     public async Task CreateOpenEditSaveAndReopenProject()
     {
         using var temporary = TemporaryDirectory.Create();

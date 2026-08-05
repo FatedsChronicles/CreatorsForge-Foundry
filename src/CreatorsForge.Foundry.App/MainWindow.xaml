@@ -217,10 +217,15 @@
           </Border>
           <TreeView
               x:Name="ProjectTree"
+              AllowDrop="True"
               AutomationProperties.Name="Project files"
               Padding="7"
               ItemsSource="{Binding ProjectItems}"
+              DragOver="ProjectTree_DragOver"
+              Drop="ProjectTree_Drop"
               PreviewKeyDown="ProjectTree_PreviewKeyDown"
+              PreviewMouseLeftButtonDown="ProjectTree_PreviewMouseLeftButtonDown"
+              PreviewMouseMove="ProjectTree_PreviewMouseMove"
               PreviewMouseRightButtonDown="ProjectTree_PreviewMouseRightButtonDown"
               MouseDoubleClick="ProjectTree_MouseDoubleClick">
             <TreeView.ContextMenu>
@@ -228,10 +233,11 @@
                 <MenuItem Header="_Add New Item…" Click="AddProjectItem_Click" />
                 <Separator />
                 <MenuItem Header="_Rename…" Click="RenameProjectItem_Click" />
-                <MenuItem Header="Move to _Recycle Bin…" Click="RecycleProjectItem_Click" />
+                <MenuItem Header="_Delete" Click="RecycleProjectItem_Click" />
                 <Separator />
                 <MenuItem Header="Show in File _Explorer" Click="RevealProjectItem_Click" />
                 <MenuItem Header="Copy _Relative Path" Click="CopyProjectItemPath_Click" />
+                <MenuItem Header="Copy _Full Path" Click="CopyProjectItemFullPath_Click" />
                 <Separator />
                 <MenuItem Header="_Refresh" Click="RefreshProjectTree_Click" />
               </ContextMenu>

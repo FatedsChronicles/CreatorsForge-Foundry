@@ -72,5 +72,8 @@ public partial class NewProjectItemDialog : Window
     public sealed record ProjectItemTypeOption(
         string DisplayName,
         WorkspaceProjectItemKind Kind,
-        string SuggestedName);
+        string SuggestedName)
+    {
+        public override string ToString() => DisplayName;
+    }
 }
