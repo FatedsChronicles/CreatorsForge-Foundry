@@ -113,3 +113,48 @@ boundaries also passed.
 
 Phase 21B exits when all nine checks pass without regressing Phase 21A
 selection or managed builds.
+
+## Phase 21C disposable build verification
+
+**Verify native build** performs a stronger check than file discovery. Foundry
+creates a uniquely named workspace beneath the system temporary directory,
+writes a minimal OBS module there, configures it with the selected CMake and
+Visual Studio generator instance, links it against the pinned OBS SDK, verifies
+the expected x64 DLL, and removes the workspace. The open project is never read
+or changed by this operation.
+
+The result lists each timed stage and reports actionable diagnostics:
+
+- `CFB1101` when readiness blocks the run.
+- `CFB1102` when CMake configuration fails.
+- `CFB1103` when native compile or link fails.
+- `CFB1104` when the expected DLL is absent.
+- `CFB1105` when the disposable run cannot be prepared or executed.
+- `CFB1106` when temporary cleanup needs attention.
+
+Configure and compile failures include the command, exit code, captured output,
+and a repair action. **Use recommended tools** selects the newest ready Visual
+Studio toolchain and discovered CMake executable; the individual selectors
+remain available when a different installation is required. Nothing is
+persisted until **Save & Close** is chosen.
+
+### Phase 21C manual acceptance
+
+1. Build and launch the Phase 21C desktop from the acceptance location.
+2. Open **Tools â†’ Development Toolchainâ€¦** and confirm all five readiness rows
+   report **READY**.
+3. Choose **Verify native build** and confirm readiness, workspace preparation,
+   CMake configure, native compile/link, DLL inspection, and cleanup all pass.
+4. Confirm the message reports **Native build verification passed** and no
+   `creators-forge-toolchain-probe.dll` remains in the open project.
+5. Choose **Use recommended tools**, save, reopen the dialog, and confirm the
+   selected Visual Studio and CMake values remain ready.
+6. Select or simulate an invalid tool, confirm verification is blocked with
+   clear repair guidance, then restore the valid selection and pass again.
+7. Build the OBS Configurable Filter sample and confirm its DLL, package ZIP,
+   and package IR are still produced.
+8. Build the Streamer.bot sample and confirm the managed build is unchanged.
+9. Confirm user and machine `PATH` values remain unchanged.
+
+Phase 21C exits when all nine checks pass and the complete regression gate is
+green.

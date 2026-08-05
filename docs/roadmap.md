@@ -456,4 +456,11 @@ Configurable Filter DLL, provider package, and package IR successfully.
   real readiness contract, and the OBS Configurable Filter real build produces
   its DLL, package ZIP, and package IR.
 - **21C:** richer build diagnostics, repair/reselect actions, and complete
-  disposable OBS build acceptance.
+  disposable OBS build acceptance implemented on 2026-08-05 and awaiting
+  product-owner manual acceptance. The Development Toolchain window can apply
+  recommended selections and run a minimal OBS configure/compile/link check in
+  an owned temporary workspace. Timed stages and stable `CFB1101`-`CFB1106`
+  diagnostics expose commands, exit codes, captured output, remediation, and
+  cleanup status without touching project sources or global environment state.
+  The implementation gate passes all 259 automated tests and all six desktop
+  smoke cases with a zero-warning solution build.
