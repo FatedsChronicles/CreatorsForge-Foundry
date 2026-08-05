@@ -99,6 +99,10 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 21B product-owner acceptance passed, including the consolidated
+  Development Toolchain and first-run displays for CMake 4.4.2, Visual Studio
+  Community 2026/MSVC 14.51.36231, Windows SDK 10.0.26100.0 x64, native x64,
+  and pinned OBS SDK 32.1.2 readiness.
 - Phase 21B passes all 256 automated tests and six desktop smoke cases with a
   zero-warning build; Windows SDK 10.0.26100.0 passes the real x64 readiness
   contract and the representative OBS native build succeeds.

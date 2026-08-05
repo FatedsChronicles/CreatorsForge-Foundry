@@ -444,8 +444,9 @@ Configurable Filter DLL, provider package, and package IR successfully.
 ### Planned Phase 21 increments
 
 - **21B:** consolidated CMake, Windows SDK, architecture, and pinned OBS SDK
-  readiness with guided remediation is implemented and awaiting product-owner
-  manual acceptance. The desktop persists an exact validated CMake executable,
+  readiness with guided remediation completed on 2026-08-05 after automated
+  validation and product-owner manual acceptance passed. The desktop persists
+  an exact validated CMake executable,
   displays five actionable readiness rows, opens Visual Studio Installer and
   the official CMake download only on request, refreshes checks in place, and
   stops invalid saved CMake selections with `CFB1012`.

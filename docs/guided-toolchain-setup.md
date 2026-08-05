@@ -87,6 +87,12 @@ configuration with `CFB1012`. Foundry does not add CMake to PATH.
 
 ### Phase 21B manual acceptance
 
+Passed on 2026-08-05. The Development Toolchain and first-run setup screens
+visually confirmed CMake 4.4.2, Visual Studio Community 2026/MSVC 14.51.36231,
+Windows SDK 10.0.26100.0 x64, native x64 targeting, and OBS SDK 32.1.2 as ready;
+all guided actions, persistence, invalid-file refusal, build output, and PATH
+boundaries also passed.
+
 1. Open **Tools → Development Toolchain…** and confirm CMake, Visual Studio,
    Windows SDK, x64 architecture, and pinned OBS SDK each have a separate row.
 2. Confirm this machine reports CMake 4.4.2, the selected Visual Studio
