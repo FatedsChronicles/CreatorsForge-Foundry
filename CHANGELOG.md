@@ -6,6 +6,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 20C external-project onboarding with read-only folder analysis, exact
+  managed/native build-input preview, provider/profile selection, safe
+  `.foundryproj` sidecar creation, and immediate Solution Explorer opening.
 - Phase 20A Solution Explorer foundation with hierarchical file-type badges,
   context-aware file/folder creation, automatic extension handling, immediate
   opening of new editable files, and explicit project-tree refresh.
@@ -61,6 +64,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Security
 
+- External-project adoption skips dependency/generated folders and directory
+  links, caps scans at 10,000 files and 32 levels, refuses existing Foundry
+  manifests, uses create-new sidecar writes, and rechecks sources after preview.
 - Solution Explorer blocks rename/move/deletion of the project manifest, declared
   build/package/test inputs, folders containing those inputs, and items with
   open editor documents. Removal uses the Windows Recycle Bin rather than
@@ -74,6 +80,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 20C regression coverage verifies Streamer.bot and OBS adoption,
+  deterministic discovery, byte-for-byte source preservation, ignored-folder
+  handling, existing-manifest refusal, and preview/change race protection.
 - Phase 20B product-owner acceptance passed for rename, drag-and-drop moves to
   folders and alongside files, protected Delete, path copying, File Explorer,
   closeable tabs, Add Project Item layout, and the cleaned context menu.

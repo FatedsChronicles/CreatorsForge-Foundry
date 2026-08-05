@@ -39,6 +39,24 @@ public sealed record FoundryProjectCreationRequest(
     string Author = "Creator",
     string? Description = null);
 
+public sealed record ExternalProjectAnalysis(
+    string ProjectDirectory,
+    IReadOnlyList<string> ManagedSources,
+    IReadOnlyList<string> NativeSources,
+    IReadOnlyList<string> OtherFiles,
+    IReadOnlyList<string> ExistingFoundryProjects,
+    int SkippedDirectoryCount);
+
+public sealed record ExternalProjectAdoptionRequest(
+    ExternalProjectAnalysis Analysis,
+    string Name,
+    string Id,
+    string TargetProfile,
+    string TargetProvider,
+    string Author = "Creator",
+    string? Description = null,
+    string ObsEntrySymbol = "foundry_obs_plugin_load");
+
 public sealed record WorkspaceDocument(
     string FullPath,
     string RelativePath,

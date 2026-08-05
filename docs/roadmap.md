@@ -367,5 +367,41 @@ Manual acceptance (passed 2026-08-05):
 Exit gate: the complete automated gate and all ten manual checks pass without
 regressing build inputs, document recovery, or multi-project targeting.
 
-External-project onboarding remains a later staged increment so it can reuse
-the accepted explorer mutation and project migration foundations.
+### Phase 20C — External-project onboarding
+
+Phase 20C is implemented and awaiting product-owner manual acceptance.
+
+- Analyze an existing source folder before making any change.
+- Preview the exact provider-compatible `.cs` or `.c` build inputs.
+- Select the Streamer.bot or OBS Studio target and compatibility profile.
+- Create a single schema-v1 `.foundryproj` sidecar with create-new semantics.
+- Open the adopted project immediately in Solution Explorer while retaining all
+  other files as editable project content.
+- Skip generated/dependency directories, directory links, and excessively deep
+  trees; cap analysis at 10,000 files.
+- Refuse existing Foundry projects and folders changed after preview.
+
+Automated coverage verifies deterministic discovery, ignored-directory
+handling, Streamer.bot and OBS manifests, byte-for-byte source preservation,
+existing-sidecar protection, and preview/change race protection.
+
+Manual acceptance:
+
+1. Copy a small existing C# project to a disposable folder and note the hashes
+   of its existing files.
+2. Choose **File → Adopt Existing Folder…**, select the folder, and confirm the
+   preview lists its `.cs` files while other files are described separately.
+3. Select Streamer.bot and `1.0.5-beta.6`, adopt it, and confirm one
+   `.foundryproj` appears and the project opens in Solution Explorer.
+4. Recheck the original file hashes and confirm none changed; build the managed
+   library or review any source-level compatibility diagnostics.
+5. Repeat with a disposable OBS C project that implements
+   `foundry_obs_plugin_load`, selecting `32.x-windows-x64`; confirm the native
+   sources appear in the saved manifest and the project opens.
+6. Select a folder that already contains a `.foundryproj` and confirm Foundry
+   directs you to open it without creating or overwriting anything.
+7. Preview a disposable folder, change its `.cs`/`.c` files before choosing
+   **Adopt**, and confirm `CFW0509` stops adoption until it is analyzed again.
+
+Exit gate: the complete automated gate and all seven manual checks pass without
+changing any pre-existing external-project file.

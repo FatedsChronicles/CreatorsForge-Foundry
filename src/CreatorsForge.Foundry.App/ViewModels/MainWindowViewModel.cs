@@ -236,6 +236,31 @@ public sealed class MainWindowViewModel : ObservableObject
         return true;
     }
 
+    public async Task<bool> AdoptExternalProjectAsync(
+        ExternalProjectAdoptionRequest request,
+        CancellationToken cancellationToken)
+    {
+        StatusText = "Adopting existing project…";
+        var result = await ExternalProjectAdoptionService.AdoptAsync(request, cancellationToken);
+        ReplaceProblems(result.Diagnostics);
+        if (!result.IsSuccess)
+        {
+            StatusText = "Project adoption failed";
+            return false;
+        }
+
+        WorkspaceSet = null;
+        ApplyWorkspace(result.Value!, clearDocuments: true);
+        await recentProjectsStore.SaveOpenedProjectAsync(
+            result.Value!.ProjectPath,
+            result.Value.Manifest.Name,
+            cancellationToken);
+        await RefreshRecentProjectsAsync(cancellationToken);
+        AppendConsole($"Adopted existing folder {result.Value.ProjectRoot}");
+        StatusText = "Existing project adopted";
+        return true;
+    }
+
     public async Task<bool> OpenDocumentAsync(
         string documentPath,
         CancellationToken cancellationToken)
