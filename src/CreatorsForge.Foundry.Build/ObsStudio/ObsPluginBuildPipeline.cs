@@ -9,7 +9,9 @@ using CreatorsForge.Foundry.Core.Projects;
 
 namespace CreatorsForge.Foundry.Build.ObsStudio;
 
-internal sealed class ObsPluginBuildPipeline(IBuildProcessRunner processRunner)
+internal sealed class ObsPluginBuildPipeline(
+    IBuildProcessRunner processRunner,
+    string? visualStudioInstallationRoot = null)
 {
     private static readonly System.Text.RegularExpressions.Regex NativeDiagnosticPattern = new(
         @"^(?<file>.+)\((?<line>\d+)(?:,(?<column>\d+))?\):\s+(?<severity>warning|error|fatal error)\s+(?<code>[A-Z]+\d+):\s+(?<message>.*?)(?:\s+\[[^\]]+\])?$",
@@ -97,6 +99,23 @@ internal sealed class ObsPluginBuildPipeline(IBuildProcessRunner processRunner)
             "-S", intermediate,
             "-B", cmakeBuild,
         };
+        var selectedToolchain = VisualStudioToolchainService.Resolve(
+            visualStudioInstallationRoot);
+        if (!string.IsNullOrWhiteSpace(visualStudioInstallationRoot) &&
+            selectedToolchain?.IsReady != true)
+        {
+            diagnostics.Add(Error(
+                "CFB1011",
+                selectedToolchain?.Summary ?? "The selected Visual Studio installation is invalid.",
+                projectPath,
+                "$.nativeBuild.toolchain",
+                "Choose a valid Visual Studio installation in Tools → Development Toolchain."));
+            return new(outputRoot, null, null, diagnostics);
+        }
+        if (selectedToolchain?.IsReady == true)
+        {
+            configureArguments.Add($"-DCMAKE_GENERATOR_INSTANCE={selectedToolchain.InstallationRoot.Replace('\\', '/')}");
+        }
         var generator = Environment.GetEnvironmentVariable("CMAKE_GENERATOR");
         if (string.IsNullOrWhiteSpace(generator) ||
             generator.StartsWith("Visual Studio", StringComparison.OrdinalIgnoreCase))

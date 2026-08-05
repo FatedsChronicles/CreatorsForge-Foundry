@@ -76,6 +76,45 @@ public sealed class ObsPluginBuildPipelineTests
     }
 
     [Fact]
+    public async Task SelectedVisualStudioInstanceIsPassedDirectlyToCMake()
+    {
+        using var project = TemporaryObsProject.Create();
+        using var installation = VisualStudioToolchainServiceTests.TemporaryVisualStudioInstallation.Create("14.42.34433");
+        var runner = new SuccessfulCMakeRunner(project.Root);
+        var orchestrator = new FoundryBuildOrchestrator(runner)
+        {
+            VisualStudioInstallationRoot = installation.Root,
+        };
+
+        var result = await orchestrator.BuildAsync(project.Manifest, project.ManifestPath);
+
+        Assert.True(result.IsSuccess);
+        Assert.Contains(
+            runner.Requests[0].Arguments,
+            argument => string.Equals(
+                argument,
+                $"-DCMAKE_GENERATOR_INSTANCE={installation.Root.Replace('\\', '/')}",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task InvalidSelectedVisualStudioInstanceStopsBeforeCMake()
+    {
+        using var project = TemporaryObsProject.Create();
+        var runner = new SuccessfulCMakeRunner(project.Root);
+        var orchestrator = new FoundryBuildOrchestrator(runner)
+        {
+            VisualStudioInstallationRoot = Path.Combine(project.Root, "missing-visual-studio"),
+        };
+
+        var result = await orchestrator.BuildAsync(project.Manifest, project.ManifestPath);
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains(result.Diagnostics, item => item.Code == "CFB1011");
+        Assert.Empty(runner.Requests);
+    }
+
+    [Fact]
     public void SdkStatusRejectsIncompleteCache()
     {
         var cache = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));

@@ -90,6 +90,9 @@ public sealed class FoundrySettingsStore
             UpdateManifestLocation = string.IsNullOrWhiteSpace(settings.UpdateManifestLocation)
                 ? null
                 : settings.UpdateManifestLocation.Trim(),
+            VisualStudioInstallationRoot = string.IsNullOrWhiteSpace(settings.VisualStudioInstallationRoot)
+                ? null
+                : settings.VisualStudioInstallationRoot.Trim(),
             Theme = Enum.IsDefined(settings.Theme)
                 ? settings.Theme
                 : FoundryThemePreference.System,

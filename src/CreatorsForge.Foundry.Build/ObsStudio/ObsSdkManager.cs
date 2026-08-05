@@ -112,6 +112,19 @@ public sealed class ObsSdkManager
         string? cacheRoot = null,
         string? archiveDirectory = null,
         IProgress<string>? progress = null,
+        CancellationToken cancellationToken = default) =>
+        await InstallWithToolchainAsync(
+            cacheRoot,
+            archiveDirectory,
+            progress,
+            null,
+            cancellationToken).ConfigureAwait(false);
+
+    public static async Task<ObsSdkStatus> InstallWithToolchainAsync(
+        string? cacheRoot = null,
+        string? archiveDirectory = null,
+        IProgress<string>? progress = null,
+        string? visualStudioInstallationRoot = null,
         CancellationToken cancellationToken = default)
     {
         var existing = Inspect(cacheRoot);
@@ -192,6 +205,7 @@ public sealed class ObsSdkManager
                 obsDll,
                 definitionPath,
                 importLibraryPath,
+                visualStudioInstallationRoot,
                 cancellationToken).ConfigureAwait(false);
 
             var cmakeDirectory = Path.Combine(staging, "cmake");
@@ -276,10 +290,17 @@ public sealed class ObsSdkManager
         string obsDll,
         string definitionPath,
         string importLibraryPath,
+        string? visualStudioInstallationRoot,
         CancellationToken cancellationToken)
     {
-        var dumpbin = FindVisualStudioTool("dumpbin.exe");
-        var librarian = FindVisualStudioTool("lib.exe");
+        var toolchain = VisualStudioToolchainService.Resolve(visualStudioInstallationRoot);
+        if (toolchain?.IsReady != true)
+        {
+            throw new FileNotFoundException(
+                toolchain?.Summary ?? "Visual Studio C++ x64 build tools were not found.");
+        }
+        var dumpbin = toolchain.DumpbinPath!;
+        var librarian = toolchain.LibrarianPath!;
         var exports = await RunProcessAsync(
             dumpbin,
             ["/nologo", "/exports", obsDll],
@@ -316,23 +337,6 @@ public sealed class ObsSdkManager
             throw new InvalidOperationException(
                 $"The MSVC librarian failed: {library.StandardOutput} {library.StandardError}".Trim());
         }
-    }
-
-    private static string FindVisualStudioTool(string toolName)
-    {
-        var visualStudioRoot = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-            "Microsoft Visual Studio");
-        if (!Directory.Exists(visualStudioRoot))
-        {
-            throw new FileNotFoundException("Visual Studio C++ build tools were not found.");
-        }
-
-        return Directory.EnumerateFiles(visualStudioRoot, toolName, SearchOption.AllDirectories)
-            .Where(path => path.Contains($"{Path.DirectorySeparatorChar}Hostx64{Path.DirectorySeparatorChar}x64{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
-            .OrderDescending(StringComparer.OrdinalIgnoreCase)
-            .FirstOrDefault() ??
-            throw new FileNotFoundException($"The Visual Studio x64 {toolName} tool was not found.");
     }
 
     private static async Task<ProcessOutput> RunProcessAsync(

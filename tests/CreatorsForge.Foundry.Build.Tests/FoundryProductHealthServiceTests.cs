@@ -18,4 +18,24 @@ public sealed class FoundryProductHealthServiceTests
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
     }
+
+    [Fact]
+    public void ProductHealthUsesTheSelectedVisualStudioInstallation()
+    {
+        var stateRoot = Path.Combine(Path.GetTempPath(), "FoundryProductHealth", Guid.NewGuid().ToString("N"));
+        using var installation = VisualStudioToolchainServiceTests.TemporaryVisualStudioInstallation.Create("14.42.34433");
+        try
+        {
+            var health = FoundryProductHealthService.Inspect(stateRoot, installation.Root);
+
+            var msvc = Assert.Single(health.Checks, item => item.Id == "msvc");
+            Assert.True(msvc.IsReady);
+            Assert.Contains("14.42.34433", msvc.Details, StringComparison.Ordinal);
+            Assert.Contains(installation.Root, msvc.Details, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            if (Directory.Exists(stateRoot)) Directory.Delete(stateRoot, recursive: true);
+        }
+    }
 }

@@ -640,6 +640,7 @@ public sealed class WorkspaceServicesTests
             new ShellLayout(WindowWidth: 100, BottomPanelHeight: 5000)) with
         {
             UpdateChannel = FoundryUpdateChannel.Prerelease,
+            VisualStudioInstallationRoot = @"C:\Program Files\Microsoft Visual Studio\2022\Community",
         };
 
         await store.SaveAsync(settings, CancellationToken.None);
@@ -649,6 +650,9 @@ public sealed class WorkspaceServicesTests
         Assert.Equal(900, loaded.Value.Layout.WindowWidth);
         Assert.Equal(600, loaded.Value.Layout.BottomPanelHeight);
         Assert.Equal(FoundryUpdateChannel.Prerelease, loaded.Value.UpdateChannel);
+        Assert.Equal(
+            @"C:\Program Files\Microsoft Visual Studio\2022\Community",
+            loaded.Value.VisualStudioInstallationRoot);
 
         await File.WriteAllTextAsync(settingsPath, "[]", CancellationToken.None);
         var broken = await store.LoadAsync(CancellationToken.None);

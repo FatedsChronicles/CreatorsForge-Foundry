@@ -172,7 +172,8 @@ public sealed record FoundryUserSettings(
     bool AllowNetworkAccess = false,
     bool IncludePathsInDiagnosticBundles = false,
     FoundryThemePreference Theme = FoundryThemePreference.System,
-    FoundryUpdateChannel UpdateChannel = FoundryUpdateChannel.Stable)
+    FoundryUpdateChannel UpdateChannel = FoundryUpdateChannel.Stable,
+    string? VisualStudioInstallationRoot = null)
 {
     public const string DefaultUpdateManifestLocation =
         "https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases/latest/download/foundry-update.json";
