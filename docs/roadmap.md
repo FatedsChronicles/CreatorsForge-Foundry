@@ -474,7 +474,7 @@ outside the Foundry editor process.
 
 ### Phase 22A - Preview foundation and design surface
 
-Implemented on 2026-08-05 and awaiting product-owner manual acceptance:
+Implemented and accepted by the product owner on 2026-08-05:
 
 - optional schema-v1 `preview` metadata with explicit enablement, kind, source,
   and bounded viewport;
@@ -485,12 +485,33 @@ Implemented on 2026-08-05 and awaiting product-owner manual acceptance:
 - no assembly loading, browser hosting, script execution, build, or deployment.
 
 Manual acceptance is defined in [design-preview.md](design-preview.md).
-The implementation gate passes all 267 automated tests and all six desktop
-smoke cases with a zero-warning solution build.
+The implementation gate passed all 267 automated tests and all desktop smoke
+cases with a zero-warning solution build.
+
+### Phase 22B - Crash-isolated runtime preview and refresh
+
+Implemented on 2026-08-05 and awaiting product-owner manual acceptance:
+
+- a dedicated `CreatorsForge.Foundry.PreviewHost` process that receives only
+  bounded, hashed structural frame data rather than a project assembly;
+- explicit starting, running, completed, failed, timed-out, and stopped states;
+- an eight-second host timeout, process-tree termination, restart, and stable
+  `CFW2310`-`CFW2313` recovery diagnostics;
+- richer role-aware rendering for actions, inputs, chrome, headings, media,
+  OBS canvases, badges, and general panels;
+- manual refresh plus debounced automatic refresh whenever the selected source
+  file is saved;
+- in-window lifecycle controls and bounded runtime logs;
+- cleanup of isolated request/result files after each run.
+
+The generic Phase 22B host still does not load project assemblies, execute
+JavaScript, or invoke native plugin code. Those provider-specific adapters are
+reserved for Phase 22C. Manual acceptance is defined in
+[runtime-preview.md](runtime-preview.md).
+The implementation gate passes all 271 automated tests and all seven sample
+project/workspace desktop smoke cases with a zero-warning solution build.
 
 ### Planned Phase 22 increments
 
-- **22B:** crash-isolated runtime preview host, lifecycle control, timeouts,
-  restart, logs, and failure recovery.
 - **22C:** provider-specific runtime adapters and representative visual sample
   projects.

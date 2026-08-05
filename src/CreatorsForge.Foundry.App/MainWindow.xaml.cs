@@ -194,6 +194,11 @@ public partial class MainWindow : Window
                 !previewDesigner.SelectedViewportDisplayText.Contains("ViewportOption", StringComparison.Ordinal) &&
                 previewDesigner.SelectedViewportDisplayText == "HD 1280 x 720" &&
                 (expectedSource is null || previewDesigner.SelectedSourceDisplayText == expectedSource);
+            if (previewDesignerReady)
+            {
+                previewDesignerReady = await previewDesigner.RunRuntimeSmokeTestAsync();
+            }
+            await previewDesigner.DisposeAsync();
             previewDesigner.Close();
         }
 
