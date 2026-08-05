@@ -17,6 +17,7 @@ public sealed class VisualStudioToolchainServiceTests
         Assert.True(result.IsReady);
         Assert.Equal("14.42.34433", result.MsvcVersion);
         Assert.Equal("Visual Studio Community", result.DisplayName);
+        Assert.Equal("Visual Studio Community — MSVC 14.42.34433", result.SelectionLabel);
         Assert.EndsWith(
             Path.Combine("14.42.34433", "bin", "Hostx64", "x64", "cl.exe"),
             result.CompilerPath,

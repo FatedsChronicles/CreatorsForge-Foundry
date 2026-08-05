@@ -20,6 +20,10 @@ public sealed record VisualStudioToolchain(
     public string Summary => IsReady
         ? $"{DisplayName} — MSVC {MsvcVersion} — {CompilerPath}"
         : $"{DisplayName} — {string.Join(" ", Problems)}";
+
+    public string SelectionLabel => IsReady
+        ? $"{DisplayName} — MSVC {MsvcVersion}"
+        : DisplayName;
 }
 
 public static class VisualStudioToolchainService

@@ -48,6 +48,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Changed
 
+- The Development Toolchain selector now displays a compact Visual Studio name
+  and MSVC version instead of the generated toolchain-record representation;
+  the complete compiler path remains available in status details and a tooltip.
 - OBS CMake builds now receive the selected Visual Studio installation through
   `CMAKE_GENERATOR_INSTANCE`, while pinned SDK generation uses `dumpbin.exe` and
   `lib.exe` from that same validated toolset.
