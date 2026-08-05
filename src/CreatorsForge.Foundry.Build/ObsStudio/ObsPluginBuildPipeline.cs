@@ -11,7 +11,8 @@ namespace CreatorsForge.Foundry.Build.ObsStudio;
 
 internal sealed class ObsPluginBuildPipeline(
     IBuildProcessRunner processRunner,
-    string? visualStudioInstallationRoot = null)
+    string? visualStudioInstallationRoot = null,
+    string? cmakeExecutablePath = null)
 {
     private static readonly System.Text.RegularExpressions.Regex NativeDiagnosticPattern = new(
         @"^(?<file>.+)\((?<line>\d+)(?:,(?<column>\d+))?\):\s+(?<severity>warning|error|fatal error)\s+(?<code>[A-Z]+\d+):\s+(?<message>.*?)(?:\s+\[[^\]]+\])?$",
@@ -94,6 +95,23 @@ internal sealed class ObsPluginBuildPipeline(
             return new(outputRoot, null, null, diagnostics);
         }
 
+        var cmakeExecutable = "cmake";
+        if (!string.IsNullOrWhiteSpace(cmakeExecutablePath))
+        {
+            var cmake = NativeToolchainReadinessService.InspectCMake(cmakeExecutablePath);
+            if (!cmake.IsReady)
+            {
+                diagnostics.Add(Error(
+                    "CFB1012",
+                    cmake.Details,
+                    projectPath,
+                    "$.nativeBuild.toolchain",
+                    "Choose CMake 3.20 or later in Tools → Development Toolchain."));
+                return new(outputRoot, null, null, diagnostics);
+            }
+            cmakeExecutable = cmake.ExecutablePath!;
+        }
+
         var configureArguments = new List<string>
         {
             "-S", intermediate,
@@ -144,7 +162,7 @@ internal sealed class ObsPluginBuildPipeline(
             configureArguments.Add($"-Dlibobs_DIR={Path.Combine(sdk.SdkRoot, "cmake")}");
         }
         var configure = await RunAsync(
-            new("cmake", projectRoot, configureArguments),
+            new(cmakeExecutable, projectRoot, configureArguments),
             "CFB1002",
             "CMake configuration",
             projectPath,
@@ -156,7 +174,7 @@ internal sealed class ObsPluginBuildPipeline(
         }
 
         var compiled = await RunAsync(
-            new("cmake", projectRoot,
+            new(cmakeExecutable, projectRoot,
             [
                 "--build", cmakeBuild,
                 "--config", "Release",

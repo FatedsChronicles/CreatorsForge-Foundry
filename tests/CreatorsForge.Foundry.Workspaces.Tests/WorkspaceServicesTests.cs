@@ -641,6 +641,7 @@ public sealed class WorkspaceServicesTests
         {
             UpdateChannel = FoundryUpdateChannel.Prerelease,
             VisualStudioInstallationRoot = @"C:\Program Files\Microsoft Visual Studio\2022\Community",
+            CMakeExecutablePath = @"C:\Program Files\CMake\bin\cmake.exe",
         };
 
         await store.SaveAsync(settings, CancellationToken.None);
@@ -653,6 +654,7 @@ public sealed class WorkspaceServicesTests
         Assert.Equal(
             @"C:\Program Files\Microsoft Visual Studio\2022\Community",
             loaded.Value.VisualStudioInstallationRoot);
+        Assert.Equal(@"C:\Program Files\CMake\bin\cmake.exe", loaded.Value.CMakeExecutablePath);
 
         await File.WriteAllTextAsync(settingsPath, "[]", CancellationToken.None);
         var broken = await store.LoadAsync(CancellationToken.None);

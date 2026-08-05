@@ -75,8 +75,9 @@ Setup can be reopened from **Tools > Run Setup Checks**.
 
 **Tools > Development Toolchain** shows CMake, MSVC, and OBS SDK status. It uses
 `vswhere` to discover current Visual Studio instances, validates the complete
-x64 C++ toolset, supports a guided installation-root selection, and persists
-the chosen instance. OBS builds receive that instance directly; Foundry never
+x64 C++ toolset and Windows SDK, supports guided Visual Studio and CMake
+selection, and persists both exact choices. OBS builds receive those tools
+directly; Foundry never
 changes the global `PATH`. The SDK can be downloaded explicitly or installed
 from an offline archive folder. See
 [guided-toolchain-setup.md](guided-toolchain-setup.md).

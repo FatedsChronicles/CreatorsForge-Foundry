@@ -6,6 +6,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 21B consolidated native-toolchain readiness for CMake, Visual Studio
+  C++ x64, Windows SDK headers/tools/libraries, target architecture, and the
+  pinned OBS SDK, with per-component guidance and explicit remediation actions.
 - Phase 21A guided Visual Studio C++ x64 setup with `vswhere` discovery,
   validated manual-root selection, persisted installation choice, and clear
   readiness details for every required MSVC tool.
@@ -48,6 +51,8 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Changed
 
+- OBS builds now persist and invoke the exact validated `cmake.exe`; invalid or
+  removed selections stop before configuration with diagnostic `CFB1012`.
 - The Development Toolchain selector now displays a compact Visual Studio name
   and MSVC version instead of the generated toolchain-record representation;
   the complete compiler path remains available in status details and a tooltip.
@@ -73,6 +78,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Security
 
+- CMake and Visual Studio choices remain process-scoped. Visual Studio Installer
+  and the official CMake download page open only after explicit button actions,
+  and no PATH or system environment variable is modified.
 - Toolchain selection is scoped to Foundry build processes and never changes
   user or machine `PATH`; invalid saved roots stop before CMake with `CFB1011`.
 - External-project adoption skips dependency/generated folders and directory
@@ -91,6 +99,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 21B passes all 256 automated tests and six desktop smoke cases with a
+  zero-warning build; Windows SDK 10.0.26100.0 passes the real x64 readiness
+  contract and the representative OBS native build succeeds.
 - Phase 21A product-owner acceptance passed with Visual Studio Community 2022
   and 2026: discovery, manual selection, persistence, invalid-root refusal,
   setup health, OBS build integration, unchanged PATH, and readable selector
