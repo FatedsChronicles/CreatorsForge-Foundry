@@ -10,7 +10,7 @@ All notable changes to Creators Forge Foundry are documented in this file.
   context-aware file/folder creation, automatic extension handling, immediate
   opening of new editable files, and explicit project-tree refresh.
 - Safe built-in project items for C#, C++, C, headers, JSON, XML, HTML, CSS,
-  JavaScript, Markdown, text, and CMake files, plus folders. Creation is
+  JavaScript, TypeScript, Markdown, text, and CMake files, plus folders. Creation is
   constrained to the active project and never overwrites an existing item.
 - Phase 20B Solution Explorer operations: rename (`F2`), protected drag-and-drop
   moves, confirmed recoverable deletion (`Delete`), reveal in Windows File
@@ -72,7 +72,10 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
-- The Phase 20B Release gate passes all 239 automated tests and managed, native,
+- Phase 20B product-owner acceptance passed for rename, drag-and-drop moves to
+  folders and alongside files, protected Delete, path copying, File Explorer,
+  closeable tabs, Add Project Item layout, and the cleaned context menu.
+- The Phase 20B Release gate passes all 240 automated tests and managed, native,
   and multi-project desktop smoke tests with zero build warnings or errors.
 - Phase 20A product-owner acceptance passed for Solution Explorer presentation,
   context-aware file and folder creation, automatic extensions, immediate file

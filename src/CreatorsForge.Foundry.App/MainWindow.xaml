@@ -230,6 +230,23 @@
               MouseDoubleClick="ProjectTree_MouseDoubleClick">
             <TreeView.ContextMenu>
               <ContextMenu>
+                <ContextMenu.Resources>
+                  <Style TargetType="Separator">
+                    <Setter Property="Height" Value="1" />
+                    <Setter Property="Margin" Value="34,5,8,5" />
+                    <Setter Property="Opacity" Value="0.65" />
+                    <Setter Property="Template">
+                      <Setter.Value>
+                        <ControlTemplate TargetType="Separator">
+                          <Border
+                              Height="1"
+                              Background="{DynamicResource PanelBorderBrush}"
+                              SnapsToDevicePixels="True" />
+                        </ControlTemplate>
+                      </Setter.Value>
+                    </Setter>
+                  </Style>
+                </ContextMenu.Resources>
                 <MenuItem Header="_Add New Item…" Click="AddProjectItem_Click" />
                 <Separator />
                 <MenuItem Header="_Rename…" Click="RenameProjectItem_Click" />

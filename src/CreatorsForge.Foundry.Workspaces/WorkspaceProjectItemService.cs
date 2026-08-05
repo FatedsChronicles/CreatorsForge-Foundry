@@ -17,6 +17,7 @@ public static class WorkspaceProjectItemService
             [WorkspaceProjectItemKind.Html] = (".html", "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <title>Foundry</title>\n</head>\n<body>\n</body>\n</html>\n"),
             [WorkspaceProjectItemKind.Css] = (".css", string.Empty),
             [WorkspaceProjectItemKind.JavaScript] = (".js", string.Empty),
+            [WorkspaceProjectItemKind.TypeScript] = (".ts", string.Empty),
             [WorkspaceProjectItemKind.Markdown] = (".md", string.Empty),
             [WorkspaceProjectItemKind.Text] = (".txt", string.Empty),
             [WorkspaceProjectItemKind.CMake] = (".txt", "cmake_minimum_required(VERSION 3.28)\n"),

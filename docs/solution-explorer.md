@@ -12,7 +12,7 @@ The new-item dialog supports:
 - C++ (`.cpp`)
 - C (`.c`)
 - C/C++ headers (`.h`)
-- JSON, XML, HTML, CSS, and JavaScript
+- JSON, XML, HTML, CSS, JavaScript, and TypeScript
 - Markdown and text documents
 - `CMakeLists.txt`
 - folders

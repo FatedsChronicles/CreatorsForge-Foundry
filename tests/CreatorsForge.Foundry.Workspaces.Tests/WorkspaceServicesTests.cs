@@ -22,6 +22,7 @@ public sealed class WorkspaceServicesTests
     [InlineData(WorkspaceProjectItemKind.Html, "panel", "panel.html")]
     [InlineData(WorkspaceProjectItemKind.Css, "panel", "panel.css")]
     [InlineData(WorkspaceProjectItemKind.JavaScript, "panel", "panel.js")]
+    [InlineData(WorkspaceProjectItemKind.TypeScript, "panel", "panel.ts")]
     [InlineData(WorkspaceProjectItemKind.Markdown, "README", "README.md")]
     [InlineData(WorkspaceProjectItemKind.Text, "notes", "notes.txt")]
     [InlineData(WorkspaceProjectItemKind.CMake, "CMakeLists", "CMakeLists.txt")]

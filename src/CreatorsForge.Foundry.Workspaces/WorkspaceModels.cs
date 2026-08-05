@@ -57,6 +57,7 @@ public enum WorkspaceProjectItemKind
     Html,
     Css,
     JavaScript,
+    TypeScript,
     Markdown,
     Text,
     CMake,

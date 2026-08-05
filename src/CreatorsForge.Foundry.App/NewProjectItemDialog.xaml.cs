@@ -30,6 +30,7 @@ public partial class NewProjectItemDialog : Window
         new("HTML document", WorkspaceProjectItemKind.Html, "panel.html"),
         new("CSS stylesheet", WorkspaceProjectItemKind.Css, "panel.css"),
         new("JavaScript", WorkspaceProjectItemKind.JavaScript, "panel.js"),
+        new("TypeScript", WorkspaceProjectItemKind.TypeScript, "panel.ts"),
         new("Markdown document", WorkspaceProjectItemKind.Markdown, "README.md"),
         new("Text document", WorkspaceProjectItemKind.Text, "notes.txt"),
         new("CMake list", WorkspaceProjectItemKind.CMake, "CMakeLists.txt"),

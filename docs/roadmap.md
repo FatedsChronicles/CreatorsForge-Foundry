@@ -291,7 +291,7 @@ manual acceptance passed.
 - Add and Refresh controls in the pane header.
 - Right-click actions that target the selected project or folder.
 - Safe creation of C#, C++, C, header, JSON, XML, HTML, CSS, JavaScript,
-  Markdown, text, CMake, and folder items.
+  TypeScript, Markdown, text, CMake, and folder items.
 - Automatic default extensions, no-overwrite behavior, project-boundary and
   reparse-point protection, tree synchronization, and immediate opening of new
   editable files.
@@ -320,6 +320,9 @@ regressing project open, edit, build, test, package, or deployment workflows.
 
 ### Phase 20B — Explorer operations and document-tab closing
 
+Phase 20B completed on 2026-08-05 after the automated gate and product-owner
+acceptance passed, including the final themed context-menu separator cleanup.
+
 - Rename files and folders from the context menu or with `F2`.
 - Move unreferenced files and folders by dragging them onto another folder in
   the active project.
@@ -333,10 +336,10 @@ regressing project open, edit, build, test, package, or deployment workflows.
   save/discard/cancel protection.
 
 Phase 20B automated gate: the Release build passes with no warnings or errors,
-all 239 tests pass, and managed, native, and multi-project desktop smoke tests
+all 240 tests pass, and managed, native, and multi-project desktop smoke tests
 pass.
 
-Manual acceptance:
+Manual acceptance (passed 2026-08-05):
 
 1. Create an unreferenced file and folder, rename both using the menu and `F2`,
    and confirm the tree refreshes immediately.
