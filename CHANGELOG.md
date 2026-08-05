@@ -80,6 +80,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 20C product-owner acceptance passed for Streamer.bot and OBS external
+  folder adoption, build-input preview, sidecar creation, source preservation,
+  existing-project refusal, and stale-preview prevention.
 - Phase 20C regression coverage verifies Streamer.bot and OBS adoption,
   deterministic discovery, byte-for-byte source preservation, ignored-folder
   handling, existing-manifest refusal, and preview/change race protection.

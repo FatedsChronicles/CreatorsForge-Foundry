@@ -369,7 +369,8 @@ regressing build inputs, document recovery, or multi-project targeting.
 
 ### Phase 20C — External-project onboarding
 
-Phase 20C is implemented and awaiting product-owner manual acceptance.
+Phase 20C completed on 2026-08-05 after the automated gate and product-owner
+manual acceptance passed.
 
 - Analyze an existing source folder before making any change.
 - Preview the exact provider-compatible `.cs` or `.c` build inputs.
@@ -385,7 +386,7 @@ Automated coverage verifies deterministic discovery, ignored-directory
 handling, Streamer.bot and OBS manifests, byte-for-byte source preservation,
 existing-sidecar protection, and preview/change race protection.
 
-Manual acceptance:
+Manual acceptance (passed 2026-08-05):
 
 1. Copy a small existing C# project to a disposable folder and note the hashes
    of its existing files.
@@ -400,8 +401,10 @@ Manual acceptance:
    sources appear in the saved manifest and the project opens.
 6. Select a folder that already contains a `.foundryproj` and confirm Foundry
    directs you to open it without creating or overwriting anything.
-7. Preview a disposable folder, change its `.cs`/`.c` files before choosing
-   **Adopt**, and confirm `CFW0509` stops adoption until it is analyzed again.
+7. Preview a disposable folder and change its `.cs`/`.c` files before choosing
+   **Adopt**. Confirm Foundry prevents adoption with the action disabled; the
+   service-level race guard also returns `CFW0509` if a stale preview is
+   submitted programmatically.
 
 Exit gate: the complete automated gate and all seven manual checks pass without
 changing any pre-existing external-project file.
