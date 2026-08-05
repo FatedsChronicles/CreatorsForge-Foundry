@@ -99,6 +99,80 @@ public partial class ObsSdkDialog : Window
         RefreshStatus();
     }
 
+    private void UseRecommendedTools_Click(object sender, RoutedEventArgs e)
+    {
+        LoadDiscoveredToolchains(null);
+        selectedCMakeExecutablePath = NativeToolchainReadinessService.ResolveCMakeExecutable();
+        VerificationStatusText.Text = "Recommended Visual Studio and CMake selections applied. Refreshing readiness checks...";
+        RefreshStatus();
+    }
+
+    private async void VerifyNativeBuild_Click(object sender, RoutedEventArgs e)
+    {
+        var readiness = NativeToolchainReadinessService.Inspect(
+            SelectedToolchain?.InstallationRoot,
+            selectedCMakeExecutablePath);
+        if (!readiness.IsReady)
+        {
+            var failures = readiness.Checks
+                .Where(item => !item.IsReady)
+                .Select(item => $"{item.Name}: {item.RecommendedAction}");
+            VerificationStatusText.Text = "Verification is blocked by incomplete readiness checks.";
+            MessageBox.Show(
+                this,
+                string.Join(Environment.NewLine, failures),
+                "Native build verification is not ready",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            IsEnabled = false;
+            var progress = new Progress<string>(message => VerificationStatusText.Text = message);
+            var result = await new NativeToolchainVerificationService().VerifyAsync(
+                SelectedToolchain?.InstallationRoot,
+                selectedCMakeExecutablePath,
+                progress,
+                CancellationToken.None);
+            VerificationStatusText.Text = result.Summary;
+            var stageDetails = string.Join(
+                Environment.NewLine,
+                result.Stages.Select(stage =>
+                    $"{(stage.Passed ? "PASSED" : "FAILED")}  {stage.Name} ({stage.Duration.TotalMilliseconds:0} ms) - {stage.Details}" +
+                    (string.IsNullOrWhiteSpace(stage.Command)
+                        ? string.Empty
+                        : $"{Environment.NewLine}  {stage.Command}")));
+            var diagnosticDetails = string.Join(
+                Environment.NewLine + Environment.NewLine,
+                result.Diagnostics.Select(diagnostic =>
+                    $"{diagnostic.Code}: {diagnostic.Message}" +
+                    (string.IsNullOrWhiteSpace(diagnostic.SuggestedFix)
+                        ? string.Empty
+                        : $"{Environment.NewLine}{diagnostic.SuggestedFix}") +
+                    (string.IsNullOrWhiteSpace(diagnostic.Details)
+                        ? string.Empty
+                        : $"{Environment.NewLine}{diagnostic.Details}")));
+            MessageBox.Show(
+                this,
+                string.IsNullOrWhiteSpace(diagnosticDetails)
+                    ? stageDetails
+                    : $"{stageDetails}{Environment.NewLine}{Environment.NewLine}{diagnosticDetails}",
+                result.IsSuccess ? "Native build verification passed" : "Native build verification failed",
+                MessageBoxButton.OK,
+                result.IsSuccess ? MessageBoxImage.Information : MessageBoxImage.Error);
+        }
+        catch (OperationCanceledException)
+        {
+            VerificationStatusText.Text = "Native build verification was cancelled.";
+        }
+        finally
+        {
+            IsEnabled = true;
+        }
+    }
+
     private void SelectCMake_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog

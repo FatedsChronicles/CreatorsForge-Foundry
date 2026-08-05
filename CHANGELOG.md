@@ -6,6 +6,12 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 21C disposable native-build verification, which configures, compiles,
+  links, checks, and removes a minimal x64 OBS module outside the open project.
+  Results include timed stages, invoked commands, captured tool output, and
+  stable `CFB1101`-`CFB1106` diagnostics.
+- A **Use recommended tools** repair action and **Verify native build** action
+  in the Development Toolchain window.
 - Phase 21B consolidated native-toolchain readiness for CMake, Visual Studio
   C++ x64, Windows SDK headers/tools/libraries, target architecture, and the
   pinned OBS SDK, with per-component guidance and explicit remediation actions.
@@ -51,6 +57,10 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Changed
 
+- Disposable native verification now locates the exact probe DLL throughout
+  CMake's owned build tree, including configuration-specific `Release`
+  subdirectories, and uses ASCII result separators to prevent mojibake in the
+  verification dialog.
 - OBS builds now persist and invoke the exact validated `cmake.exe`; invalid or
   removed selections stop before configuration with diagnostic `CFB1012`.
 - The Development Toolchain selector now displays a compact Visual Studio name
@@ -78,6 +88,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Security
 
+- Native toolchain verification uses a uniquely named system-temporary
+  workspace, validates ownership before recursive cleanup, never writes to the
+  open project, and never changes global environment variables.
 - CMake and Visual Studio choices remain process-scoped. Visual Studio Installer
   and the official CMake download page open only after explicit button actions,
   and no PATH or system environment variable is modified.
@@ -99,6 +112,15 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 21C product-owner acceptance passed on 2026-08-05: the installed
+  Visual Studio, CMake, Windows SDK, and pinned OBS SDK completed readiness,
+  disposable preparation, configure, compile/link, nested DLL discovery, and
+  owned-workspace cleanup successfully. The result dialog also confirmed the
+  ASCII-only status formatting correction.
+- Phase 21C passes all 259 automated tests and six desktop smoke cases with a
+  zero-warning solution build. Focused tests cover successful disposable
+  compilation, readiness blocking, captured configure failures, exact x64 SDK
+  arguments, expected-artifact inspection, and owned-workspace cleanup.
 - Phase 21B product-owner acceptance passed, including the consolidated
   Development Toolchain and first-run displays for CMake 4.4.2, Visual Studio
   Community 2026/MSVC 14.51.36231, Windows SDK 10.0.26100.0 x64, native x64,
