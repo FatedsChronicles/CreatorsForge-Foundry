@@ -283,6 +283,9 @@ and provider-neutral workspace model.
 
 ### Phase 20A — Explorer foundation and new items
 
+Phase 20A completed on 2026-08-05 after automated validation and product-owner
+manual acceptance passed.
+
 - Hierarchical type badges for managed, native, web, data, metadata, and folder
   entries.
 - Add and Refresh controls in the pane header.
@@ -297,7 +300,7 @@ Phase 20A automated gate: focused workspace tests, Release desktop build, the
 full repository regression gate, and desktop smoke tests pass with no warnings
 or errors.
 
-Manual acceptance:
+Manual acceptance (passed 2026-08-05):
 
 1. Open one Streamer.bot project and one OBS project in turn.
 2. Select the project root, choose **Add**, create a folder, and confirm it

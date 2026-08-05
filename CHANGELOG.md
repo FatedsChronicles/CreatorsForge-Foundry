@@ -60,6 +60,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 20A product-owner acceptance passed for Solution Explorer presentation,
+  context-aware file and folder creation, automatic extensions, immediate file
+  opening, duplicate protection, refresh, and multi-project targeting.
 - Inno Setup 6.7.3 compiled the native `0.19.0-alpha.1` setup and updater
   executables with matching payload hashes and correct Windows product metadata.
 - Product-owner acceptance passed installation to the default Program Files
