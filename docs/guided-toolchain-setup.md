@@ -62,3 +62,54 @@ confirmed.
 
 Phase 21A exits when all eight checks pass without changing global environment
 variables or regressing managed builds.
+
+## Phase 21B consolidated readiness
+
+The Development Toolchain window reports five independently actionable checks:
+
+- CMake 3.20 or later, with automatic discovery or an exact `cmake.exe`
+  selection.
+- The persisted Visual Studio C++ Hostx64/x64 toolset.
+- A complete Windows 10/11 SDK containing matching headers, x64 libraries,
+  `rc.exe`, and `mt.exe`.
+- Host-x64 to target-x64 architecture readiness.
+- The checksum-verified pinned OBS SDK.
+
+Each failed row includes a recommended action. **Open Visual Studio Installer**
+opens the installed maintenance tool so the C++ workload or Windows SDK can be
+added; **Get CMake…** opens the official CMake download page; **Refresh checks**
+reruns every local inspection. These actions occur only after the corresponding
+button is selected.
+
+The saved CMake executable is passed directly to both CMake configure and build
+operations. A removed, renamed, older, or invalid saved executable stops before
+configuration with `CFB1012`. Foundry does not add CMake to PATH.
+
+### Phase 21B manual acceptance
+
+Passed on 2026-08-05. The Development Toolchain and first-run setup screens
+visually confirmed CMake 4.4.2, Visual Studio Community 2026/MSVC 14.51.36231,
+Windows SDK 10.0.26100.0 x64, native x64 targeting, and OBS SDK 32.1.2 as ready;
+all guided actions, persistence, invalid-file refusal, build output, and PATH
+boundaries also passed.
+
+1. Open **Tools → Development Toolchain…** and confirm CMake, Visual Studio,
+   Windows SDK, x64 architecture, and pinned OBS SDK each have a separate row.
+2. Confirm this machine reports CMake 4.4.2, the selected Visual Studio
+   installation, Windows SDK 10.0.26100.0 x64, and the pinned OBS SDK as ready.
+3. Select the installed `cmake.exe`, save, reopen the dialog, and confirm the
+   exact executable selection persists.
+4. Try a disposable file named `cmake.exe` that is not CMake and confirm Foundry
+   refuses it without replacing the saved valid selection.
+5. Choose **Refresh checks** and confirm all readiness rows update without
+   restarting Foundry.
+6. Confirm **Open Visual Studio Installer** and **Get CMake…** open only when
+   clicked; close them without changing the installed tools.
+7. Run **Tools → Run Setup Checks…** and confirm the Windows SDK and x64 checks
+   are included in the complete native-toolchain result.
+8. Build the OBS Configurable Filter sample and confirm the DLL, package ZIP,
+   and package IR are produced with the saved CMake and Visual Studio choices.
+9. Confirm user and machine PATH values remain unchanged.
+
+Phase 21B exits when all nine checks pass without regressing Phase 21A
+selection or managed builds.

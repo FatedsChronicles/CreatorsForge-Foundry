@@ -19,7 +19,8 @@ public partial class ProductSetupDialog : Window
     {
         var health = FoundryProductHealthService.Inspect(
             stateRoot,
-            settings.VisualStudioInstallationRoot);
+            settings.VisualStudioInstallationRoot,
+            settings.CMakeExecutablePath);
         ChecksList.ItemsSource = health.Checks.Select(check => new CheckView(check, check.IsReady ? "READY" : check.Required ? "REQUIRED" : "OPTIONAL")).ToArray();
         SummaryText.Text = health.IsReady
             ? health.NativeToolchainReady ? "Foundry and the complete OBS toolchain are ready." : "Foundry is ready. Optional OBS development tools can be completed later."

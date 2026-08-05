@@ -115,6 +115,38 @@ public sealed class ObsPluginBuildPipelineTests
     }
 
     [Fact]
+    public async Task SelectedCMakeExecutableIsUsedForConfigureAndBuild()
+    {
+        using var project = TemporaryObsProject.Create();
+        var cmake = NativeToolchainReadinessService.ResolveCMakeExecutable();
+        Assert.NotNull(cmake);
+        var runner = new SuccessfulCMakeRunner(project.Root);
+        var orchestrator = new FoundryBuildOrchestrator(runner) { CMakeExecutablePath = cmake };
+
+        var result = await orchestrator.BuildAsync(project.Manifest, project.ManifestPath);
+
+        Assert.True(result.IsSuccess);
+        Assert.All(runner.Requests, request => Assert.Equal(Path.GetFullPath(cmake), request.FileName));
+    }
+
+    [Fact]
+    public async Task InvalidSelectedCMakeStopsBeforeConfiguration()
+    {
+        using var project = TemporaryObsProject.Create();
+        var runner = new SuccessfulCMakeRunner(project.Root);
+        var orchestrator = new FoundryBuildOrchestrator(runner)
+        {
+            CMakeExecutablePath = Path.Combine(project.Root, "missing", "cmake.exe"),
+        };
+
+        var result = await orchestrator.BuildAsync(project.Manifest, project.ManifestPath);
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains(result.Diagnostics, item => item.Code == "CFB1012");
+        Assert.Empty(runner.Requests);
+    }
+
+    [Fact]
     public void SdkStatusRejectsIncompleteCache()
     {
         var cache = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
@@ -189,7 +221,7 @@ public sealed class ObsPluginBuildPipelineTests
         {
             InvocationCount++;
             Requests.Add(request);
-            Assert.Equal("cmake", request.FileName);
+            Assert.Equal("cmake", Path.GetFileNameWithoutExtension(request.FileName), ignoreCase: true);
             if (request.Arguments.Contains("--build", StringComparer.Ordinal))
             {
                 var output = Path.Combine(projectRoot, "build", "obs", "bin");

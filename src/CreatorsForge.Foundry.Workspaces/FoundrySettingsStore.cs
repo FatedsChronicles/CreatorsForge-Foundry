@@ -93,6 +93,9 @@ public sealed class FoundrySettingsStore
             VisualStudioInstallationRoot = string.IsNullOrWhiteSpace(settings.VisualStudioInstallationRoot)
                 ? null
                 : settings.VisualStudioInstallationRoot.Trim(),
+            CMakeExecutablePath = string.IsNullOrWhiteSpace(settings.CMakeExecutablePath)
+                ? null
+                : settings.CMakeExecutablePath.Trim(),
             Theme = Enum.IsDefined(settings.Theme)
                 ? settings.Theme
                 : FoundryThemePreference.System,

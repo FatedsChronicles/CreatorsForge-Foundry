@@ -63,12 +63,16 @@ Choose **Tools > Development Toolchain...**.
    `lib.exe`, `dumpbin.exe`, and `VsDevCmd.bat` before accepting it.
 3. Choose **Save & Close**. Foundry saves the selection for its own OBS build
    processes and does not modify the Windows `PATH`.
-4. To work online, first enable explicit network access in Settings, then
+4. Review the CMake, Windows SDK, and x64 rows. Use **Select cmake.exe...** when
+   automatic CMake discovery is not the intended installation. Use **Open
+   Visual Studio Installer** to add missing C++/Windows SDK components, or
+   **Get CMake...** to open the official download page.
+5. To work online, first enable explicit network access in Settings, then
    select **Install SDK**. Foundry downloads the official archives, checks their
    SHA-256 hashes, and creates the local development SDK.
-5. To work offline, select **Use Offline Archives...** and choose a folder that
+6. To work offline, select **Use Offline Archives...** and choose a folder that
    contains both official archives. The same checksum verification applies.
-6. Use **Copy SDK Path** when another local tool needs the verified SDK path.
+7. Use **Copy SDK Path** when another local tool needs the verified SDK path.
 
 The SDK is a development cache. It is not copied into your plugin package.
 

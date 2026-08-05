@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Diagnostics;
 using CreatorsForge.Foundry.Build;
 using CreatorsForge.Foundry.Build.ObsStudio;
 using CreatorsForge.Foundry.Workspaces;
@@ -13,12 +14,15 @@ public partial class ObsSdkDialog : Window
     private readonly bool allowNetworkAccess;
     private readonly List<VisualStudioToolchain> toolchains = [];
     private string? archiveDirectory;
+    private string? selectedCMakeExecutablePath;
 
     public ObsSdkDialog(FoundryUserSettings settings)
     {
         originalSettings = settings;
         allowNetworkAccess = settings.AllowNetworkAccess;
         InitializeComponent();
+        selectedCMakeExecutablePath = settings.CMakeExecutablePath ??
+            NativeToolchainReadinessService.ResolveCMakeExecutable();
         LoadDiscoveredToolchains(settings.VisualStudioInstallationRoot);
         RefreshStatus();
     }
@@ -59,11 +63,15 @@ public partial class ObsSdkDialog : Window
             ? $"Ready — OBS SDK {status.Version}"
             : $"Not ready — OBS SDK {status.Version}";
         SdkPathText.Text = status.SdkRoot;
-        var product = FoundryProductHealthService.Inspect(
-            visualStudioInstallationRoot: selected?.InstallationRoot);
-        ProgressTextBox.Text = string.Join(Environment.NewLine, product.Checks
-            .Where(item => item.Id is "cmake" or "msvc" or "obs-sdk")
-            .Select(item => $"{(item.IsReady ? "READY" : "NEEDS ATTENTION")}  {item.Name}: {item.Details}"));
+        var readiness = NativeToolchainReadinessService.Inspect(
+            selected?.InstallationRoot,
+            selectedCMakeExecutablePath);
+        CMakeStatusText.Text = readiness.CMake.IsReady
+            ? $"READY — {readiness.CMake.Details}"
+            : $"NEEDS ATTENTION — {readiness.CMake.Details}";
+        ReadinessList.ItemsSource = readiness.Checks
+            .Select(check => new ReadinessView(check, check.IsReady ? "READY" : "NEEDS ATTENTION"))
+            .ToArray();
         InstallButton.Content = status.IsReady ? "Verify SDK" : "Install SDK";
     }
 
@@ -82,6 +90,34 @@ public partial class ObsSdkDialog : Window
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
         }
+        RefreshStatus();
+    }
+
+    private void AutoDetectCMake_Click(object sender, RoutedEventArgs e)
+    {
+        selectedCMakeExecutablePath = NativeToolchainReadinessService.ResolveCMakeExecutable();
+        RefreshStatus();
+    }
+
+    private void SelectCMake_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog
+        {
+            CheckFileExists = true,
+            Filter = "CMake executable (cmake.exe)|cmake.exe",
+            InitialDirectory = selectedCMakeExecutablePath is null
+                ? Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)
+                : Path.GetDirectoryName(selectedCMakeExecutablePath),
+            Title = "Select cmake.exe",
+        };
+        if (dialog.ShowDialog(this) != true) return;
+        var inspected = NativeToolchainReadinessService.InspectCMake(dialog.FileName);
+        if (!inspected.IsReady)
+        {
+            MessageBox.Show(this, inspected.Details, "CMake is not ready", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        selectedCMakeExecutablePath = inspected.ExecutablePath;
         RefreshStatus();
     }
 
@@ -151,12 +187,7 @@ public partial class ObsSdkDialog : Window
         try
         {
             IsEnabled = false;
-            ProgressTextBox.Clear();
-            var progress = new Progress<string>(message =>
-            {
-                ProgressTextBox.AppendText(message + Environment.NewLine);
-                ProgressTextBox.ScrollToEnd();
-            });
+            var progress = new Progress<string>(message => StatusText.Text = message);
             var status = await ObsSdkManager.InstallWithToolchainAsync(
                 archiveDirectory: archiveDirectory,
                 progress: progress,
@@ -184,9 +215,16 @@ public partial class ObsSdkDialog : Window
             MessageBox.Show(this, "Select a valid Visual Studio C++ x64 installation before saving.", "Development toolchain", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
+        var cmake = NativeToolchainReadinessService.InspectCMake(selectedCMakeExecutablePath);
+        if (!cmake.IsReady)
+        {
+            MessageBox.Show(this, cmake.Details, "Select CMake", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
         UpdatedSettings = originalSettings with
         {
             VisualStudioInstallationRoot = SelectedToolchain.InstallationRoot,
+            CMakeExecutablePath = cmake.ExecutablePath,
         };
         DialogResult = true;
     }
@@ -199,6 +237,30 @@ public partial class ObsSdkDialog : Window
         var dialog = new OpenFolderDialog { Title = "Select folder containing both official OBS 32.1.2 archives", Multiselect = false };
         if (dialog.ShowDialog(this) != true) return;
         archiveDirectory = dialog.FolderName;
-        ProgressTextBox.Text = $"Offline mode selected. Expected files:\n{ObsSdkManager.SourceArchiveName}\n{ObsSdkManager.WindowsArchiveName}";
+        StatusText.Text = $"Offline archives selected: {ObsSdkManager.SourceArchiveName} and {ObsSdkManager.WindowsArchiveName}";
     }
+
+    private void RefreshChecks_Click(object sender, RoutedEventArgs e) => RefreshStatus();
+
+    private void OpenVisualStudioInstaller_Click(object sender, RoutedEventArgs e)
+    {
+        var installer = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+            "Microsoft Visual Studio",
+            "Installer",
+            "setup.exe");
+        if (!File.Exists(installer))
+        {
+            MessageBox.Show(this, "Visual Studio Installer was not found.", "Development toolchain", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+        Process.Start(new ProcessStartInfo(installer) { UseShellExecute = true });
+    }
+
+    private void OpenCMakeDownload_Click(object sender, RoutedEventArgs e) =>
+        Process.Start(new ProcessStartInfo("https://cmake.org/download/") { UseShellExecute = true });
+
+    private sealed record ReadinessView(
+        NativeToolchainReadinessCheck Check,
+        string Status);
 }

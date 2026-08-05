@@ -14,6 +14,8 @@ public sealed class FoundryProductHealthServiceTests
             Assert.Contains(health.Checks, item => item.Id == "storage" && item.Required);
             Assert.Contains(health.Checks, item => item.Id == "cmake" && !item.Required);
             Assert.Contains(health.Checks, item => item.Id == "msvc" && !item.Required);
+            Assert.Contains(health.Checks, item => item.Id == "windows-sdk" && !item.Required);
+            Assert.Contains(health.Checks, item => item.Id == "x64" && !item.Required);
             Assert.Contains(health.Checks, item => item.Id == "obs-sdk" && !item.Required);
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }

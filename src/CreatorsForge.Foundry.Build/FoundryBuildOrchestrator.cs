@@ -29,6 +29,8 @@ public sealed class FoundryBuildOrchestrator
 
     public string? VisualStudioInstallationRoot { get; set; }
 
+    public string? CMakeExecutablePath { get; set; }
+
     public FoundryBuildOrchestrator(IBuildProcessRunner? processRunner = null)
     {
         this.processRunner = processRunner ?? new DotNetBuildProcessRunner();
@@ -60,7 +62,8 @@ public sealed class FoundryBuildOrchestrator
         {
             return await new ObsPluginBuildPipeline(
                 processRunner,
-                VisualStudioInstallationRoot).BuildAsync(
+                VisualStudioInstallationRoot,
+                CMakeExecutablePath).BuildAsync(
                 manifest,
                 fullProjectPath,
                 diagnostics,
