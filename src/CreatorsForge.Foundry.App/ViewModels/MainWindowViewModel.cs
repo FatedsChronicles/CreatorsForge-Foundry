@@ -5,6 +5,7 @@ using CreatorsForge.Foundry.Core.Diagnostics;
 using CreatorsForge.Foundry.Core.Projects;
 using CreatorsForge.Foundry.Editor;
 using CreatorsForge.Foundry.Workspaces;
+using Microsoft.VisualBasic.FileIO;
 
 namespace CreatorsForge.Foundry.App;
 
@@ -356,6 +357,155 @@ public sealed class MainWindowViewModel : ObservableObject
         }
 
         StatusText = "Project files refreshed";
+        return true;
+    }
+
+    public string? GetProjectItemMutationBlocker(string itemPath)
+    {
+        if (Workspace is null)
+        {
+            return "No project is open.";
+        }
+
+        if (string.Equals(itemPath, Workspace.ProjectPath, StringComparison.OrdinalIgnoreCase))
+        {
+            return "The active .foundryproj manifest cannot be renamed or removed from Solution Explorer.";
+        }
+
+        var isDirectory = Directory.Exists(itemPath);
+        if (Documents.Any(document => IsSameOrDescendant(itemPath, document.FullPath, isDirectory)))
+        {
+            return "Close every editor tab for this item before renaming or removing it.";
+        }
+
+        var relativePath = Path.GetRelativePath(Workspace.ProjectRoot, itemPath).Replace('\\', '/');
+        var reference = EnumerateManifestReferences(Workspace.Manifest)
+            .FirstOrDefault(candidate =>
+                string.Equals(candidate, relativePath, StringComparison.OrdinalIgnoreCase) ||
+                (isDirectory && candidate.StartsWith($"{relativePath}/", StringComparison.OrdinalIgnoreCase)));
+        return reference is null
+            ? null
+            : $"This item contains the declared project input '{reference}'. Update the project design or manifest before renaming or removing it.";
+    }
+
+    public async Task<bool> RenameProjectItemAsync(
+        string itemPath,
+        string newName,
+        CancellationToken cancellationToken)
+    {
+        if (Workspace is null || GetProjectItemMutationBlocker(itemPath) is not null)
+        {
+            return false;
+        }
+
+        var result = await WorkspaceProjectItemService.RenameAsync(
+            Workspace.ProjectRoot,
+            itemPath,
+            newName,
+            cancellationToken);
+        AddDiagnostics(result.Diagnostics);
+        if (!result.IsSuccess)
+        {
+            StatusText = "Project item rename failed";
+            return false;
+        }
+
+        await RefreshProjectTreeAsync(cancellationToken);
+        AppendConsole($"Renamed project item to {result.Value!.RelativePath}");
+        StatusText = $"Renamed to {result.Value.RelativePath}";
+        return true;
+    }
+
+    public async Task<bool> MoveProjectItemAsync(
+        string itemPath,
+        string destinationDirectory,
+        CancellationToken cancellationToken)
+    {
+        if (Workspace is null || GetProjectItemMutationBlocker(itemPath) is not null)
+        {
+            return false;
+        }
+
+        var result = await WorkspaceProjectItemService.MoveAsync(
+            Workspace.ProjectRoot,
+            itemPath,
+            destinationDirectory,
+            cancellationToken);
+        AddDiagnostics(result.Diagnostics);
+        if (!result.IsSuccess)
+        {
+            StatusText = "Project item move failed";
+            return false;
+        }
+
+        await RefreshProjectTreeAsync(cancellationToken);
+        AppendConsole($"Moved project item to {result.Value!.RelativePath}");
+        StatusText = $"Moved to {result.Value.RelativePath}";
+        return true;
+    }
+
+    public async Task<bool> RecycleProjectItemAsync(
+        string itemPath,
+        CancellationToken cancellationToken)
+    {
+        if (Workspace is null || GetProjectItemMutationBlocker(itemPath) is not null)
+        {
+            return false;
+        }
+
+        var inspected = WorkspaceProjectItemService.InspectMutable(
+            Workspace.ProjectRoot,
+            itemPath);
+        AddDiagnostics(inspected.Diagnostics);
+        if (!inspected.IsSuccess)
+        {
+            StatusText = "Project item removal failed";
+            return false;
+        }
+
+        var item = inspected.Value!;
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.Run(
+                () =>
+                {
+                    if (item.IsDirectory)
+                    {
+                        FileSystem.DeleteDirectory(
+                            item.FullPath,
+                            UIOption.OnlyErrorDialogs,
+                            RecycleOption.SendToRecycleBin);
+                    }
+                    else
+                    {
+                        FileSystem.DeleteFile(
+                            item.FullPath,
+                            UIOption.OnlyErrorDialogs,
+                            RecycleOption.SendToRecycleBin);
+                    }
+                },
+                cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            AddDiagnostics(
+                [new(
+                    "CFW1121",
+                    FoundryDiagnosticSeverity.Error,
+                    $"The project item could not be moved to the Recycle Bin: {exception.Message}",
+                    new FoundryDiagnosticLocation(item.FullPath))]);
+            StatusText = "Project item removal failed";
+            return false;
+        }
+
+        await RefreshProjectTreeAsync(cancellationToken);
+        AppendConsole($"Moved {item.RelativePath} to the Recycle Bin");
+        StatusText = $"Moved {item.RelativePath} to the Recycle Bin";
         return true;
     }
 
@@ -967,6 +1117,39 @@ public sealed class MainWindowViewModel : ObservableObject
                     Workspace!.ProjectPath,
                     StringComparison.OrdinalIgnoreCase)));
         }
+    }
+
+    private static bool IsSameOrDescendant(string parent, string candidate, bool parentIsDirectory) =>
+        string.Equals(parent, candidate, StringComparison.OrdinalIgnoreCase) ||
+        (parentIsDirectory && candidate.StartsWith(
+            $"{Path.TrimEndingDirectorySeparator(parent)}{Path.DirectorySeparatorChar}",
+            StringComparison.OrdinalIgnoreCase));
+
+    private static IEnumerable<string> EnumerateManifestReferences(FoundryProjectManifest manifest)
+    {
+        foreach (var source in manifest.ManagedBuild?.Sources ?? []) yield return NormalizeReference(source);
+        foreach (var source in manifest.NativeBuild?.Sources ?? []) yield return NormalizeReference(source);
+        foreach (var component in manifest.Components)
+        {
+            foreach (var source in component.Sources) yield return NormalizeReference(source);
+        }
+
+        if (manifest.TargetDefinition is { Length: > 0 } targetDefinition) yield return NormalizeReference(targetDefinition);
+        if (manifest.TestDefinition is { Length: > 0 } testDefinition) yield return NormalizeReference(testDefinition);
+        if (manifest.ObsPlugin?.Design?.Source is { Length: > 0 } obsSource) yield return NormalizeReference(obsSource);
+        if (manifest.Publishing?.LicenseFile is { Length: > 0 } license) yield return NormalizeReference(license);
+        if (manifest.Publishing?.ChangelogFile is { Length: > 0 } changelog) yield return NormalizeReference(changelog);
+    }
+
+    private static string NormalizeReference(string path)
+    {
+        var normalized = path.Replace('\\', '/').TrimStart('/');
+        while (normalized.StartsWith("./", StringComparison.Ordinal))
+        {
+            normalized = normalized[2..];
+        }
+
+        return normalized;
     }
 
     private async Task RefreshRecentProjectsAsync(CancellationToken cancellationToken)

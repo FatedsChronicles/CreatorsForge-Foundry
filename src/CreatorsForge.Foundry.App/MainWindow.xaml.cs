@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,6 +19,7 @@ namespace CreatorsForge.Foundry.App;
     Justification = "WPF owns the window lifetime; OnClosed cancels and disposes the token source.")]
 public partial class MainWindow : Window
 {
+    private const string ProjectTreeItemDataFormat = "CreatorsForge.Foundry.ProjectTreeItem";
     private readonly AppServices services;
     private readonly MainWindowViewModel viewModel;
     private readonly string? startupProjectPath;
@@ -25,6 +27,8 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer autosaveTimer = new();
     private bool allowClose;
     private bool isBusy;
+    private Point projectTreeDragStart;
+    private ProjectTreeItemViewModel? projectTreeDragItem;
 
     public MainWindow(
         AppServices services,
@@ -162,6 +166,11 @@ public partial class MainWindow : Window
         }
 
         var darkSyntaxHighlightingReady = FoundrySyntaxHighlighting.Dark is not null;
+        var newProjectItemDialog = new NewProjectItemDialog("Folder: src");
+        var newProjectItemDialogReady = newProjectItemDialog.Content is not null &&
+            newProjectItemDialog.ItemTypes.All(option =>
+                string.Equals(option.ToString(), option.DisplayName, StringComparison.Ordinal));
+        newProjectItemDialog.Close();
 
         var succeeded = IsVisible &&
             (source is null || FindVisualChild<CodeEditor>(DocumentTabs) is not null) &&
@@ -172,6 +181,7 @@ public partial class MainWindow : Window
             obsDesignerReady &&
             deploymentReady &&
             testExplorerReady &&
+            newProjectItemDialogReady &&
             darkSyntaxHighlightingReady;
         allowClose = true;
         Close();
@@ -463,6 +473,20 @@ public partial class MainWindow : Window
             return;
         }
 
+        await TryCloseDocumentAsync(document);
+    }
+
+    private async void CloseDocumentTab_Click(object sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (sender is FrameworkElement { DataContext: DocumentViewModel document })
+        {
+            await TryCloseDocumentAsync(document);
+        }
+    }
+
+    private async Task<bool> TryCloseDocumentAsync(DocumentViewModel document)
+    {
         if (document.IsDirty)
         {
             var decision = MessageBox.Show(
@@ -473,19 +497,18 @@ public partial class MainWindow : Window
                 MessageBoxImage.Question);
             if (decision == MessageBoxResult.Cancel)
             {
-                return;
+                return false;
             }
 
             if (decision == MessageBoxResult.Yes &&
-                !await viewModel.SaveDocumentAsync(
-                    document,
-                    lifetimeCancellation.Token))
+                !await viewModel.SaveDocumentAsync(document, lifetimeCancellation.Token))
             {
-                return;
+                return false;
             }
         }
 
         viewModel.CloseDocument(document);
+        return true;
     }
 
     private async void CloseProject_Click(object sender, RoutedEventArgs e)
@@ -1107,6 +1130,247 @@ public partial class MainWindow : Window
 
     private async void RefreshProjectTree_Click(object sender, RoutedEventArgs e) =>
         await RunBusyAsync(() => viewModel.RefreshProjectTreeAsync(lifetimeCancellation.Token));
+
+    private async void RenameProjectItem_Click(object sender, RoutedEventArgs e)
+    {
+        var item = await PrepareSelectedProjectItemMutationAsync();
+        if (item is null)
+        {
+            return;
+        }
+
+        var dialog = new RenameProjectItemDialog(item.Name) { Owner = this };
+        if (dialog.ShowDialog() == true)
+        {
+            await RunBusyAsync(() => viewModel.RenameProjectItemAsync(
+                item.FullPath,
+                dialog.NewName,
+                lifetimeCancellation.Token));
+        }
+    }
+
+    private void ProjectTree_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        projectTreeDragStart = e.GetPosition(ProjectTree);
+        projectTreeDragItem = FindVisualParent<TreeViewItem>(e.OriginalSource as DependencyObject)
+            ?.DataContext as ProjectTreeItemViewModel;
+    }
+
+    private void ProjectTree_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed ||
+            projectTreeDragItem is null ||
+            projectTreeDragItem.IsProjectRoot)
+        {
+            return;
+        }
+
+        var position = e.GetPosition(ProjectTree);
+        if (Math.Abs(position.X - projectTreeDragStart.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(position.Y - projectTreeDragStart.Y) < SystemParameters.MinimumVerticalDragDistance)
+        {
+            return;
+        }
+
+        var item = projectTreeDragItem;
+        projectTreeDragItem = null;
+        if (item.ProjectPath is { } projectPath &&
+            !string.Equals(projectPath, viewModel.Workspace?.ProjectPath, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var data = new DataObject(ProjectTreeItemDataFormat, item);
+        DragDrop.DoDragDrop(ProjectTree, data, DragDropEffects.Move);
+    }
+
+    private void ProjectTree_DragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = TryGetProjectTreeDrop(e, out _, out _)
+            ? DragDropEffects.Move
+            : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private async void ProjectTree_Drop(object sender, DragEventArgs e)
+    {
+        e.Handled = true;
+        if (!TryGetProjectTreeDrop(e, out var source, out var destination))
+        {
+            return;
+        }
+
+        var blocker = viewModel.GetProjectItemMutationBlocker(source!.FullPath);
+        if (blocker is not null)
+        {
+            MessageBox.Show(
+                this,
+                blocker,
+                "Project item protected",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        await RunBusyAsync(() => viewModel.MoveProjectItemAsync(
+            source.FullPath,
+            GetProjectTreeDropDirectory(destination!),
+            lifetimeCancellation.Token));
+    }
+
+    private bool TryGetProjectTreeDrop(
+        DragEventArgs e,
+        out ProjectTreeItemViewModel? source,
+        out ProjectTreeItemViewModel? destination)
+    {
+        source = e.Data.GetData(ProjectTreeItemDataFormat) as ProjectTreeItemViewModel;
+        destination = FindVisualParent<TreeViewItem>(e.OriginalSource as DependencyObject)
+            ?.DataContext as ProjectTreeItemViewModel;
+        if (source is null || destination is null)
+        {
+            return false;
+        }
+
+        var destinationDirectory = GetProjectTreeDropDirectory(destination);
+
+        if (string.Equals(
+                Path.GetDirectoryName(source.FullPath),
+                destinationDirectory,
+                StringComparison.OrdinalIgnoreCase) ||
+            (source.IsDirectory &&
+             (string.Equals(source.FullPath, destinationDirectory, StringComparison.OrdinalIgnoreCase) ||
+              destinationDirectory.StartsWith(
+                  $"{Path.TrimEndingDirectorySeparator(source.FullPath)}{Path.DirectorySeparatorChar}",
+                  StringComparison.OrdinalIgnoreCase))))
+        {
+            return false;
+        }
+
+        var sourceProject = source.ProjectPath ?? viewModel.Workspace?.ProjectPath;
+        var destinationProject = destination.ProjectPath ?? viewModel.Workspace?.ProjectPath;
+        return string.Equals(sourceProject, destinationProject, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(sourceProject, viewModel.Workspace?.ProjectPath, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GetProjectTreeDropDirectory(ProjectTreeItemViewModel target) =>
+        target.IsDirectory ? target.FullPath : Path.GetDirectoryName(target.FullPath)!;
+
+    private void ProjectTree_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (Keyboard.Modifiers == ModifierKeys.None && e.Key == Key.F2)
+        {
+            e.Handled = true;
+            RenameProjectItem_Click(sender, e);
+        }
+        else if (Keyboard.Modifiers == ModifierKeys.None && e.Key == Key.Delete)
+        {
+            e.Handled = true;
+            RecycleProjectItem_Click(sender, e);
+        }
+        else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.C)
+        {
+            e.Handled = true;
+            CopyProjectItemPath_Click(sender, e);
+        }
+    }
+
+    private async void RecycleProjectItem_Click(object sender, RoutedEventArgs e)
+    {
+        var item = await PrepareSelectedProjectItemMutationAsync();
+        if (item is null)
+        {
+            return;
+        }
+
+        var decision = MessageBox.Show(
+            this,
+            $"Move '{item.Name}' to the Recycle Bin?\n\nThis can be restored through Windows Recycle Bin.",
+            "Remove project item",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (decision == MessageBoxResult.Yes)
+        {
+            await RunBusyAsync(() => viewModel.RecycleProjectItemAsync(
+                item.FullPath,
+                lifetimeCancellation.Token));
+        }
+    }
+
+    private void RevealProjectItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (ProjectTree.SelectedItem is not ProjectTreeItemViewModel item)
+        {
+            return;
+        }
+
+        var start = new ProcessStartInfo("explorer.exe") { UseShellExecute = true };
+        if (!item.IsDirectory)
+        {
+            start.ArgumentList.Add("/select,");
+        }
+
+        start.ArgumentList.Add(item.FullPath);
+        using var process = Process.Start(start);
+    }
+
+    private void CopyProjectItemPath_Click(object sender, RoutedEventArgs e)
+    {
+        if (ProjectTree.SelectedItem is ProjectTreeItemViewModel item)
+        {
+            Clipboard.SetText(item.RelativePath);
+        }
+    }
+
+    private void CopyProjectItemFullPath_Click(object sender, RoutedEventArgs e)
+    {
+        if (ProjectTree.SelectedItem is ProjectTreeItemViewModel item)
+        {
+            Clipboard.SetText(item.FullPath);
+        }
+    }
+
+    private async Task<ProjectTreeItemViewModel?> PrepareSelectedProjectItemMutationAsync()
+    {
+        if (ProjectTree.SelectedItem is not ProjectTreeItemViewModel item)
+        {
+            return null;
+        }
+
+        if (item.IsProjectRoot)
+        {
+            MessageBox.Show(
+                this,
+                "The project root cannot be renamed or removed from Solution Explorer.",
+                "Project item protected",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return null;
+        }
+
+        if (item.ProjectPath is { } projectPath &&
+            !string.Equals(projectPath, viewModel.Workspace?.ProjectPath, StringComparison.OrdinalIgnoreCase))
+        {
+            if (!await ConfirmDiscardOrSaveAsync() ||
+                !await viewModel.ActivateProjectAsync(projectPath, lifetimeCancellation.Token))
+            {
+                return null;
+            }
+        }
+
+        var blocker = viewModel.GetProjectItemMutationBlocker(item.FullPath);
+        if (blocker is not null)
+        {
+            MessageBox.Show(
+                this,
+                blocker,
+                "Project item protected",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return null;
+        }
+
+        return item;
+    }
 
     private async void AutosaveTimer_Tick(object? sender, EventArgs e)
     {

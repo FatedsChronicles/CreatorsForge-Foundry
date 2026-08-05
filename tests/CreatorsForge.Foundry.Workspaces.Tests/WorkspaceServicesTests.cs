@@ -22,6 +22,7 @@ public sealed class WorkspaceServicesTests
     [InlineData(WorkspaceProjectItemKind.Html, "panel", "panel.html")]
     [InlineData(WorkspaceProjectItemKind.Css, "panel", "panel.css")]
     [InlineData(WorkspaceProjectItemKind.JavaScript, "panel", "panel.js")]
+    [InlineData(WorkspaceProjectItemKind.TypeScript, "panel", "panel.ts")]
     [InlineData(WorkspaceProjectItemKind.Markdown, "README", "README.md")]
     [InlineData(WorkspaceProjectItemKind.Text, "notes", "notes.txt")]
     [InlineData(WorkspaceProjectItemKind.CMake, "CMakeLists", "CMakeLists.txt")]
@@ -70,6 +71,89 @@ public sealed class WorkspaceServicesTests
         Assert.True(Directory.Exists(folder.Value!.FullPath));
         Assert.Contains(duplicate.Diagnostics, diagnostic => diagnostic.Code == "CFW1103");
         Assert.Contains(traversal.Diagnostics, diagnostic => diagnostic.Code == "CFW1102");
+    }
+
+    [Fact]
+    public async Task ProjectItemRenameMovesFileAndFolderWithoutOverwriting()
+    {
+        using var temporary = TemporaryDirectory.Create();
+        var source = Path.Combine(temporary.Path, "source.txt");
+        var folder = Path.Combine(temporary.Path, "Features");
+        await File.WriteAllTextAsync(source, "preserved");
+        Directory.CreateDirectory(folder);
+
+        var renamedFile = await WorkspaceProjectItemService.RenameAsync(
+            temporary.Path,
+            source,
+            "renamed.txt");
+        var renamedFolder = await WorkspaceProjectItemService.RenameAsync(
+            temporary.Path,
+            folder,
+            "Components");
+        var duplicate = await WorkspaceProjectItemService.RenameAsync(
+            temporary.Path,
+            renamedFile.Value!.FullPath,
+            "Components");
+
+        Assert.True(renamedFile.IsSuccess);
+        Assert.Equal("preserved", await File.ReadAllTextAsync(renamedFile.Value.FullPath));
+        Assert.True(renamedFolder.IsSuccess);
+        Assert.True(Directory.Exists(renamedFolder.Value!.FullPath));
+        Assert.Contains(duplicate.Diagnostics, diagnostic => diagnostic.Code == "CFW1114");
+    }
+
+    [Fact]
+    public void ProjectItemInspectionRejectsRootOutsideAndMissingItems()
+    {
+        using var temporary = TemporaryDirectory.Create();
+        using var outside = TemporaryDirectory.Create();
+
+        var root = WorkspaceProjectItemService.InspectMutable(
+            temporary.Path,
+            temporary.Path);
+        var external = WorkspaceProjectItemService.InspectMutable(
+            temporary.Path,
+            outside.Path);
+        var missing = WorkspaceProjectItemService.InspectMutable(
+            temporary.Path,
+            Path.Combine(temporary.Path, "missing.txt"));
+
+        Assert.Contains(root.Diagnostics, diagnostic => diagnostic.Code == "CFW1110");
+        Assert.Contains(external.Diagnostics, diagnostic => diagnostic.Code == "CFW1110");
+        Assert.Contains(missing.Diagnostics, diagnostic => diagnostic.Code == "CFW1111");
+    }
+
+    [Fact]
+    public async Task ProjectItemMoveMovesIntoFolderAndRejectsUnsafeDestinations()
+    {
+        using var temporary = TemporaryDirectory.Create();
+        using var outside = TemporaryDirectory.Create();
+        var source = Path.Combine(temporary.Path, "notes.txt");
+        var destination = Path.Combine(temporary.Path, "Docs");
+        var tree = Path.Combine(temporary.Path, "Tree");
+        var descendant = Path.Combine(tree, "Nested");
+        await File.WriteAllTextAsync(source, "preserved");
+        Directory.CreateDirectory(destination);
+        Directory.CreateDirectory(descendant);
+
+        var moved = await WorkspaceProjectItemService.MoveAsync(
+            temporary.Path,
+            source,
+            destination);
+        var outsideMove = await WorkspaceProjectItemService.MoveAsync(
+            temporary.Path,
+            moved.Value!.FullPath,
+            outside.Path);
+        var descendantMove = await WorkspaceProjectItemService.MoveAsync(
+            temporary.Path,
+            tree,
+            descendant);
+
+        Assert.True(moved.IsSuccess);
+        Assert.Equal("Docs/notes.txt", moved.Value.RelativePath);
+        Assert.Equal("preserved", await File.ReadAllTextAsync(moved.Value.FullPath));
+        Assert.Contains(outsideMove.Diagnostics, diagnostic => diagnostic.Code == "CFW1116");
+        Assert.Contains(descendantMove.Diagnostics, diagnostic => diagnostic.Code == "CFW1117");
     }
 
     [Fact]

@@ -291,7 +291,7 @@ manual acceptance passed.
 - Add and Refresh controls in the pane header.
 - Right-click actions that target the selected project or folder.
 - Safe creation of C#, C++, C, header, JSON, XML, HTML, CSS, JavaScript,
-  Markdown, text, CMake, and folder items.
+  TypeScript, Markdown, text, CMake, and folder items.
 - Automatic default extensions, no-overwrite behavior, project-boundary and
   reparse-point protection, tree synchronization, and immediate opening of new
   editable files.
@@ -318,6 +318,54 @@ Manual acceptance (passed 2026-08-05):
 Exit gate: all automated checks and the manual acceptance above pass without
 regressing project open, edit, build, test, package, or deployment workflows.
 
-Later Phase 20 increments will add richer item operations and external-project
-onboarding; those changes remain separate so this mutation foundation can be
-accepted first.
+### Phase 20B — Explorer operations and document-tab closing
+
+Phase 20B completed on 2026-08-05 after the automated gate and product-owner
+acceptance passed, including the final themed context-menu separator cleanup.
+
+- Rename files and folders from the context menu or with `F2`.
+- Move unreferenced files and folders by dragging them onto another folder in
+  the active project.
+- Move unreferenced items to the Windows Recycle Bin after confirmation from
+  the context menu or with `Delete`.
+- Reveal items in Windows File Explorer and copy project-relative (`Ctrl+C`) or
+  full Windows paths.
+- Protect the project manifest, declared sources/definitions/publishing files,
+  containing folders, and items with open documents from unsafe mutation.
+- Display a close button on each editor tab and retain dirty-document
+  save/discard/cancel protection.
+
+Phase 20B automated gate: the Release build passes with no warnings or errors,
+all 240 tests pass, and managed, native, and multi-project desktop smoke tests
+pass.
+
+Manual acceptance (passed 2026-08-05):
+
+1. Create an unreferenced file and folder, rename both using the menu and `F2`,
+   and confirm the tree refreshes immediately.
+2. Attempt to rename an item to an existing name and confirm `CFW1114` appears
+   without overwriting either item.
+3. Attempt to rename or remove the `.foundryproj`, a declared source, and a
+   folder containing a declared source; confirm Foundry blocks each operation.
+4. Open an unreferenced file and confirm rename/removal is blocked until its tab
+   is closed.
+5. Drag unreferenced files and folders onto a destination folder and onto a file
+   within that folder; confirm both place the moved item inside that folder and
+   refresh the tree. Confirm declared/open items, cross-project moves,
+   self/descendant folder moves, and destination collisions are refused.
+6. Delete an unreferenced item using `Delete`, confirm it disappears, then
+   restore it from Windows Recycle Bin and refresh the tree.
+7. Confirm **Show in File Explorer** selects a file and opens a selected folder;
+   verify both **Copy Relative Path** and **Copy Full Path**.
+8. Confirm Add Project Item shows only readable type names and its complete
+   automatic-extension/no-overwrite guidance is visible.
+9. Close clean and dirty tabs using their visible close buttons; exercise Save,
+   Don't Save, and Cancel and confirm each result.
+10. Repeat representative checks in Dark, Light, and System themes and in a
+   multi-project workspace.
+
+Exit gate: the complete automated gate and all ten manual checks pass without
+regressing build inputs, document recovery, or multi-project targeting.
+
+External-project onboarding remains a later staged increment so it can reuse
+the accepted explorer mutation and project migration foundations.

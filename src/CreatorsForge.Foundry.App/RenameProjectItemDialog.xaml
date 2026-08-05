@@ -1,0 +1,35 @@
+<Window Style="{StaticResource FoundryWindowStyle}"
+    x:Class="CreatorsForge.Foundry.App.RenameProjectItemDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Rename project item"
+    Width="440"
+    Height="220"
+    ResizeMode="NoResize"
+    WindowStartupLocation="CenterOwner"
+    AutomationProperties.Name="Rename project item">
+  <Grid Margin="20">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <TextBlock FontSize="20" FontWeight="SemiBold" Text="Rename project item" />
+    <TextBlock
+        Grid.Row="1"
+        Margin="0,6,0,12"
+        Foreground="{DynamicResource MutedTextBrush}"
+        Text="Enter a new name without a path." />
+    <TextBox
+        x:Name="NameTextBox"
+        Grid.Row="2"
+        Padding="7"
+        AutomationProperties.Name="New project item name" />
+    <StackPanel Grid.Row="4" HorizontalAlignment="Right" Orientation="Horizontal">
+      <Button MinWidth="90" Content="Cancel" IsCancel="True" />
+      <Button MinWidth="90" Content="Rename" IsDefault="True" Click="Rename_Click" />
+    </StackPanel>
+  </Grid>
+</Window>

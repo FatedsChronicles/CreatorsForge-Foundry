@@ -10,8 +10,12 @@ All notable changes to Creators Forge Foundry are documented in this file.
   context-aware file/folder creation, automatic extension handling, immediate
   opening of new editable files, and explicit project-tree refresh.
 - Safe built-in project items for C#, C++, C, headers, JSON, XML, HTML, CSS,
-  JavaScript, Markdown, text, and CMake files, plus folders. Creation is
+  JavaScript, TypeScript, Markdown, text, and CMake files, plus folders. Creation is
   constrained to the active project and never overwrites an existing item.
+- Phase 20B Solution Explorer operations: rename (`F2`), protected drag-and-drop
+  moves, confirmed recoverable deletion (`Delete`), reveal in Windows File
+  Explorer, copy relative/full paths, and visible close buttons on every editor
+  tab.
 - Persisted Dark, Light, and System themes with live Windows-theme handling,
   High Contrast priority, readable interaction states, and SVG branding.
 - A conventional Inno Setup 6 Windows installer with a stable product identity,
@@ -38,6 +42,12 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Changed
 
+- The Add Project Item dialog now renders plain item-type names and provides
+  enough space for its complete automatic-extension and no-overwrite guidance.
+- Dragging onto a file now treats that file's containing folder as the move
+  destination, allowing items to be dropped alongside existing files.
+- The Solution Explorer context menu uses a compact local item template without
+  an unused icon/check gutter, eliminating the bright bracket-shaped dividers.
 - Windows installation, upgrade, and uninstall now use a registered native
   setup workflow instead of requiring end users to run PowerShell scripts.
 - Clean installations default to Program Files, while native upgrades retain
@@ -51,6 +61,10 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Security
 
+- Solution Explorer blocks rename/move/deletion of the project manifest, declared
+  build/package/test inputs, folders containing those inputs, and items with
+  open editor documents. Removal uses the Windows Recycle Bin rather than
+  permanent deletion.
 - Update packages must come from a local path or HTTPS endpoint and must match
   the release manifest's declared length and SHA-256 hash.
 - A process-wide Foundry mutex prevents native uninstall while the application
@@ -60,6 +74,11 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 20B product-owner acceptance passed for rename, drag-and-drop moves to
+  folders and alongside files, protected Delete, path copying, File Explorer,
+  closeable tabs, Add Project Item layout, and the cleaned context menu.
+- The Phase 20B Release gate passes all 240 automated tests and managed, native,
+  and multi-project desktop smoke tests with zero build warnings or errors.
 - Phase 20A product-owner acceptance passed for Solution Explorer presentation,
   context-aware file and folder creation, automatic extensions, immediate file
   opening, duplicate protection, refresh, and multi-project targeting.
