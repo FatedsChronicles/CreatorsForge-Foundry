@@ -83,8 +83,13 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
             return Content is not null;
         }
         await RefreshPreviewAsync(showErrors: false);
-        return lastSurface is not null &&
-            runtimeSession.State.Status == PreviewRuntimeStatus.Completed &&
+        var stopAvailable = StopRuntimeButton.IsEnabled;
+        runtimeSession.Stop();
+        return stopAvailable &&
+            !StopRuntimeButton.IsEnabled &&
+            DesignCanvas.Children.Count > 0 &&
+            lastSurface is not null &&
+            runtimeSession.State.Status == PreviewRuntimeStatus.Stopped &&
             RuntimeLogTextBox.Text.Contains("scripts were not loaded", StringComparison.Ordinal);
     }
 
@@ -152,6 +157,7 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
         if (runtimeResult.IsSuccess)
         {
             RenderRuntime(runtimeResult.Frame!);
+            ApplyRuntimeState(runtimeSession.State);
             PreviewStatusText.Text =
                 $"Isolated runtime frame generation {runtimeResult.Frame!.Generation} completed in {runtimeResult.Duration.TotalMilliseconds:0} ms. Source SHA-256: {runtimeResult.Frame.SourceSha256[..12]}...";
             return;
@@ -326,7 +332,9 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
         HeightTextBox.IsEnabled = enabled;
         AutoRefreshCheckBox.IsEnabled = enabled;
         StopRuntimeButton.IsEnabled = enabled &&
-            runtimeSession.State.Status is PreviewRuntimeStatus.Starting or PreviewRuntimeStatus.Running;
+            runtimeSession.State.Status is PreviewRuntimeStatus.Starting or
+                PreviewRuntimeStatus.Running or
+                PreviewRuntimeStatus.Completed;
         RestartRuntimeButton.IsEnabled = enabled;
     }
 
@@ -384,15 +392,25 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
         await RefreshPreviewAsync(showErrors: false);
     }
 
-    private void RuntimeSession_StateChanged(object? sender, PreviewRuntimeState state) =>
-        Dispatcher.BeginInvoke(
-            () =>
-            {
-                RuntimeStateText.Text = $"{state.Status}: {state.Message}";
-                StopRuntimeButton.IsEnabled = state.Status is PreviewRuntimeStatus.Starting or PreviewRuntimeStatus.Running;
-                RestartRuntimeButton.IsEnabled = EnabledCheckBox.IsChecked == true;
-            },
-            DispatcherPriority.Background);
+    private void RuntimeSession_StateChanged(object? sender, PreviewRuntimeState state)
+    {
+        if (Dispatcher.CheckAccess())
+        {
+            ApplyRuntimeState(state);
+            return;
+        }
+        Dispatcher.BeginInvoke(() => ApplyRuntimeState(state), DispatcherPriority.Background);
+    }
+
+    private void ApplyRuntimeState(PreviewRuntimeState state)
+    {
+        RuntimeStateText.Text = $"{state.Status}: {state.Message}";
+        StopRuntimeButton.IsEnabled = EnabledCheckBox.IsChecked == true &&
+            state.Status is PreviewRuntimeStatus.Starting or
+                PreviewRuntimeStatus.Running or
+                PreviewRuntimeStatus.Completed;
+        RestartRuntimeButton.IsEnabled = EnabledCheckBox.IsChecked == true;
+    }
 
     private async void PreviewDesignerDialog_Closed(object? sender, EventArgs e)
     {

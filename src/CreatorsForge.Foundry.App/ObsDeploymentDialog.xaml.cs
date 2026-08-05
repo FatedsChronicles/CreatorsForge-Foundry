@@ -49,6 +49,11 @@ public partial class ObsDeploymentDialog : Window
 
     public bool WasApplied { get; private set; }
 
+    internal bool InstallationLabelsReady => installations.All(choice =>
+        string.Equals(choice.ToString(), choice.DisplayName, StringComparison.Ordinal)) &&
+        (InstallationComboBox.SelectedItem is not InstallationChoice selected ||
+         string.Equals(InstallationComboBox.Text, selected.DisplayName, StringComparison.Ordinal));
+
     private async void InstallationComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         ClearPlan();
@@ -317,5 +322,8 @@ public partial class ObsDeploymentDialog : Window
         long Size,
         string Sha256);
 
-    private sealed record InstallationChoice(ObsInstallation Installation, string DisplayName);
+    private sealed record InstallationChoice(ObsInstallation Installation, string DisplayName)
+    {
+        public override string ToString() => DisplayName;
+    }
 }

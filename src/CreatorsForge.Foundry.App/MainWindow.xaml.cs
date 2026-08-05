@@ -143,7 +143,8 @@ public partial class MainWindow : Window
             var deploymentDialog = new DeploymentDialog(
                 viewModel.Workspace!,
                 viewModel.Settings);
-            deploymentReady = deploymentDialog.Content is not null;
+            deploymentReady = deploymentDialog.Content is not null &&
+                deploymentDialog.InstallationLabelsReady;
             deploymentDialog.Close();
         }
         else if (string.Equals(
@@ -154,7 +155,8 @@ public partial class MainWindow : Window
             var deploymentDialog = new ObsDeploymentDialog(
                 viewModel.Workspace!,
                 viewModel.Settings);
-            deploymentReady = deploymentDialog.Content is not null;
+            deploymentReady = deploymentDialog.Content is not null &&
+                deploymentDialog.InstallationLabelsReady;
             deploymentDialog.Close();
         }
 

@@ -64,6 +64,11 @@ public partial class DeploymentDialog : Window
 
     public bool PackagingEnabled { get; private set; }
 
+    internal bool InstallationLabelsReady => installations.All(choice =>
+        string.Equals(choice.ToString(), choice.DisplayName, StringComparison.Ordinal)) &&
+        (InstallationComboBox.SelectedItem is not InstallationChoice selected ||
+         string.Equals(InstallationComboBox.Text, selected.DisplayName, StringComparison.Ordinal));
+
     private async void InstallationComboBox_SelectionChanged(
         object sender,
         SelectionChangedEventArgs e)
@@ -504,5 +509,8 @@ public partial class DeploymentDialog : Window
 
     private sealed record InstallationChoice(
         StreamerBotInstallation Installation,
-        string DisplayName);
+        string DisplayName)
+    {
+        public override string ToString() => DisplayName;
+    }
 }

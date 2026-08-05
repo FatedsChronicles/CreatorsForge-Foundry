@@ -238,6 +238,9 @@ the current development build relative to the packaged `0.1.0-rc.1` baseline.
 
 ### Fixed
 
+- The completed PreviewHost can now be explicitly stopped while preserving its
+  last frame, and deployment installation selectors show concise version/path
+  labels instead of generated `InstallationChoice` record text.
 - Preview-host failures and timeouts now remain outside the Foundry desktop and
   report stable `CFW2310`-`CFW2313` recovery diagnostics while preserving the
   last safe structural frame.
