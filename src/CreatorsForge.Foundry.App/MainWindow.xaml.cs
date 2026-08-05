@@ -170,6 +170,9 @@ public partial class MainWindow : Window
         }
 
         var darkSyntaxHighlightingReady = FoundrySyntaxHighlighting.Dark is not null;
+        var previewShortcutReady = IsPreviewShortcut(
+            Key.P,
+            ModifierKeys.Control | ModifierKeys.Shift);
         var newProjectItemDialog = new NewProjectItemDialog("Folder: src");
         var newProjectItemDialogReady = newProjectItemDialog.Content is not null &&
             newProjectItemDialog.ItemTypes.All(option =>
@@ -205,6 +208,7 @@ public partial class MainWindow : Window
             testExplorerReady &&
             newProjectItemDialogReady &&
             previewDesignerReady &&
+            previewShortcutReady &&
             darkSyntaxHighlightingReady;
         allowClose = true;
         Close();
@@ -1546,6 +1550,11 @@ public partial class MainWindow : Window
             e.Handled = true;
             SnippetBrowser_Click(sender, e);
         }
+        else if (IsPreviewShortcut(e.Key, Keyboard.Modifiers))
+        {
+            e.Handled = true;
+            PreviewDesigner_Click(sender, e);
+        }
         else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.OemComma)
         {
             e.Handled = true;
@@ -1558,6 +1567,10 @@ public partial class MainWindow : Window
         }
 
     }
+
+    internal static bool IsPreviewShortcut(Key key, ModifierKeys modifiers) =>
+        key == Key.P &&
+        modifiers == (ModifierKeys.Control | ModifierKeys.Shift);
 
     private async Task<bool> NavigateToSourceAsync(EditorSourceLocation location)
     {

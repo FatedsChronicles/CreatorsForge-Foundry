@@ -225,6 +225,7 @@ the current development build relative to the packaged `0.1.0-rc.1` baseline.
 
 ### Fixed
 
+- **Ctrl+Shift+P** now opens Design Preview as advertised by the View menu.
 - New acceptance projects now include a test definition, preventing `CFT2002`
   when they are first opened in Test Explorer.
 - Generated OBS filter projects register the source correctly so installed
