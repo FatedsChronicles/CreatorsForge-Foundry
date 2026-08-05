@@ -295,6 +295,70 @@ public sealed class MainWindowViewModel : ObservableObject
         return true;
     }
 
+    public async Task<WorkspaceProjectItem?> CreateProjectItemAsync(
+        string parentDirectory,
+        string name,
+        WorkspaceProjectItemKind kind,
+        CancellationToken cancellationToken)
+    {
+        if (Workspace is null)
+        {
+            return null;
+        }
+
+        StatusText = "Creating project item…";
+        var result = await WorkspaceProjectItemService.CreateAsync(
+            Workspace.ProjectRoot,
+            parentDirectory,
+            name,
+            kind,
+            cancellationToken);
+        AddDiagnostics(result.Diagnostics);
+        if (!result.IsSuccess)
+        {
+            StatusText = "Project item creation failed";
+            return null;
+        }
+
+        if (!await RefreshProjectTreeAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        AppendConsole($"Created {result.Value!.RelativePath}");
+        StatusText = $"Created {result.Value.RelativePath}";
+        return result.Value;
+    }
+
+    public async Task<bool> RefreshProjectTreeAsync(CancellationToken cancellationToken)
+    {
+        if (Workspace is null)
+        {
+            return false;
+        }
+
+        var refreshed = await FoundryWorkspaceService.OpenAsync(
+            Workspace.ProjectPath,
+            cancellationToken);
+        AddDiagnostics(refreshed.Diagnostics);
+        if (!refreshed.IsSuccess)
+        {
+            StatusText = "Project refresh failed";
+            return false;
+        }
+
+        var refreshedWorkspace = refreshed.Value!;
+        ApplyWorkspace(refreshedWorkspace, clearDocuments: false);
+        SynchronizeWorkspaceSet(refreshedWorkspace);
+        if (WorkspaceSet is not null)
+        {
+            PopulateWorkspaceProjects();
+        }
+
+        StatusText = "Project files refreshed";
+        return true;
+    }
+
     public async Task<bool> SaveDocumentAsync(
         DocumentViewModel document,
         CancellationToken cancellationToken)

@@ -13,19 +13,25 @@
         DataType="{x:Type local:ProjectTreeItemViewModel}"
         ItemsSource="{Binding Children}">
       <StackPanel Orientation="Horizontal">
-        <TextBlock Margin="0,0,6,0" Foreground="{DynamicResource AccentBrush}">
-          <TextBlock.Style>
-            <Style TargetType="TextBlock">
-              <Setter Property="Text" Value="·" />
-              <Style.Triggers>
-                <DataTrigger Binding="{Binding IsDirectory}" Value="True">
-                  <Setter Property="Text" Value="▸" />
-                </DataTrigger>
-              </Style.Triggers>
-            </Style>
-          </TextBlock.Style>
-        </TextBlock>
-        <TextBlock Text="{Binding Name}" />
+        <Border
+            Width="35"
+            Height="18"
+            Margin="0,0,6,0"
+            VerticalAlignment="Center"
+            Background="{DynamicResource ButtonBackgroundBrush}"
+            BorderBrush="{DynamicResource PanelBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="2">
+          <TextBlock
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              FontFamily="Consolas"
+              FontSize="9"
+              FontWeight="SemiBold"
+              Foreground="{DynamicResource AccentBrush}"
+              Text="{Binding IconLabel}" />
+        </Border>
+        <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
       </StackPanel>
     </HierarchicalDataTemplate>
   </Window.Resources>
@@ -183,21 +189,46 @@
               Padding="10,8"
               BorderBrush="{DynamicResource PanelBorderBrush}"
               BorderThickness="0,0,0,1">
-            <StackPanel>
-              <TextBlock FontWeight="SemiBold" Text="PROJECT" />
-              <TextBlock
-                  Margin="0,3,0,0"
-                  FontSize="12"
-                  Foreground="{DynamicResource MutedTextBrush}"
-                  Text="{Binding ProjectName}" />
-            </StackPanel>
+            <DockPanel>
+              <StackPanel DockPanel.Dock="Left">
+                <TextBlock FontWeight="SemiBold" Text="SOLUTION EXPLORER" />
+                <TextBlock
+                    Margin="0,3,0,0"
+                    FontSize="12"
+                    Foreground="{DynamicResource MutedTextBrush}"
+                    Text="{Binding ProjectName}" />
+              </StackPanel>
+              <StackPanel DockPanel.Dock="Right" HorizontalAlignment="Right" Orientation="Horizontal">
+                <Button
+                    MinWidth="42"
+                    Padding="6,3"
+                    AutomationProperties.Name="Add project item"
+                    Content="Add"
+                    Click="AddProjectItem_Click" />
+                <Button
+                    MinWidth="28"
+                    Padding="6,3"
+                    AutomationProperties.Name="Refresh project files"
+                    Content="↻"
+                    ToolTip="Refresh project files"
+                    Click="RefreshProjectTree_Click" />
+              </StackPanel>
+            </DockPanel>
           </Border>
           <TreeView
               x:Name="ProjectTree"
               AutomationProperties.Name="Project files"
               Padding="7"
               ItemsSource="{Binding ProjectItems}"
-              MouseDoubleClick="ProjectTree_MouseDoubleClick" />
+              PreviewMouseRightButtonDown="ProjectTree_PreviewMouseRightButtonDown"
+              MouseDoubleClick="ProjectTree_MouseDoubleClick">
+            <TreeView.ContextMenu>
+              <ContextMenu>
+                <MenuItem Header="_Add New Item…" Click="AddProjectItem_Click" />
+                <MenuItem Header="_Refresh" Click="RefreshProjectTree_Click" />
+              </ContextMenu>
+            </TreeView.ContextMenu>
+          </TreeView>
         </DockPanel>
       </Border>
 

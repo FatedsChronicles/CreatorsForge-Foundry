@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -1035,6 +1036,78 @@ public partial class MainWindow : Window
             viewModel.OpenDocumentAsync(item.FullPath, lifetimeCancellation.Token));
     }
 
+    private void ProjectTree_PreviewMouseRightButtonDown(
+        object sender,
+        MouseButtonEventArgs e)
+    {
+        if (FindVisualParent<TreeViewItem>(e.OriginalSource as DependencyObject) is { } item)
+        {
+            item.IsSelected = true;
+            item.Focus();
+        }
+    }
+
+    private async void AddProjectItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (viewModel.Workspace is null)
+        {
+            MessageBox.Show(
+                this,
+                "Open or create a project before adding files.",
+                "Add project item",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        var selectedItem = ProjectTree.SelectedItem as ProjectTreeItemViewModel;
+        if (selectedItem?.ProjectPath is { } projectPath &&
+            !string.Equals(projectPath, viewModel.Workspace.ProjectPath, StringComparison.OrdinalIgnoreCase))
+        {
+            if (!await ConfirmDiscardOrSaveAsync() ||
+                !await viewModel.ActivateProjectAsync(projectPath, lifetimeCancellation.Token))
+            {
+                return;
+            }
+
+            selectedItem = null;
+        }
+
+        var targetDirectory = selectedItem switch
+        {
+            { IsDirectory: true } => selectedItem.FullPath,
+            not null => Path.GetDirectoryName(selectedItem.FullPath)!,
+            _ => viewModel.Workspace.ProjectRoot,
+        };
+        var relativeTarget = Path.GetRelativePath(viewModel.Workspace.ProjectRoot, targetDirectory);
+        var targetDescription = relativeTarget == "."
+            ? $"Project: {viewModel.Workspace.Manifest.Name}"
+            : $"Folder: {relativeTarget}";
+        var dialog = new NewProjectItemDialog(targetDescription) { Owner = this };
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        await RunBusyAsync(async () =>
+        {
+            var created = await viewModel.CreateProjectItemAsync(
+                targetDirectory,
+                dialog.ItemName,
+                dialog.SelectedKind,
+                lifetimeCancellation.Token);
+            if (created is { IsDirectory: false })
+            {
+                await viewModel.OpenDocumentAsync(created.FullPath, lifetimeCancellation.Token);
+            }
+
+            return created is not null;
+        });
+    }
+
+    private async void RefreshProjectTree_Click(object sender, RoutedEventArgs e) =>
+        await RunBusyAsync(() => viewModel.RefreshProjectTreeAsync(lifetimeCancellation.Token));
+
     private async void AutosaveTimer_Tick(object? sender, EventArgs e)
     {
         if (isBusy)
@@ -1146,6 +1219,22 @@ public partial class MainWindow : Window
             {
                 return descendant;
             }
+        }
+
+        return null;
+    }
+
+    private static T? FindVisualParent<T>(DependencyObject? child)
+        where T : DependencyObject
+    {
+        while (child is not null)
+        {
+            if (child is T match)
+            {
+                return match;
+            }
+
+            child = VisualTreeHelper.GetParent(child);
         }
 
         return null;
