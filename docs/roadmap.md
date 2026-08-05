@@ -490,7 +490,7 @@ cases with a zero-warning solution build.
 
 ### Phase 22B - Crash-isolated runtime preview and refresh
 
-Implemented on 2026-08-05 and awaiting product-owner manual acceptance:
+Implemented and accepted by the product owner on 2026-08-05:
 
 - a dedicated `CreatorsForge.Foundry.PreviewHost` process that receives only
   bounded, hashed structural frame data rather than a project assembly;

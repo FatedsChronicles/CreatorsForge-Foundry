@@ -67,4 +67,6 @@ or TimedOut. Failures never close the Foundry editor.
 10. Close the preview during or after a refresh and confirm Foundry remains
     responsive and no preview-host process remains running.
 
-Phase 22B exits after the automated regression gate and these ten checks pass.
+Phase 22B exited on 2026-08-05 after the automated regression gate and all ten
+product-owner acceptance checks passed, including the completed-frame Stop
+workflow and readable deployment installation selectors.

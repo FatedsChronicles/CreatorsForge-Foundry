@@ -133,6 +133,10 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 22B product-owner acceptance passed on 2026-08-05, including runtime
+  lifecycle transitions, retained frames after Stop, restart generations,
+  automatic/manual refresh, bounded logs, responsive close, and readable
+  deployment installation selectors.
 - Phase 22B passes all 271 automated tests and all seven project/workspace
   desktop smoke cases with a zero-warning solution build. Focused coverage
   executes the real isolated host, verifies restart generations, contains a
