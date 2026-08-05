@@ -6,6 +6,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 21A guided Visual Studio C++ x64 setup with `vswhere` discovery,
+  validated manual-root selection, persisted installation choice, and clear
+  readiness details for every required MSVC tool.
 - Phase 20C external-project onboarding with read-only folder analysis, exact
   managed/native build-input preview, provider/profile selection, safe
   `.foundryproj` sidecar creation, and immediate Solution Explorer opening.
@@ -45,6 +48,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Changed
 
+- OBS CMake builds now receive the selected Visual Studio installation through
+  `CMAKE_GENERATOR_INSTANCE`, while pinned SDK generation uses `dumpbin.exe` and
+  `lib.exe` from that same validated toolset.
 - The Add Project Item dialog now renders plain item-type names and provides
   enough space for its complete automatic-extension and no-overwrite guidance.
 - Dragging onto a file now treats that file's containing folder as the move
@@ -64,6 +70,8 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Security
 
+- Toolchain selection is scoped to Foundry build processes and never changes
+  user or machine `PATH`; invalid saved roots stop before CMake with `CFB1011`.
 - External-project adoption skips dependency/generated folders and directory
   links, caps scans at 10,000 files and 32 levels, refuses existing Foundry
   manifests, uses create-new sidecar writes, and rechecks sources after preview.
@@ -80,6 +88,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 21A passes all 250 automated tests and six desktop smoke cases with a
+  zero-warning build; a real auto-discovered Visual Studio/CMake build produced
+  the representative OBS plugin DLL, package ZIP, and package IR.
 - Phase 20C product-owner acceptance passed for Streamer.bot and OBS external
   folder adoption, build-input preview, sidecar creation, source preservation,
   existing-project refusal, and stale-preview prevention.

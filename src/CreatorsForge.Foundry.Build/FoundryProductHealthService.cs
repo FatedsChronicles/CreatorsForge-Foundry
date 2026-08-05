@@ -17,7 +17,9 @@ public sealed record FoundryProductHealth(
 
 public static class FoundryProductHealthService
 {
-    public static FoundryProductHealth Inspect(string? applicationDataRoot = null)
+    public static FoundryProductHealth Inspect(
+        string? applicationDataRoot = null,
+        string? visualStudioInstallationRoot = null)
     {
         var stateRoot = Path.GetFullPath(applicationDataRoot ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Creators Forge", "Foundry"));
@@ -32,9 +34,10 @@ public static class FoundryProductHealthService
         var cmake = FindCmake();
         Add(checks, "cmake", "CMake 3.20 or later", false, cmake.IsReady, cmake.Details,
             "Install CMake 3.20 or later for OBS projects.");
-        var msvc = FindMsvcCompiler();
-        Add(checks, "msvc", "Visual Studio C++ x64 tools", false, msvc is not null, msvc ?? "Not detected.",
-            "Install Visual Studio Build Tools with Desktop development with C++.");
+        var msvc = VisualStudioToolchainService.Resolve(visualStudioInstallationRoot);
+        Add(checks, "msvc", "Visual Studio C++ x64 tools", false, msvc?.IsReady == true,
+            msvc?.Summary ?? "Not detected.",
+            "Select a Visual Studio installation with Desktop development with C++ in Development Toolchain.");
         var sdk = ObsSdkManager.Inspect();
         Add(checks, "obs-sdk", $"Pinned OBS SDK {sdk.Version}", false, sdk.IsReady,
             sdk.IsReady ? sdk.SdkRoot : sdk.Message ?? sdk.SdkRoot, "Use the Development Toolchain manager to install or verify it.");
@@ -61,23 +64,6 @@ public static class FoundryProductHealthService
             .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(directory => Path.Combine(directory, name))
             .FirstOrDefault(File.Exists);
-    }
-
-    private static string? FindMsvcCompiler()
-    {
-        var direct = FindExecutable("cl.exe");
-        if (direct is not null) return direct;
-        var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-        foreach (var year in new[] { "2022", "2019" })
-        foreach (var edition in new[] { "BuildTools", "Community", "Professional", "Enterprise" })
-        {
-            var tools = Path.Combine(programFiles, "Microsoft Visual Studio", year, edition, "VC", "Tools", "MSVC");
-            if (!Directory.Exists(tools)) continue;
-            var compiler = Directory.EnumerateDirectories(tools).OrderByDescending(path => path, StringComparer.OrdinalIgnoreCase)
-                .Select(path => Path.Combine(path, "bin", "Hostx64", "x64", "cl.exe")).FirstOrDefault(File.Exists);
-            if (compiler is not null) return compiler;
-        }
-        return null;
     }
 
     private static (bool IsReady, string Details) FindCmake()

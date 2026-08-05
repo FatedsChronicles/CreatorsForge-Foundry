@@ -1052,8 +1052,23 @@ public partial class MainWindow : Window
         ApplyLayout(ShellLayout.Default);
     }
 
-    private void ObsSdkManager_Click(object sender, RoutedEventArgs e) =>
-        new ObsSdkDialog(viewModel.Settings.AllowNetworkAccess) { Owner = this }.ShowDialog();
+    private async void ObsSdkManager_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new ObsSdkDialog(viewModel.Settings) { Owner = this };
+        if (dialog.ShowDialog() == true)
+        {
+            try
+            {
+                await viewModel.SaveSettingsAsync(
+                    dialog.UpdatedSettings!,
+                    lifetimeCancellation.Token);
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                ShowUnexpectedError(exception);
+            }
+        }
+    }
 
     private async void RunSetup_Click(object sender, RoutedEventArgs e)
     {

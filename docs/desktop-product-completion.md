@@ -73,8 +73,13 @@ Visual Studio C++ tools, and the pinned OBS SDK. Only desktop/runtime checks are
 required for Streamer.bot work; native tools are marked optional until needed.
 Setup can be reopened from **Tools > Run Setup Checks**.
 
-**Tools > Development Toolchain** shows CMake, MSVC, and OBS SDK status. The SDK
-can be downloaded explicitly or installed from an offline archive folder.
+**Tools > Development Toolchain** shows CMake, MSVC, and OBS SDK status. It uses
+`vswhere` to discover current Visual Studio instances, validates the complete
+x64 C++ toolset, supports a guided installation-root selection, and persists
+the chosen instance. OBS builds receive that instance directly; Foundry never
+changes the global `PATH`. The SDK can be downloaded explicitly or installed
+from an offline archive folder. See
+[guided-toolchain-setup.md](guided-toolchain-setup.md).
 
 ## Updates, recovery, accessibility, and performance
 

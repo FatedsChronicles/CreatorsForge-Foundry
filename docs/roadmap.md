@@ -408,3 +408,41 @@ Manual acceptance (passed 2026-08-05):
 
 Exit gate: the complete automated gate and all seven manual checks pass without
 changing any pre-existing external-project file.
+
+## Phase 21 — Guided development toolchain setup
+
+Phase 21 replaces fixed Visual Studio directory assumptions with a guided,
+version-independent setup flow. It is staged so discovery and selection can be
+accepted before broader remediation and SDK management changes.
+
+### Phase 21A — Visual Studio C++ discovery and selection
+
+Phase 21A is implemented and awaiting product-owner manual acceptance.
+
+- Discover installations through `vswhere` using the C++ x64 workload ID.
+- Fall back to dynamically enumerated Visual Studio roots under both Program
+  Files locations without hard-coding a Visual Studio year or edition.
+- Validate `cl.exe`, `link.exe`, `lib.exe`, `dumpbin.exe`, and `VsDevCmd.bat` and
+  select the newest installed MSVC x64 toolset.
+- Allow a user-selected Visual Studio installation root with clear validation.
+- Persist the selection and display it in toolchain and first-run health checks.
+- Pass the selected instance to CMake and use its exact SDK utility paths.
+- Never modify user or machine environment variables.
+- Stop invalid selected-instance builds with structured diagnostic `CFB1011`.
+
+The focused automated gate covers complete/incomplete roots, newest-toolset
+selection, persisted settings, health reporting, CMake instance propagation,
+and invalid-selection blocking. Manual acceptance is defined in
+[guided-toolchain-setup.md](guided-toolchain-setup.md).
+
+The implementation gate passes all 250 automated tests and all six desktop
+smoke cases with zero build warnings or errors. A real native build also
+auto-discovered the installed Visual Studio toolchain and produced the OBS
+Configurable Filter DLL, provider package, and package IR successfully.
+
+### Planned Phase 21 increments
+
+- **21B:** consolidated CMake, Windows SDK, architecture, and pinned OBS SDK
+  readiness with guided remediation.
+- **21C:** richer build diagnostics, repair/reselect actions, and complete
+  disposable OBS build acceptance.

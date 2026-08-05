@@ -137,6 +137,7 @@ public sealed class MainWindowViewModel : ObservableObject
     {
         var settingsResult = await settingsStore.LoadAsync(cancellationToken);
         Settings = settingsResult.Value;
+        builder.VisualStudioInstallationRoot = Settings.VisualStudioInstallationRoot;
         AddDiagnostics(settingsResult.Diagnostics);
         await RefreshRecentProjectsAsync(cancellationToken);
     }
@@ -1032,6 +1033,7 @@ public sealed class MainWindowViewModel : ObservableObject
     {
         await settingsStore.SaveAsync(newSettings, cancellationToken);
         Settings = newSettings;
+        builder.VisualStudioInstallationRoot = newSettings.VisualStudioInstallationRoot;
     }
 
     public void CloseDocument(DocumentViewModel document)

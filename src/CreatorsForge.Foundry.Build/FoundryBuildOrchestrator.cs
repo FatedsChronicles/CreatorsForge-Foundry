@@ -27,6 +27,8 @@ public sealed class FoundryBuildOrchestrator
 
     private readonly IBuildProcessRunner processRunner;
 
+    public string? VisualStudioInstallationRoot { get; set; }
+
     public FoundryBuildOrchestrator(IBuildProcessRunner? processRunner = null)
     {
         this.processRunner = processRunner ?? new DotNetBuildProcessRunner();
@@ -56,7 +58,9 @@ public sealed class FoundryBuildOrchestrator
         if (manifest.Outputs.Contains(FoundryOutputKinds.ObsPlugin, StringComparer.Ordinal) ||
             manifest.Outputs.Contains(FoundryOutputKinds.ObsPluginPackage, StringComparer.Ordinal))
         {
-            return await new ObsPluginBuildPipeline(processRunner).BuildAsync(
+            return await new ObsPluginBuildPipeline(
+                processRunner,
+                VisualStudioInstallationRoot).BuildAsync(
                 manifest,
                 fullProjectPath,
                 diagnostics,
