@@ -143,7 +143,7 @@ public sealed class NativeToolchainVerificationServiceTests
             if (isBuild && createArtifact)
             {
                 var buildRoot = request.Arguments[1];
-                var output = Path.Combine(buildRoot, "verified", "creators-forge-toolchain-probe.dll");
+                var output = Path.Combine(buildRoot, "verified", "Release", "creators-forge-toolchain-probe.dll");
                 Directory.CreateDirectory(Path.GetDirectoryName(output)!);
                 File.WriteAllText(output, "probe");
             }

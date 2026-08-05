@@ -141,7 +141,7 @@ persisted until **Save & Close** is chosen.
 ### Phase 21C manual acceptance
 
 1. Build and launch the Phase 21C desktop from the acceptance location.
-2. Open **Tools â†’ Development Toolchainâ€¦** and confirm all five readiness rows
+2. Open **Tools > Development Toolchain...** and confirm all five readiness rows
    report **READY**.
 3. Choose **Verify native build** and confirm readiness, workspace preparation,
    CMake configure, native compile/link, DLL inspection, and cleanup all pass.

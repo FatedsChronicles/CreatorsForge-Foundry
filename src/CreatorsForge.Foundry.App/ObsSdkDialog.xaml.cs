@@ -140,7 +140,7 @@ public partial class ObsSdkDialog : Window
             var stageDetails = string.Join(
                 Environment.NewLine,
                 result.Stages.Select(stage =>
-                    $"{(stage.Passed ? "PASSED" : "FAILED")}  {stage.Name} ({stage.Duration.TotalMilliseconds:0} ms) â€” {stage.Details}" +
+                    $"{(stage.Passed ? "PASSED" : "FAILED")}  {stage.Name} ({stage.Duration.TotalMilliseconds:0} ms) - {stage.Details}" +
                     (string.IsNullOrWhiteSpace(stage.Command)
                         ? string.Empty
                         : $"{Environment.NewLine}  {stage.Command}")));

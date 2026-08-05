@@ -130,15 +130,15 @@ public sealed class NativeToolchainVerificationService
                 return new(false, stages, diagnostics);
             }
 
-            var binaryPath = Path.Combine(buildRoot, "verified", $"{ProbeName}.dll");
             var artifactWatch = Stopwatch.StartNew();
-            var artifactExists = File.Exists(binaryPath);
+            var binaryPath = FindProbeBinary(buildRoot);
+            var artifactExists = binaryPath is not null;
             artifactWatch.Stop();
             stages.Add(new(
                 "artifact", "Probe artifact", artifactExists, artifactWatch.Elapsed,
                 artifactExists
-                    ? "The expected x64 OBS module DLL was produced."
-                    : $"Expected output was not produced: {binaryPath}"));
+                    ? $"The expected x64 OBS module DLL was produced at {Path.GetRelativePath(buildRoot, binaryPath!)}."
+                    : $"No {ProbeName}.dll was found beneath the disposable CMake build directory."));
             if (!artifactExists)
             {
                 diagnostics.Add(Error(
@@ -260,6 +260,26 @@ public sealed class NativeToolchainVerificationService
         {
             Directory.Delete(fullRunRoot, recursive: true);
         }
+    }
+
+    private static string? FindProbeBinary(string buildRoot)
+    {
+        if (!Directory.Exists(buildRoot))
+        {
+            return null;
+        }
+
+        var fullBuildRoot = Path.GetFullPath(buildRoot);
+        var ownedPrefix = fullBuildRoot.TrimEnd(Path.DirectorySeparatorChar) +
+            Path.DirectorySeparatorChar;
+        return Directory.EnumerateFiles(
+                fullBuildRoot,
+                $"{ProbeName}.dll",
+                SearchOption.AllDirectories)
+            .Select(Path.GetFullPath)
+            .Where(path => path.StartsWith(ownedPrefix, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
     }
 
     private static FoundryDiagnostic Error(string code, string message, string fix) =>

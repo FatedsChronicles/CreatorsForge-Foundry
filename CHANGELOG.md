@@ -57,6 +57,10 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Changed
 
+- Disposable native verification now locates the exact probe DLL throughout
+  CMake's owned build tree, including configuration-specific `Release`
+  subdirectories, and uses ASCII result separators to prevent mojibake in the
+  verification dialog.
 - OBS builds now persist and invoke the exact validated `cmake.exe`; invalid or
   removed selections stop before configuration with diagnostic `CFB1012`.
 - The Development Toolchain selector now displays a compact Visual Studio name
