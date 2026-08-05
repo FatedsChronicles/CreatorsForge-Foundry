@@ -116,6 +116,119 @@ public static class WorkspaceProjectItemService
         }
     }
 
+    public static Task<WorkspaceOperationResult<WorkspaceProjectItem>> RenameAsync(
+        string projectRoot,
+        string itemPath,
+        string newName,
+        CancellationToken cancellationToken = default)
+    {
+        var inspected = InspectMutable(projectRoot, itemPath);
+        if (!inspected.IsSuccess)
+        {
+            return Task.FromResult(inspected);
+        }
+
+        var trimmedName = newName.Trim();
+        if (!IsValidName(trimmedName))
+        {
+            return Task.FromResult(Failure(
+                "CFW1112",
+                "Enter one valid file or folder name without a path.",
+                newName));
+        }
+
+        var item = inspected.Value!;
+        var destination = Path.Combine(Path.GetDirectoryName(item.FullPath)!, trimmedName);
+        if (string.Equals(item.FullPath, destination, StringComparison.OrdinalIgnoreCase))
+        {
+            return Task.FromResult(Failure(
+                "CFW1113",
+                "The new name must be different from the current name.",
+                destination));
+        }
+
+        if (File.Exists(destination) || Directory.Exists(destination))
+        {
+            return Task.FromResult(Failure(
+                "CFW1114",
+                "A file or folder with that name already exists.",
+                destination));
+        }
+
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (item.IsDirectory)
+            {
+                Directory.Move(item.FullPath, destination);
+            }
+            else
+            {
+                File.Move(item.FullPath, destination);
+            }
+
+            var fullRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(projectRoot));
+            return Task.FromResult<WorkspaceOperationResult<WorkspaceProjectItem>>(new(
+                new(
+                    destination,
+                    Path.GetRelativePath(fullRoot, destination).Replace('\\', '/'),
+                    item.IsDirectory),
+                []));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return Task.FromResult(Failure(
+                "CFW1115",
+                $"The project item could not be renamed: {exception.Message}",
+                item.FullPath));
+        }
+    }
+
+    public static WorkspaceOperationResult<WorkspaceProjectItem> InspectMutable(
+        string projectRoot,
+        string itemPath)
+    {
+        try
+        {
+            var fullRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(projectRoot));
+            var fullPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(itemPath));
+            if (string.Equals(fullRoot, fullPath, StringComparison.OrdinalIgnoreCase) ||
+                !IsWithin(fullRoot, fullPath) ||
+                ContainsReparsePoint(fullRoot, fullPath))
+            {
+                return Failure(
+                    "CFW1110",
+                    "Only non-root items inside the project can be changed.",
+                    itemPath);
+            }
+
+            var isDirectory = Directory.Exists(fullPath);
+            if (!isDirectory && !File.Exists(fullPath))
+            {
+                return Failure("CFW1111", "The project item does not exist.", fullPath);
+            }
+
+            return new(
+                new(
+                    fullPath,
+                    Path.GetRelativePath(fullRoot, fullPath).Replace('\\', '/'),
+                    isDirectory),
+                []);
+        }
+        catch (Exception exception) when (
+            exception is ArgumentException or IOException or NotSupportedException or PathTooLongException or UnauthorizedAccessException)
+        {
+            return Failure(
+                "CFW1110",
+                $"The project item path is invalid: {exception.Message}",
+                itemPath);
+        }
+    }
+
     private static bool TryResolveParent(
         string projectRoot,
         string parentDirectory,

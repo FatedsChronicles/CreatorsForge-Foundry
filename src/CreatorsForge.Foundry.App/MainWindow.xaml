@@ -220,11 +220,19 @@
               AutomationProperties.Name="Project files"
               Padding="7"
               ItemsSource="{Binding ProjectItems}"
+              PreviewKeyDown="ProjectTree_PreviewKeyDown"
               PreviewMouseRightButtonDown="ProjectTree_PreviewMouseRightButtonDown"
               MouseDoubleClick="ProjectTree_MouseDoubleClick">
             <TreeView.ContextMenu>
               <ContextMenu>
                 <MenuItem Header="_Add New Item…" Click="AddProjectItem_Click" />
+                <Separator />
+                <MenuItem Header="_Rename…" Click="RenameProjectItem_Click" />
+                <MenuItem Header="Move to _Recycle Bin…" Click="RecycleProjectItem_Click" />
+                <Separator />
+                <MenuItem Header="Show in File _Explorer" Click="RevealProjectItem_Click" />
+                <MenuItem Header="Copy _Relative Path" Click="CopyProjectItemPath_Click" />
+                <Separator />
                 <MenuItem Header="_Refresh" Click="RefreshProjectTree_Click" />
               </ContextMenu>
             </TreeView.ContextMenu>
@@ -254,7 +262,21 @@
             SelectedItem="{Binding SelectedDocument}">
           <TabControl.ItemTemplate>
             <DataTemplate>
-              <TextBlock Margin="8,2" Text="{Binding Title}" />
+              <StackPanel Margin="8,2" Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center" Text="{Binding Title}" />
+                <Button
+                    Width="18"
+                    Height="18"
+                    MinWidth="0"
+                    Margin="6,0,0,0"
+                    Padding="0"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="{Binding FileName, StringFormat=Close {0}}"
+                    Content="×"
+                    Focusable="False"
+                    ToolTip="Close document"
+                    Click="CloseDocumentTab_Click" />
+              </StackPanel>
             </DataTemplate>
           </TabControl.ItemTemplate>
           <TabControl.ContentTemplate>

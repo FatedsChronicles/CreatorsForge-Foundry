@@ -73,6 +73,56 @@ public sealed class WorkspaceServicesTests
     }
 
     [Fact]
+    public async Task ProjectItemRenameMovesFileAndFolderWithoutOverwriting()
+    {
+        using var temporary = TemporaryDirectory.Create();
+        var source = Path.Combine(temporary.Path, "source.txt");
+        var folder = Path.Combine(temporary.Path, "Features");
+        await File.WriteAllTextAsync(source, "preserved");
+        Directory.CreateDirectory(folder);
+
+        var renamedFile = await WorkspaceProjectItemService.RenameAsync(
+            temporary.Path,
+            source,
+            "renamed.txt");
+        var renamedFolder = await WorkspaceProjectItemService.RenameAsync(
+            temporary.Path,
+            folder,
+            "Components");
+        var duplicate = await WorkspaceProjectItemService.RenameAsync(
+            temporary.Path,
+            renamedFile.Value!.FullPath,
+            "Components");
+
+        Assert.True(renamedFile.IsSuccess);
+        Assert.Equal("preserved", await File.ReadAllTextAsync(renamedFile.Value.FullPath));
+        Assert.True(renamedFolder.IsSuccess);
+        Assert.True(Directory.Exists(renamedFolder.Value!.FullPath));
+        Assert.Contains(duplicate.Diagnostics, diagnostic => diagnostic.Code == "CFW1114");
+    }
+
+    [Fact]
+    public void ProjectItemInspectionRejectsRootOutsideAndMissingItems()
+    {
+        using var temporary = TemporaryDirectory.Create();
+        using var outside = TemporaryDirectory.Create();
+
+        var root = WorkspaceProjectItemService.InspectMutable(
+            temporary.Path,
+            temporary.Path);
+        var external = WorkspaceProjectItemService.InspectMutable(
+            temporary.Path,
+            outside.Path);
+        var missing = WorkspaceProjectItemService.InspectMutable(
+            temporary.Path,
+            Path.Combine(temporary.Path, "missing.txt"));
+
+        Assert.Contains(root.Diagnostics, diagnostic => diagnostic.Code == "CFW1110");
+        Assert.Contains(external.Diagnostics, diagnostic => diagnostic.Code == "CFW1110");
+        Assert.Contains(missing.Diagnostics, diagnostic => diagnostic.Code == "CFW1111");
+    }
+
+    [Fact]
     public async Task CreateOpenEditSaveAndReopenProject()
     {
         using var temporary = TemporaryDirectory.Create();
