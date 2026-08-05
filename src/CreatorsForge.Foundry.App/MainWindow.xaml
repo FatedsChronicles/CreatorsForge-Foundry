@@ -231,9 +231,44 @@
             <TreeView.ContextMenu>
               <ContextMenu>
                 <ContextMenu.Resources>
+                  <Style TargetType="MenuItem">
+                    <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+                    <Setter Property="Padding" Value="12,6" />
+                    <Setter Property="OverridesDefaultStyle" Value="True" />
+                    <Setter Property="Template">
+                      <Setter.Value>
+                        <ControlTemplate TargetType="MenuItem">
+                          <Border
+                              x:Name="ItemBorder"
+                              Padding="{TemplateBinding Padding}"
+                              Background="{TemplateBinding Background}"
+                              BorderBrush="Transparent"
+                              BorderThickness="1"
+                              CornerRadius="3"
+                              SnapsToDevicePixels="True">
+                            <ContentPresenter
+                                VerticalAlignment="Center"
+                                ContentSource="Header"
+                                RecognizesAccessKey="True" />
+                          </Border>
+                          <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                              <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource MenuSelectionBrush}" />
+                              <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{DynamicResource PanelBorderBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                              <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}" />
+                              <Setter TargetName="ItemBorder" Property="Opacity" Value="0.62" />
+                            </Trigger>
+                          </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                      </Setter.Value>
+                    </Setter>
+                  </Style>
                   <Style TargetType="Separator">
                     <Setter Property="Height" Value="1" />
-                    <Setter Property="Margin" Value="34,5,8,5" />
+                    <Setter Property="Margin" Value="8,5" />
                     <Setter Property="Opacity" Value="0.65" />
                     <Setter Property="Template">
                       <Setter.Value>
