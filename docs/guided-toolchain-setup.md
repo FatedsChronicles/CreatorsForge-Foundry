@@ -140,6 +140,12 @@ persisted until **Save & Close** is chosen.
 
 ### Phase 21C manual acceptance
 
+Passed on 2026-08-05. Product-owner runtime verification confirmed every
+disposable native-build stage, including configuration-specific probe discovery
+and owned-workspace cleanup. The corrected result dialog contains readable
+ASCII separators. The full automated and desktop smoke gates cover the
+provider sample regressions and unchanged managed workflow.
+
 1. Build and launch the Phase 21C desktop from the acceptance location.
 2. Open **Tools > Development Toolchain...** and confirm all five readiness rows
    report **READY**.
@@ -156,5 +162,5 @@ persisted until **Save & Close** is chosen.
 8. Build the Streamer.bot sample and confirm the managed build is unchanged.
 9. Confirm user and machine `PATH` values remain unchanged.
 
-Phase 21C exits when all nine checks pass and the complete regression gate is
-green.
+Phase 21C exited after product-owner runtime verification and the complete
+regression gate passed.

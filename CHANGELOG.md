@@ -112,6 +112,11 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 21C product-owner acceptance passed on 2026-08-05: the installed
+  Visual Studio, CMake, Windows SDK, and pinned OBS SDK completed readiness,
+  disposable preparation, configure, compile/link, nested DLL discovery, and
+  owned-workspace cleanup successfully. The result dialog also confirmed the
+  ASCII-only status formatting correction.
 - Phase 21C passes all 259 automated tests and six desktop smoke cases with a
   zero-warning solution build. Focused tests cover successful disposable
   compilation, readiness blocking, captured configure failures, exact x64 SDK
