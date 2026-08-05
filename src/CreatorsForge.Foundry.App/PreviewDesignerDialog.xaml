@@ -1,0 +1,67 @@
+<Window Style="{StaticResource FoundryWindowStyle}"
+    x:Class="CreatorsForge.Foundry.App.PreviewDesignerDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Design Preview" Width="1180" Height="780" MinWidth="900" MinHeight="620"
+    ShowInTaskbar="False" WindowStartupLocation="CenterOwner">
+  <Grid Margin="18">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <StackPanel>
+      <TextBlock FontSize="20" FontWeight="SemiBold" Text="Preview foundation and design surface"/>
+      <TextBlock Margin="0,6,0,0" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap"
+          Text="Foundry analyzes declared source structure only. Project assemblies, scripts, and browser content are never executed in this Phase 22A design view."/>
+    </StackPanel>
+
+    <Grid Grid.Row="1" Margin="0,14,0,0">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="320"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <Border Padding="14" Background="{DynamicResource PanelBackgroundBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1" CornerRadius="4">
+        <StackPanel>
+          <CheckBox x:Name="EnabledCheckBox" FontWeight="SemiBold" Content="Enable design preview for this project" IsChecked="True" Checked="PreviewSetting_Changed" Unchecked="PreviewSetting_Changed"/>
+          <TextBlock Margin="0,16,0,4" Foreground="{DynamicResource MutedTextBrush}" Text="Preview kind"/>
+          <ComboBox x:Name="KindComboBox" Padding="7" DisplayMemberPath="DisplayName" SelectionChanged="Kind_SelectionChanged" AutomationProperties.Name="Preview kind"/>
+          <TextBlock Margin="0,14,0,4" Foreground="{DynamicResource MutedTextBrush}" Text="Declared source"/>
+          <ComboBox x:Name="SourceComboBox" Padding="7" IsEditable="True" AutomationProperties.Name="Preview source"/>
+          <TextBlock Margin="0,14,0,4" Foreground="{DynamicResource MutedTextBrush}" Text="Viewport preset"/>
+          <ComboBox x:Name="ViewportComboBox" Padding="7" DisplayMemberPath="DisplayName" SelectionChanged="Viewport_SelectionChanged" AutomationProperties.Name="Preview viewport preset"/>
+          <Grid Margin="0,8,0,0">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <StackPanel><TextBlock Foreground="{DynamicResource MutedTextBrush}" Text="Width"/><TextBox x:Name="WidthTextBox" Margin="0,4,0,0" Padding="7" Text="1280"/></StackPanel>
+            <StackPanel Grid.Column="2"><TextBlock Foreground="{DynamicResource MutedTextBrush}" Text="Height"/><TextBox x:Name="HeightTextBox" Margin="0,4,0,0" Padding="7" Text="720"/></StackPanel>
+          </Grid>
+          <Button Margin="0,16,0,0" Content="Refresh structural preview" Click="RefreshPreview_Click"/>
+          <Separator Margin="0,16"/>
+          <TextBlock FontWeight="SemiBold" Text="Safety boundary"/>
+          <TextBlock Margin="0,6,0,0" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap"
+              Text="Source reads are confined to the project, limited to 1 MiB, hashed for traceability, and parsed without loading a DLL or invoking JavaScript."/>
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Column="2" Padding="12" Background="{DynamicResource EditorBackgroundBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1" CornerRadius="4">
+        <Grid>
+          <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+          <DockPanel Margin="0,0,0,10">
+            <TextBlock x:Name="SurfaceTitleText" FontWeight="SemiBold" Text="Design surface"/>
+            <TextBlock x:Name="ViewportStatusText" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="{DynamicResource MutedTextBrush}"/>
+          </DockPanel>
+          <Border Grid.Row="1" Padding="8" Background="{DynamicResource WindowBackgroundBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1">
+            <Viewbox x:Name="PreviewViewbox" Stretch="Uniform" StretchDirection="DownOnly">
+              <Canvas x:Name="DesignCanvas" Width="1280" Height="720" Background="{DynamicResource PanelBackgroundBrush}" ClipToBounds="True"/>
+            </Viewbox>
+          </Border>
+          <TextBlock x:Name="PreviewStatusText" Grid.Row="2" Margin="0,10,0,0" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap"
+              Text="Choose a supported source and refresh the preview."/>
+        </Grid>
+      </Border>
+    </Grid>
+
+    <StackPanel Grid.Row="2" Margin="0,14,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
+      <Button MinWidth="100" Content="Cancel" IsCancel="True"/>
+      <Button MinWidth="140" Content="Save &amp; Close" IsDefault="True" Click="Save_Click"/>
+    </StackPanel>
+  </Grid>
+</Window>

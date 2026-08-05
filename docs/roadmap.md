@@ -466,3 +466,31 @@ Configurable Filter DLL, provider package, and package IR successfully.
   smoke cases with a zero-warning solution build. Runtime acceptance confirmed
   readiness, temporary preparation, CMake configure, native compile/link,
   configuration-specific DLL discovery, cleanup, and readable result text.
+
+## Phase 22 - Visual design and runtime preview
+
+Phase 22 provides visual feedback before deployment while keeping user code
+outside the Foundry editor process.
+
+### Phase 22A - Preview foundation and design surface
+
+Implemented on 2026-08-05 and awaiting product-owner manual acceptance:
+
+- optional schema-v1 `preview` metadata with explicit enablement, kind, source,
+  and bounded viewport;
+- provider-aware source eligibility for static web, WinForms, and OBS component
+  structure;
+- a themed desktop design window with viewport presets and persistence;
+- bounded static source analysis, SHA-256 traceability, and stable diagnostics;
+- no assembly loading, browser hosting, script execution, build, or deployment.
+
+Manual acceptance is defined in [design-preview.md](design-preview.md).
+The implementation gate passes all 267 automated tests and all six desktop
+smoke cases with a zero-warning solution build.
+
+### Planned Phase 22 increments
+
+- **22B:** crash-isolated runtime preview host, lifecycle control, timeouts,
+  restart, logs, and failure recovery.
+- **22C:** provider-specific runtime adapters and representative visual sample
+  projects.

@@ -50,6 +50,7 @@ Foundry uses versioned `.foundryproj` manifests to describe:
 - Test definitions and compatibility profiles
 - Reusable components
 - Publishing and signing configuration
+- Optional non-running design-preview source and viewport
 - Expected release outputs
 
 Projects remain reviewable, portable, and suitable for source control.
@@ -92,6 +93,13 @@ Foundry provides a pinned native development workflow for OBS Studio plugins, in
 - OBS log inspection
 
 The OBS Plugin Designer provides a structured interface for module and component metadata while keeping the generated C source visible and reviewable.
+
+### Safe structural design preview
+
+The Phase 22A Design Preview provides viewport-aware structural feedback for
+static HTML, WinForms source, and declared OBS components. It reads one bounded
+project source and never executes project assemblies, scripts, or plugins.
+Interactive runtime fidelity is reserved for a later crash-isolated host.
 
 ## Integrated editors
 

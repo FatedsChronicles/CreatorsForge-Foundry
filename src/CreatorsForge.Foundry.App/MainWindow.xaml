@@ -111,6 +111,9 @@
             Header="OBS Native API _Reference..."
             Click="ObsApiReference_Click" />
       </MenuItem>
+      <MenuItem Header="_View">
+        <MenuItem Header="Design _Preview..." InputGestureText="Ctrl+Shift+P" Click="PreviewDesigner_Click" />
+      </MenuItem>
       <MenuItem Header="_Tools">
         <MenuItem Header="Reusable _Components..." Click="ReusableComponents_Click" />
         <MenuItem Header="Migrate Legacy _Project..." Click="MigrateProject_Click" />
@@ -156,6 +159,7 @@
           <Button Content="Snippets" Click="SnippetBrowser_Click" />
           <Button Content="Build" Click="Build_Click" />
           <Button Content="Test" Click="TestExplorer_Click" />
+          <Button Content="Preview" Click="PreviewDesigner_Click" />
         </StackPanel>
         <StackPanel
             DockPanel.Dock="Right"

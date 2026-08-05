@@ -370,6 +370,61 @@ public sealed class FoundryProjectValidatorTests
         Assert.Contains("CFP0067", codes);
     }
 
+    [Fact]
+    public void ValidateAcceptsStaticWebPreviewMetadata()
+    {
+        var manifest = CreateValidManifest() with
+        {
+            Preview = new FoundryPreview
+            {
+                Kind = FoundryPreview.StaticWebKind,
+                Source = "ui/index.html",
+                Width = 1280,
+                Height = 720,
+            },
+        };
+
+        Assert.Empty(FoundryProjectValidator.Validate(manifest));
+    }
+
+    [Fact]
+    public void ValidateAcceptsDeclaredWinFormsPreview()
+    {
+        var manifest = CreateValidManifest() with
+        {
+            Features = new FoundryFeatures { WinForms = true },
+            Preview = new FoundryPreview
+            {
+                Kind = FoundryPreview.WinFormsKind,
+                Source = "src/EntryPoint.cs",
+                Width = 800,
+                Height = 600,
+            },
+        };
+
+        Assert.Empty(FoundryProjectValidator.Validate(manifest));
+    }
+
+    [Fact]
+    public void ValidateRejectsUnsafeUnsupportedOrIneligiblePreview()
+    {
+        var manifest = CreateValidManifest() with
+        {
+            Preview = new FoundryPreview
+            {
+                Kind = FoundryPreview.WinFormsKind,
+                Source = "../outside.html",
+                Width = 100,
+                Height = 5000,
+            },
+        };
+
+        var codes = FoundryProjectValidator.Validate(manifest).Select(item => item.Code).ToHashSet();
+        Assert.Contains("CFP0069", codes);
+        Assert.Contains("CFP0070", codes);
+        Assert.Contains("CFP0071", codes);
+    }
+
     private static FoundryProjectManifest CreateValidManifest() => new()
     {
         Name = "Shoutout Tool",

@@ -28,6 +28,8 @@ public sealed record FoundryProjectManifest
 
     public FoundryFeatures Features { get; init; } = new();
 
+    public FoundryPreview? Preview { get; init; }
+
     public FoundryManagedBuild? ManagedBuild { get; init; }
 
     public FoundryNativeBuild? NativeBuild { get; init; }
@@ -124,6 +126,31 @@ public sealed record FoundryFeatures
     public bool WinForms { get; init; }
 
     public bool MockRuntime { get; init; }
+
+    [JsonExtensionData]
+    public IDictionary<string, JsonElement>? AdditionalProperties { get; init; }
+}
+
+public sealed record FoundryPreview
+{
+    public const string StaticWebKind = "static-web";
+    public const string WinFormsKind = "winforms";
+    public const string ObsComponentKind = "obs-component";
+
+    public static IReadOnlySet<string> SupportedKinds { get; } =
+        new HashSet<string>(
+            [StaticWebKind, WinFormsKind, ObsComponentKind],
+            StringComparer.Ordinal);
+
+    public bool Enabled { get; init; } = true;
+
+    public string Kind { get; init; } = string.Empty;
+
+    public string Source { get; init; } = string.Empty;
+
+    public int Width { get; init; } = 1280;
+
+    public int Height { get; init; } = 720;
 
     [JsonExtensionData]
     public IDictionary<string, JsonElement>? AdditionalProperties { get; init; }

@@ -172,6 +172,14 @@ public partial class MainWindow : Window
                 string.Equals(option.ToString(), option.DisplayName, StringComparison.Ordinal));
         newProjectItemDialog.Close();
 
+        var previewDesignerReady = true;
+        if (viewModel.Workspace is not null)
+        {
+            var previewDesigner = new PreviewDesignerDialog(viewModel.Workspace);
+            previewDesignerReady = previewDesigner.Content is not null;
+            previewDesigner.Close();
+        }
+
         var succeeded = IsVisible &&
             (source is null || FindVisualChild<CodeEditor>(DocumentTabs) is not null) &&
             SnippetProvider.Default.Catalogue.Snippets.Count > 0 &&
@@ -182,6 +190,7 @@ public partial class MainWindow : Window
             deploymentReady &&
             testExplorerReady &&
             newProjectItemDialogReady &&
+            previewDesignerReady &&
             darkSyntaxHighlightingReady;
         allowClose = true;
         Close();
@@ -739,6 +748,23 @@ public partial class MainWindow : Window
                 design,
                 generatedSource,
                 lifetimeCancellation.Token));
+        }
+    }
+
+    private async void PreviewDesigner_Click(object sender, RoutedEventArgs e)
+    {
+        var workspace = viewModel.Workspace;
+        if (workspace is null)
+        {
+            MessageBox.Show(this, "Open a project before using Design Preview.", "Design Preview", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+        if (!await viewModel.SaveAllAsync(lifetimeCancellation.Token)) return;
+
+        var dialog = new PreviewDesignerDialog(workspace) { Owner = this };
+        if (dialog.ShowDialog() == true)
+        {
+            await viewModel.RefreshWorkspaceAsync(lifetimeCancellation.Token);
         }
     }
 

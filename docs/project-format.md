@@ -25,6 +25,7 @@ A working manifest is available at
 | `template` | No | Versioned project-template ID, revision, and captured parameters |
 | `features.winForms` | No | Project intends to use WinForms |
 | `features.mockRuntime` | No | Project intends to use the mock runtime |
+| `preview` | No | Explicit non-running design-preview kind, source, and viewport |
 | `managedBuild.targetFramework` | For `managedLibrary` | Currently `net481` |
 | `managedBuild.languageVersion` | For `managedLibrary` | Currently `7.3` |
 | `managedBuild.assemblyName` | For `managedLibrary` | Output assembly name |
@@ -49,7 +50,7 @@ Supported output identifiers are:
 - `obsPluginPackage`
 
 Unknown properties are retained at the manifest, target, features, managed
-build, and bridge levels. This supports forward-compatible inspection and
+build, preview, and bridge levels. This supports forward-compatible inspection and
 future read-modify-write workflows. Unknown output identifiers remain errors
 because an older Foundry cannot truthfully claim to build them.
 
@@ -225,3 +226,11 @@ the versioned Phase 9C template IDs, `source` must also appear in
 `nativeBuild.sources`, and `componentId` is a stable lowercase OBS source ID.
 Older and hand-authored projects may omit the block. See
 [obs-plugin-designer.md](obs-plugin-designer.md).
+
+## Design preview
+
+The optional `preview` block enables the Phase 22A structural design surface.
+Supported kinds are `static-web`, `winforms`, and `obs-component`; the declared
+source must match the kind and remain project-relative. Viewports are bounded
+from 240x180 through 3840x2160. Preview metadata is not a build input and does
+not change package output. See [design-preview.md](design-preview.md).

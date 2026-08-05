@@ -6,6 +6,12 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 22A non-executing design preview foundation with optional project
+  metadata, provider-aware eligibility, HD/Full HD/Compact/Portrait/custom
+  viewports, source hashing, and structural surfaces for static HTML, WinForms,
+  and OBS components.
+- A **View > Design Preview...** command and **Preview** toolbar action with
+  persisted per-project settings and explicit disable support.
 - Phase 21C disposable native-build verification, which configures, compiles,
   links, checks, and removes a minimal x64 OBS module outside the open project.
   Results include timed stages, invoked commands, captured tool output, and
@@ -88,6 +94,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Security
 
+- Design preview source resolution is project-confined and limited to 1 MiB and
+  48 bounded elements. Phase 22A never loads a project assembly, hosts a browser,
+  executes JavaScript, invokes native code, builds, or deploys.
 - Native toolchain verification uses a uniquely named system-temporary
   workspace, validates ownership before recursive cleanup, never writes to the
   open project, and never changes global environment variables.
@@ -112,6 +121,11 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 22A passes all 267 automated tests and six desktop smoke cases with a
+  zero-warning solution build. Focused coverage verifies preview eligibility,
+  bounded UTF-8 source reads, HTML script exclusion, WinForms layout extraction,
+  missing/oversized source diagnostics, disable behavior, forward-compatible
+  persistence, and construction of the themed preview window.
 - Phase 21C product-owner acceptance passed on 2026-08-05: the installed
   Visual Studio, CMake, Windows SDK, and pinned OBS SDK completed readiness,
   disposable preparation, configure, compile/link, nested DLL discovery, and
