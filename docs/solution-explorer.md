@@ -29,10 +29,12 @@ keyboard equivalents are `F2`, `Delete`, and `Ctrl+C` for the relative path.
 Right-click selection follows the pointer, so the menu always acts on the item
 that was clicked.
 
-Drag a file or folder onto another folder to move it. Moves stay within the
-active project, never overwrite a destination item, and cannot place a folder
-inside itself or one of its descendants. Declared project inputs and open
-documents retain the same protection used by rename and delete.
+Drag a file or folder onto another folder, or onto a file already inside the
+destination folder, to move it. Dropping onto a file places the moved item next
+to that file. Moves stay within the active project, never overwrite a
+destination item, and cannot place a folder inside itself or one of its
+descendants. Declared project inputs and open documents retain the same
+protection used by rename and delete.
 
 Rename never overwrites another item. Removal always asks for confirmation and
 uses the Recycle Bin so an accidentally removed item can be restored. Foundry

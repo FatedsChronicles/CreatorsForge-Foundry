@@ -44,6 +44,8 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 - The Add Project Item dialog now renders plain item-type names and provides
   enough space for its complete automatic-extension and no-overwrite guidance.
+- Dragging onto a file now treats that file's containing folder as the move
+  destination, allowing items to be dropped alongside existing files.
 - Windows installation, upgrade, and uninstall now use a registered native
   setup workflow instead of requiring end users to run PowerShell scripts.
 - Clean installations default to Program Files, while native upgrades retain

@@ -346,9 +346,10 @@ Manual acceptance:
    folder containing a declared source; confirm Foundry blocks each operation.
 4. Open an unreferenced file and confirm rename/removal is blocked until its tab
    is closed.
-5. Drag unreferenced files and folders into another folder and confirm the tree
-   refreshes; confirm declared/open items, cross-project moves, self/descendant
-   folder moves, and destination collisions are refused.
+5. Drag unreferenced files and folders onto a destination folder and onto a file
+   within that folder; confirm both place the moved item inside that folder and
+   refresh the tree. Confirm declared/open items, cross-project moves,
+   self/descendant folder moves, and destination collisions are refused.
 6. Delete an unreferenced item using `Delete`, confirm it disappears, then
    restore it from Windows Recycle Bin and refresh the tree.
 7. Confirm **Show in File Explorer** selects a file and opens a selected folder;

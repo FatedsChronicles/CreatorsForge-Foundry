@@ -1214,7 +1214,7 @@ public partial class MainWindow : Window
 
         await RunBusyAsync(() => viewModel.MoveProjectItemAsync(
             source.FullPath,
-            destination!.FullPath,
+            GetProjectTreeDropDirectory(destination!),
             lifetimeCancellation.Token));
     }
 
@@ -1226,18 +1226,20 @@ public partial class MainWindow : Window
         source = e.Data.GetData(ProjectTreeItemDataFormat) as ProjectTreeItemViewModel;
         destination = FindVisualParent<TreeViewItem>(e.OriginalSource as DependencyObject)
             ?.DataContext as ProjectTreeItemViewModel;
-        if (source is null || destination is not { IsDirectory: true })
+        if (source is null || destination is null)
         {
             return false;
         }
 
+        var destinationDirectory = GetProjectTreeDropDirectory(destination);
+
         if (string.Equals(
                 Path.GetDirectoryName(source.FullPath),
-                destination.FullPath,
+                destinationDirectory,
                 StringComparison.OrdinalIgnoreCase) ||
             (source.IsDirectory &&
-             (string.Equals(source.FullPath, destination.FullPath, StringComparison.OrdinalIgnoreCase) ||
-              destination.FullPath.StartsWith(
+             (string.Equals(source.FullPath, destinationDirectory, StringComparison.OrdinalIgnoreCase) ||
+              destinationDirectory.StartsWith(
                   $"{Path.TrimEndingDirectorySeparator(source.FullPath)}{Path.DirectorySeparatorChar}",
                   StringComparison.OrdinalIgnoreCase))))
         {
@@ -1249,6 +1251,9 @@ public partial class MainWindow : Window
         return string.Equals(sourceProject, destinationProject, StringComparison.OrdinalIgnoreCase) &&
                string.Equals(sourceProject, viewModel.Workspace?.ProjectPath, StringComparison.OrdinalIgnoreCase);
     }
+
+    private static string GetProjectTreeDropDirectory(ProjectTreeItemViewModel target) =>
+        target.IsDirectory ? target.FullPath : Path.GetDirectoryName(target.FullPath)!;
 
     private void ProjectTree_PreviewKeyDown(object sender, KeyEventArgs e)
     {
