@@ -6,6 +6,11 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 22D opt-in executable previews: real staged HTML/CSS/JavaScript through
+  disposable WebView2, real built WinForms capture in an isolated STA host, and
+  real OBS module/source/property callback execution through libobs.
+- Explicit live-mode warnings, disposable OBS runtime selection, captured PNG
+  display, and structural fallback when build or executable preview fails.
 - Phase 22C provider-specific isolated preview adapters for static-web
   documents, WinForms design models, and OBS components, with visible adapter
   identity and distinct browser, form, program-canvas, and properties layouts.
@@ -74,6 +79,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Changed
 
+- OBS executable preview now offers only supported 32.1.2/32.2.1 runtimes,
+  prefers the project API match instead of the oldest discovered installation,
+  and reports module/open/init/source flags when lifecycle execution fails.
 - Managed projects with `features.winForms` now receive deterministic
   `System.Drawing` and `System.Windows.Forms` framework references so their
   declared UI source builds as well as previews.
@@ -111,6 +119,10 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Security
 
+- Executable preview rejects linked or escaping paths, bounds staged files and
+  PNG/result payloads, blocks browser network/navigation/permissions/popups,
+  and never loads project code in the Foundry desktop process. Structural mode
+  remains the non-executing default.
 - Phase 22C adapter descriptors are limited to 12 metadata entries with bounded
   keys and values. Provider adapters never receive project binary paths or full
   source text and never embed a browser engine, load managed project code,
@@ -146,6 +158,14 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 22D passes all 283 automated tests and all ten representative desktop
+  smoke cases with a zero-warning release build. Real integration coverage
+  executes JavaScript while proving outbound requests are blocked, captures the
+  built WinForms sample, rejects path escape, contains malformed host output,
+  and verifies disposable cleanup.
+  The supplied OBS 32.1.2 runtime also loaded the configurable-filter DLL,
+  registered/created/destroyed its source, and returned its live `enabled`
+  property callback without a module failure.
 - Phase 22C product-owner acceptance passed on 2026-08-06, covering all twelve
   static-web, WinForms, and OBS adapter checks, live refresh, isolation logs,
   lifecycle controls, sample builds, and host cleanup.

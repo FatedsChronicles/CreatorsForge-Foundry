@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -26,8 +26,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\CreatorsForge.Foundry.Build\CreatorsForge.Foundry.Build.csproj" />
     <ProjectReference Include="..\..\src\CreatorsForge.Foundry.PreviewHost\CreatorsForge.Foundry.PreviewHost.csproj" />
     <ProjectReference Include="..\..\src\CreatorsForge.Foundry.Workspaces\CreatorsForge.Foundry.Workspaces.csproj" />
+    <ProjectReference Include="..\CreatorsForge.Foundry.PreviewProtocolFixture\CreatorsForge.Foundry.PreviewProtocolFixture.csproj" />
   </ItemGroup>
 
 </Project>

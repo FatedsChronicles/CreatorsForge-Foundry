@@ -108,6 +108,12 @@ program-canvas/properties composition. The adapters operate only on sanitized
 design metadata; project assemblies, scripts, browser engines, libobs, and
 plugin DLLs remain unexecuted.
 
+Phase 22D adds an explicit **Run live executable preview** mode. It renders real
+staged HTML/CSS/JavaScript through a disposable WebView2 profile, builds and
+captures real WinForms UI in an isolated managed host, and executes applicable
+OBS module/source/property callbacks in the native host. Safe structural mode
+remains the default.
+
 Representative visual projects are available in
 `samples/VisualPreviewSamples.foundryworkspace`.
 

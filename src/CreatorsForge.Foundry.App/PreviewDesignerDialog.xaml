@@ -14,7 +14,7 @@
     <StackPanel>
       <TextBlock FontSize="20" FontWeight="SemiBold" Text="Isolated runtime preview"/>
       <TextBlock Margin="0,6,0,0" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap"
-          Text="Foundry analyzes the declared source, then sends only a bounded visual frame to a crash-isolated provider adapter. Project assemblies, scripts, browser engines, libobs, and plugin DLLs are never loaded."/>
+          Text="Structural mode remains non-executing. Opt-in executable mode stages bounded content and runs it only inside disposable browser, managed, or native child hosts; Foundry itself never loads project code."/>
     </StackPanel>
 
     <Grid Grid.Row="1" Margin="0,14,0,0">
@@ -34,6 +34,15 @@
             <StackPanel Grid.Column="2"><TextBlock Foreground="{DynamicResource MutedTextBrush}" Text="Height"/><TextBox x:Name="HeightTextBox" Margin="0,4,0,0" Padding="7" Text="720"/></StackPanel>
           </Grid>
           <CheckBox x:Name="AutoRefreshCheckBox" Margin="0,14,0,0" IsChecked="True" Content="Refresh automatically when the source is saved" Checked="AutoRefresh_Changed" Unchecked="AutoRefresh_Changed"/>
+          <CheckBox x:Name="ExecutablePreviewCheckBox" Margin="0,12,0,0" FontWeight="SemiBold"
+              Content="Run live executable preview (untrusted code)" Checked="ExecutablePreview_Changed" Unchecked="ExecutablePreview_Changed"
+              AutomationProperties.Name="Run live executable preview"/>
+          <TextBlock Margin="0,4,0,0" Foreground="{DynamicResource AccentBrush}" TextWrapping="Wrap"
+              Text="Live mode builds or executes staged project content in a crash-isolated process. Enable it only for code you trust."/>
+          <StackPanel x:Name="ObsRuntimePanel" Margin="0,10,0,0" Visibility="Collapsed">
+            <TextBlock Foreground="{DynamicResource MutedTextBrush}" Text="Disposable OBS runtime"/>
+            <ComboBox x:Name="ObsRuntimeComboBox" Margin="0,4,0,0" Padding="7" AutomationProperties.Name="Disposable OBS runtime"/>
+          </StackPanel>
           <Button Margin="0,12,0,0" Content="Refresh preview" Click="RefreshPreview_Click"/>
           <Grid Margin="0,8,0,0">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -60,7 +69,10 @@
           </DockPanel>
           <Border Grid.Row="1" Padding="8" Background="{DynamicResource WindowBackgroundBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1">
             <Viewbox x:Name="PreviewViewbox" Stretch="Uniform" StretchDirection="DownOnly">
-              <Canvas x:Name="DesignCanvas" Width="1280" Height="720" Background="{DynamicResource PanelBackgroundBrush}" ClipToBounds="True"/>
+              <Grid x:Name="PreviewSurfaceRoot" Width="1280" Height="720">
+                <Canvas x:Name="DesignCanvas" Width="1280" Height="720" Background="{DynamicResource PanelBackgroundBrush}" ClipToBounds="True"/>
+                <Image x:Name="ExecutablePreviewImage" Stretch="Fill" Visibility="Collapsed"/>
+              </Grid>
             </Viewbox>
           </Border>
           <TextBlock x:Name="PreviewStatusText" Grid.Row="2" Margin="0,10,0,0" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap"

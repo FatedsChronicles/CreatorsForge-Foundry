@@ -45,12 +45,21 @@ internal static class Program
             if (request.Surface.ViewportWidth is < 240 or > 3840 ||
                 request.Surface.ViewportHeight is < 180 or > 2160 ||
                 request.Surface.Elements.Count > MaximumElements ||
-                !IsAdapterDescriptorBounded(request.Surface.Adapter))
+                !IsAdapterDescriptorBounded(request.Surface.Adapter) ||
+                !IsExecutionDescriptorBounded(request.Execution))
             {
                 return await WriteFailureAsync(resultPath, "Preview frame exceeds the bounded runtime contract.");
             }
 
-            var adapterResult = PreviewProviderAdapterRegistry.Render(request.Surface);
+            var executableResult = request.Execution is null
+                ? null
+                : await ExecutablePreviewRenderer.RenderAsync(
+                    request,
+                    Path.GetDirectoryName(requestPath)!,
+                    CancellationToken.None);
+            var adapterResult = executableResult is null
+                ? PreviewProviderAdapterRegistry.Render(request.Surface)
+                : null;
             var frame = new PreviewRuntimeFrame(
                 request.SessionId,
                 request.Generation,
@@ -60,22 +69,26 @@ internal static class Program
                 request.Surface.ViewportWidth,
                 request.Surface.ViewportHeight,
                 request.Surface.SourceSha256,
-                adapterResult.Elements,
-                adapterResult.AdapterId,
-                adapterResult.DisplayName);
+                executableResult?.Elements ?? adapterResult!.Elements,
+                executableResult?.AdapterId ?? adapterResult!.AdapterId,
+                executableResult?.DisplayName ?? adapterResult!.DisplayName,
+                executableResult is null ? "structural" : "executable",
+                executableResult?.ImagePngBase64);
             var logs = new List<string>
             {
                 $"Accepted bounded {request.Surface.Kind} frame generation {request.Generation}.",
-                $"Selected provider adapter {adapterResult.AdapterId}: {adapterResult.DisplayName}.",
-                $"Rendered {adapterResult.Elements.Count} visual elements at {frame.ViewportWidth} x {frame.ViewportHeight}.",
+                $"Selected provider adapter {frame.AdapterId}: {frame.AdapterDisplayName}.",
+                $"Rendered {frame.Elements.Count} visual elements at {frame.ViewportWidth} x {frame.ViewportHeight}.",
             };
-            logs.AddRange(adapterResult.Logs);
-            logs.Add("Project assemblies, scripts, browser engines, and native plugins were not loaded by the Phase 22C adapters.");
+            logs.AddRange(executableResult?.Logs ?? adapterResult!.Logs);
+            logs.Add(executableResult is null
+                ? "Project assemblies, scripts, browser engines, and native plugins were not loaded by the structural adapters."
+                : "Executable content ran only in disposable child hosts; it was not loaded by the Foundry desktop process.");
             await WriteAsync(resultPath, new PreviewRuntimeHostResult(true, frame, logs, null));
             Console.WriteLine($"Preview generation {request.Generation} completed.");
             return 0;
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException or ArgumentException)
+        catch (Exception exception) when (exception is not OutOfMemoryException and not StackOverflowException)
         {
             return await WriteFailureAsync(resultPath, exception.Message);
         }
@@ -93,6 +106,16 @@ internal static class Program
             adapter.Metadata.All(item =>
                 item.Key.Length is > 0 and <= 64 &&
                 item.Value.Length <= 256);
+    }
+
+    private static bool IsExecutionDescriptorBounded(PreviewRuntimeExecution? execution)
+    {
+        if (execution is null) return true;
+        return execution.Kind.Length is > 0 and <= 64 &&
+            execution.EntryPath.Length is > 0 and <= 512 &&
+            (execution.ArtifactPath?.Length ?? 0) <= 512 &&
+            (execution.ObsRoot?.Length ?? 0) <= 512 &&
+            (execution.ComponentId?.Length ?? 0) <= 256;
     }
 
     private static async Task<int> WriteFailureAsync(string resultPath, string message)

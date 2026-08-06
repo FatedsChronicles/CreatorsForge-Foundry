@@ -1,5 +1,7 @@
-// Phase 22C deliberately does not execute this file. It exists to demonstrate
-// that the safe static-web adapter ignores project JavaScript.
+// Structural mode deliberately ignores this file. Phase 22D live mode executes
+// it only inside the disposable WebView2 host.
+document.documentElement.dataset.foundryRuntime = "javascript-ready";
+document.querySelector(".progress").title = "JavaScript executed in isolated preview";
 document.querySelector("button")?.addEventListener("click", () => {
   document.querySelector(".progress").textContent = "Goal celebrated!";
 });

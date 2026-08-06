@@ -184,7 +184,10 @@ public partial class MainWindow : Window
         var previewDesignerReady = true;
         if (viewModel.Workspace is not null)
         {
-            var previewDesigner = new PreviewDesignerDialog(viewModel.Workspace);
+            var previewDesigner = new PreviewDesignerDialog(
+                viewModel.Workspace,
+                viewModel.Settings,
+                viewModel.Builder);
             var expectedSource = string.Equals(
                 viewModel.Workspace.Manifest.Target?.Provider,
                 "obsstudio",
@@ -786,7 +789,10 @@ public partial class MainWindow : Window
         }
         if (!await viewModel.SaveAllAsync(lifetimeCancellation.Token)) return;
 
-        var dialog = new PreviewDesignerDialog(workspace) { Owner = this };
+        var dialog = new PreviewDesignerDialog(
+            workspace,
+            viewModel.Settings,
+            viewModel.Builder) { Owner = this };
         if (dialog.ShowDialog() == true)
         {
             await viewModel.RefreshWorkspaceAsync(lifetimeCancellation.Token);
