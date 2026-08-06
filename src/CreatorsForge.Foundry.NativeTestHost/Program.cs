@@ -102,6 +102,13 @@ internal static class Program
             var enumerate = GetDelegate<ObsEnumSourceTypes>(obs, "obs_enum_source_types");
             var create = GetDelegate<ObsSourceCreate>(obs, "obs_source_create");
             var release = GetDelegate<ObsSourceRelease>(obs, "obs_source_release");
+            var getProperties = GetDelegate<ObsSourceProperties>(obs, "obs_source_properties");
+            var firstProperty = GetDelegate<ObsPropertiesFirst>(obs, "obs_properties_first");
+            var nextProperty = GetDelegate<ObsPropertyNext>(obs, "obs_property_next");
+            var propertyName = GetDelegate<ObsPropertyName>(obs, "obs_property_name");
+            var propertyDescription = GetDelegate<ObsPropertyDescription>(obs, "obs_property_description");
+            var propertyType = GetDelegate<ObsPropertyType>(obs, "obs_property_get_type");
+            var destroyProperties = GetDelegate<ObsPropertiesDestroy>(obs, "obs_properties_destroy");
             var queue = GetDelegate<ObsQueueTask>(obs, "obs_queue_task");
             locale = AllocateUtf8("en-US");
             pluginPath = AllocateUtf8(Path.GetFullPath(request.PluginPath));
@@ -127,6 +134,7 @@ internal static class Program
             var lifecycle = initialized && !string.IsNullOrWhiteSpace(request.ExpectedSourceId);
             var created = false;
             var destroyed = false;
+            var properties = new List<ObsNativeProperty>();
             if (lifecycle)
             {
                 sourceId = AllocateUtf8(request.ExpectedSourceId!);
@@ -138,6 +146,26 @@ internal static class Program
                 }
 
                 created = true;
+                var propertySet = getProperties(source);
+                if (propertySet != IntPtr.Zero)
+                {
+                    try
+                    {
+                        var property = firstProperty(propertySet);
+                        while (property != IntPtr.Zero && properties.Count < 32)
+                        {
+                            properties.Add(new(
+                                Marshal.PtrToStringUTF8(propertyName(property)) ?? string.Empty,
+                                Marshal.PtrToStringUTF8(propertyDescription(property)) ?? string.Empty,
+                                propertyType(property)));
+                            if (!nextProperty(ref property)) break;
+                        }
+                    }
+                    finally
+                    {
+                        destroyProperties(propertySet);
+                    }
+                }
                 release(source);
                 ObsTask barrier = _ => { };
                 queue(3, barrier, IntPtr.Zero, true);
@@ -155,6 +183,7 @@ internal static class Program
                 SourceLifecycleAttempted = lifecycle,
                 SourceCreated = created,
                 SourceDestroyed = destroyed,
+                Properties = properties,
             };
         }
         finally
@@ -246,6 +275,28 @@ internal static class Program
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void ObsSourceRelease(IntPtr source);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate IntPtr ObsSourceProperties(IntPtr source);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate IntPtr ObsPropertiesFirst(IntPtr properties);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return: MarshalAs(UnmanagedType.I1)]
+    private delegate bool ObsPropertyNext(ref IntPtr property);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate IntPtr ObsPropertyName(IntPtr property);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate IntPtr ObsPropertyDescription(IntPtr property);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int ObsPropertyType(IntPtr property);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void ObsPropertiesDestroy(IntPtr properties);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void ObsTask(IntPtr parameter);

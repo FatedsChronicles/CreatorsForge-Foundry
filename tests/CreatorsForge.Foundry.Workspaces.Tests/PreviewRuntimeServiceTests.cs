@@ -1,4 +1,5 @@
 using CreatorsForge.Foundry.PreviewHost;
+using CreatorsForge.Foundry.PreviewProtocolFixture;
 
 namespace CreatorsForge.Foundry.Workspaces.Tests;
 
@@ -77,6 +78,21 @@ public sealed class PreviewRuntimeServiceTests
         Assert.Contains(result.Diagnostics, item => item.Code == "CFW2312");
     }
 
+    [Fact]
+    public async Task MalformedHostResultIsContainedAndReported()
+    {
+        using var stateRoot = new TemporaryDirectory();
+        await using var session = new PreviewRuntimeSession(
+            typeof(PreviewProtocolFixtureMarker).Assembly.Location,
+            stateRoot.Path);
+
+        var result = await session.RefreshAsync(CreateSurface());
+
+        Assert.Equal(PreviewRuntimeStatus.Failed, result.Status);
+        Assert.Contains(result.Diagnostics, item => item.Code == "CFW2313");
+        Assert.Empty(Directory.EnumerateFiles(stateRoot.Path, "result.json", SearchOption.AllDirectories));
+    }
+
     [Theory]
     [InlineData("static-web", PreviewAdapterIds.StaticWeb, "browser-chrome")]
     [InlineData("winforms", PreviewAdapterIds.WinForms, "form-chrome")]
@@ -101,6 +117,58 @@ public sealed class PreviewRuntimeServiceTests
         Assert.Contains(result.Frame.Elements, item => item.VisualRole == expectedRole);
         Assert.InRange(result.Frame.Elements.Count, 1, 48);
         Assert.Contains(result.Logs, item => item.Contains($"provider adapter {adapterId}", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ExecutableWebPreviewRunsStagedJavascriptAndReturnsPng()
+    {
+        using var project = new TemporaryDirectory();
+        using var stateRoot = new TemporaryDirectory();
+        var ui = System.IO.Path.Combine(project.Path, "ui");
+        Directory.CreateDirectory(ui);
+        await File.WriteAllTextAsync(
+            System.IO.Path.Combine(ui, "index.html"),
+            "<html><head><title>Before</title><script>fetch('https://example.com').then(r=>document.title=r.ok?'network allowed':'Phase22D blocked network').catch(()=>document.title='Phase22D blocked network');</script></head><body style='background:#e66a00'>Live</body></html>");
+        await using var session = new PreviewRuntimeSession(
+            typeof(PreviewHostMarker).Assembly.Location,
+            stateRoot.Path,
+            TimeSpan.FromSeconds(15));
+
+        var result = await session.RefreshExecutableAsync(
+            CreateProviderSurface("static-web", PreviewAdapterIds.StaticWeb, "Static web"),
+            new(
+                PreviewRuntimeExecutionKinds.StaticWeb,
+                project.Path,
+                "ui/index.html"));
+
+        Assert.True(result.IsSuccess, string.Join(Environment.NewLine, result.Diagnostics));
+        Assert.Equal("executable", result.Frame!.ExecutionMode);
+        Assert.Equal("static-web-live-v1", result.Frame.AdapterId);
+        var png = Convert.FromBase64String(result.Frame.ImagePngBase64!);
+        Assert.Equal(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }, png[..8]);
+        Assert.Contains(result.Logs, item => item.Contains("Phase22D blocked network", StringComparison.Ordinal));
+        Assert.False(Directory.Exists(System.IO.Path.Combine(stateRoot.Path, "preview-runtime", session.SessionId, "1")));
+    }
+
+    [Fact]
+    public async Task ExecutablePreviewRejectsSourceOutsideProjectBoundary()
+    {
+        using var project = new TemporaryDirectory();
+        using var stateRoot = new TemporaryDirectory();
+        await using var session = new PreviewRuntimeSession(
+            typeof(PreviewHostMarker).Assembly.Location,
+            stateRoot.Path);
+
+        var result = await session.RefreshExecutableAsync(
+            CreateProviderSurface("static-web", PreviewAdapterIds.StaticWeb, "Static web"),
+            new(
+                PreviewRuntimeExecutionKinds.StaticWeb,
+                project.Path,
+                "../outside.html"));
+
+        Assert.Equal(PreviewRuntimeStatus.Failed, result.Status);
+        Assert.Contains(result.Diagnostics, item => item.Code == "CFW2311");
+        Assert.Empty(Directory.EnumerateFiles(stateRoot.Path, "request.json", SearchOption.AllDirectories));
     }
 
     private static PreviewDesignSurface CreateSurface() => new(

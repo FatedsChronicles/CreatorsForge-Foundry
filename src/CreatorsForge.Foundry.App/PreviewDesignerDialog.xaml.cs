@@ -1,10 +1,14 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using CreatorsForge.Foundry.Build;
+using CreatorsForge.Foundry.Core.Packaging;
 using CreatorsForge.Foundry.Core.Projects;
 using CreatorsForge.Foundry.PreviewHost;
 using CreatorsForge.Foundry.Workspaces;
+using CreatorsForge.Foundry.Workspaces.Deployment;
 
 namespace CreatorsForge.Foundry.App;
 
@@ -25,6 +29,8 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
         new("Custom", 0, 0),
     ];
     private readonly FoundryWorkspace workspace;
+    private readonly FoundryUserSettings? settings;
+    private readonly FoundryBuildOrchestrator? builder;
     private readonly PreviewRuntimeSession runtimeSession;
     private readonly DispatcherTimer autoRefreshTimer;
     private CancellationTokenSource? refreshCancellation;
@@ -34,9 +40,14 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
     private bool initialized;
     private bool disposed;
 
-    public PreviewDesignerDialog(FoundryWorkspace workspace)
+    public PreviewDesignerDialog(
+        FoundryWorkspace workspace,
+        FoundryUserSettings? settings = null,
+        FoundryBuildOrchestrator? builder = null)
     {
         this.workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+        this.settings = settings;
+        this.builder = builder;
         InitializeComponent();
         var stateRoot = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -63,6 +74,7 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
         ViewportComboBox.SelectedItem = ViewportOptions.FirstOrDefault(item =>
             item.Width == configuredWidth && item.Height == configuredHeight) ?? ViewportOptions[^1];
         RefreshSources(configured?.Source);
+        RefreshObsRuntimes();
         initialized = true;
         SetConfigurationControlsEnabled();
         Loaded += async (_, _) => await RefreshPreviewAsync(showErrors: false);
@@ -123,6 +135,18 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
             : sources.Count > 0 ? sources[0] : null;
     }
 
+    private void RefreshObsRuntimes()
+    {
+        var installations = ObsInstallationDiscovery.Discover(
+            settings?.ObsInstallations ?? [],
+            workspace.ProjectRoot);
+        ObsRuntimeComboBox.ItemsSource = installations
+            .Select(item => new ObsRuntimeOption(item.RootPath, $"OBS {item.Version} - {item.RootPath}"))
+            .ToArray();
+        ObsRuntimeComboBox.SelectedIndex = ObsRuntimeComboBox.Items.Count > 0 ? 0 : -1;
+        UpdateExecutableControls();
+    }
+
     private async Task RefreshPreviewAsync(bool showErrors, bool restart = false)
     {
         refreshCancellation?.Cancel();
@@ -146,9 +170,32 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
         ConfigureSourceWatcher(configuration.Source);
         RenderStructural(lastSurface);
         PreviewStatusText.Text = "Structural frame ready. Starting isolated runtime renderer...";
-        var runtimeResult = restart
-            ? await runtimeSession.RestartAsync(lastSurface, cancellationToken)
-            : await runtimeSession.RefreshAsync(lastSurface, cancellationToken);
+        PreviewRuntimeResult runtimeResult;
+        if (ExecutablePreviewCheckBox.IsChecked == true)
+        {
+            PreviewRuntimeInput executableInput;
+            try
+            {
+                PreviewStatusText.Text = "Preparing bounded executable preview inputs...";
+                executableInput = await CreateExecutableInputAsync(configuration, cancellationToken);
+            }
+            catch (Exception exception) when (
+                exception is InvalidOperationException or IOException or UnauthorizedAccessException)
+            {
+                PreviewStatusText.Text = $"Executable preview was not started: {exception.Message} The structural frame remains available.";
+                RuntimeLogTextBox.Text = exception.Message;
+                return;
+            }
+            runtimeResult = restart
+                ? await runtimeSession.RestartExecutableAsync(lastSurface, executableInput, cancellationToken)
+                : await runtimeSession.RefreshExecutableAsync(lastSurface, executableInput, cancellationToken);
+        }
+        else
+        {
+            runtimeResult = restart
+                ? await runtimeSession.RestartAsync(lastSurface, cancellationToken)
+                : await runtimeSession.RefreshAsync(lastSurface, cancellationToken);
+        }
         if (cancellationToken.IsCancellationRequested)
         {
             return;
@@ -174,8 +221,12 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
     private void RenderStructural(PreviewDesignSurface surface)
     {
         DesignCanvas.Children.Clear();
+        ExecutablePreviewImage.Source = null;
+        ExecutablePreviewImage.Visibility = Visibility.Collapsed;
         DesignCanvas.Width = surface.ViewportWidth;
         DesignCanvas.Height = surface.ViewportHeight;
+        PreviewSurfaceRoot.Width = surface.ViewportWidth;
+        PreviewSurfaceRoot.Height = surface.ViewportHeight;
         SurfaceTitleText.Text = $"{workspace.Manifest.Name} - {surface.Kind}";
         AdapterStatusText.Text = surface.Adapter?.DisplayName ?? "Generic structural renderer";
         ViewportStatusText.Text = $"{surface.ViewportWidth} x {surface.ViewportHeight}";
@@ -201,9 +252,29 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
         DesignCanvas.Children.Clear();
         DesignCanvas.Width = frame.ViewportWidth;
         DesignCanvas.Height = frame.ViewportHeight;
+        PreviewSurfaceRoot.Width = frame.ViewportWidth;
+        PreviewSurfaceRoot.Height = frame.ViewportHeight;
         SurfaceTitleText.Text = $"{workspace.Manifest.Name} - {frame.AdapterDisplayName}";
         AdapterStatusText.Text = $"{frame.AdapterId} - isolated generation {frame.Generation}";
         ViewportStatusText.Text = $"{frame.ViewportWidth} x {frame.ViewportHeight}";
+        if (!string.IsNullOrWhiteSpace(frame.ImagePngBase64))
+        {
+            var bytes = Convert.FromBase64String(frame.ImagePngBase64);
+            using var stream = new MemoryStream(bytes, writable: false);
+            var image = new BitmapImage();
+            image.BeginInit();
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            image.StreamSource = stream;
+            image.EndInit();
+            image.Freeze();
+            ExecutablePreviewImage.Source = image;
+            ExecutablePreviewImage.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            ExecutablePreviewImage.Source = null;
+            ExecutablePreviewImage.Visibility = Visibility.Collapsed;
+        }
         foreach (var element in frame.Elements)
         {
             AddVisualElement(element);
@@ -214,10 +285,10 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
     {
         var label = new TextBlock
         {
-            Margin = new Thickness(element.VisualRole == "badge" ? 6 : 10),
+            Margin = new Thickness(element.VisualRole is "badge" or "success-badge" ? 6 : 10),
             Text = element.Label,
             TextWrapping = TextWrapping.Wrap,
-            FontWeight = element.VisualRole is "heading" or "action" or "badge" or
+            FontWeight = element.VisualRole is "heading" or "action" or "badge" or "success-badge" or
                 "browser-chrome" or "form-chrome" or "obs-chrome"
                 ? FontWeights.Bold
                 : FontWeights.SemiBold,
@@ -234,7 +305,7 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
             Width = Math.Max(20, element.Width),
             Height = Math.Max(20, element.Height),
             BorderThickness = new Thickness(element.VisualRole is "action" or "canvas" or "obs-preview" ? 3 : 1.5),
-            CornerRadius = new CornerRadius(element.VisualRole is "action" or "badge" ? 7 : 3),
+            CornerRadius = new CornerRadius(element.VisualRole is "action" or "badge" or "success-badge" ? 7 : 3),
             Child = label,
             ToolTip = $"{element.Kind}: {element.Name} ({element.VisualRole})",
             Opacity = element.VisualRole == "media" ? 0.82 : 1,
@@ -292,6 +363,7 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
     {
         if (!initialized) return;
         RefreshSources();
+        UpdateExecutableControls();
         ScheduleAutoRefresh();
     }
 
@@ -322,6 +394,21 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
         }
     }
 
+    private void ExecutablePreview_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!initialized) return;
+        UpdateExecutableControls();
+        ScheduleAutoRefresh();
+    }
+
+    private void UpdateExecutableControls()
+    {
+        var isObs = KindComboBox.SelectedItem is PreviewKindOption { Id: FoundryPreview.ObsComponentKind };
+        ObsRuntimePanel.Visibility = ExecutablePreviewCheckBox.IsChecked == true && isObs
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
     private void PreviewSetting_Changed(object sender, RoutedEventArgs e)
     {
         if (!initialized) return;
@@ -337,11 +424,65 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
         WidthTextBox.IsEnabled = enabled;
         HeightTextBox.IsEnabled = enabled;
         AutoRefreshCheckBox.IsEnabled = enabled;
+        ExecutablePreviewCheckBox.IsEnabled = enabled;
         StopRuntimeButton.IsEnabled = enabled &&
             runtimeSession.State.Status is PreviewRuntimeStatus.Starting or
                 PreviewRuntimeStatus.Running or
                 PreviewRuntimeStatus.Completed;
         RestartRuntimeButton.IsEnabled = enabled;
+    }
+
+    private async Task<PreviewRuntimeInput> CreateExecutableInputAsync(
+        FoundryPreview configuration,
+        CancellationToken cancellationToken)
+    {
+        if (configuration.Kind == FoundryPreview.StaticWebKind)
+        {
+            return new(
+                PreviewRuntimeExecutionKinds.StaticWeb,
+                workspace.ProjectRoot,
+                configuration.Source);
+        }
+        if (builder is null)
+        {
+            throw new InvalidOperationException("The Foundry build service is unavailable in this desktop session.");
+        }
+        var build = await builder.BuildAsync(workspace.Manifest, workspace.ProjectPath, cancellationToken);
+        if (!build.IsSuccess)
+        {
+            var errors = build.Diagnostics
+                .Where(item => item.IsError)
+                .Select(item => $"{item.Code}: {item.Message}");
+            throw new InvalidOperationException("Build failed. " + string.Join(" ", errors));
+        }
+        var artifactKind = configuration.Kind == FoundryPreview.WinFormsKind
+            ? FoundryPackageArtifactKinds.ManagedAssembly
+            : FoundryPackageArtifactKinds.NativeObsPlugin;
+        var artifact = build.PackageIntermediate!.Artifacts.SingleOrDefault(item => item.Kind == artifactKind) ??
+            throw new InvalidOperationException($"Build produced no {artifactKind} artifact.");
+        var artifactPath = Path.Combine(
+            workspace.ProjectRoot,
+            "build",
+            artifact.Path.Replace('/', Path.DirectorySeparatorChar));
+        if (configuration.Kind == FoundryPreview.WinFormsKind)
+        {
+            return new(
+                PreviewRuntimeExecutionKinds.WinForms,
+                workspace.ProjectRoot,
+                configuration.Source,
+                artifactPath);
+        }
+        if (ObsRuntimeComboBox.SelectedItem is not ObsRuntimeOption obsRuntime)
+        {
+            throw new InvalidOperationException("Select a disposable OBS Studio runtime for executable preview.");
+        }
+        return new(
+            PreviewRuntimeExecutionKinds.ObsComponent,
+            workspace.ProjectRoot,
+            configuration.Source,
+            artifactPath,
+            obsRuntime.RootPath,
+            workspace.Manifest.ObsPlugin?.Design?.ComponentId);
     }
 
     private void ConfigureSourceWatcher(string relativeSource)
@@ -462,6 +603,11 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
     }
 
     private sealed record ViewportOption(string DisplayName, int Width, int Height)
+    {
+        public override string ToString() => DisplayName;
+    }
+
+    private sealed record ObsRuntimeOption(string RootPath, string DisplayName)
     {
         public override string ToString() => DisplayName;
     }

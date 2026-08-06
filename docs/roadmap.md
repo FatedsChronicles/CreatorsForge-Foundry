@@ -533,3 +533,26 @@ Manual acceptance is defined in [provider-preview-adapters.md](provider-preview-
 The implementation gate passes all 279 automated tests and all ten sample
 project/workspace desktop smoke cases with a zero-warning release build.
 All twelve provider-adapter manual acceptance checks passed on 2026-08-06.
+
+### Phase 22D - Executable provider preview runtimes
+
+Implemented on 2026-08-06 and awaiting product-owner manual acceptance:
+
+- explicit, session-only live execution with structural preview retained as the
+  non-executing default;
+- bounded web-content staging and real HTML/CSS/JavaScript rendering through a
+  disposable WebView2 profile with network, navigation, permission, and popup
+  denial;
+- deterministic WinForms build, copied-assembly loading in the isolated STA
+  host, and live PNG capture;
+- deterministic OBS build and real libobs module, source lifecycle, and
+  properties-callback execution in the crash-isolated native host;
+- bounded PNG/result sizes, linked-path rejection, timeouts, process-tree
+  termination, restart/stop, logs, fallback, and owned-run cleanup.
+
+Manual acceptance is defined in
+[executable-preview-runtimes.md](executable-preview-runtimes.md).
+The implementation gate passes all 283 automated tests and all ten sample
+project/workspace desktop smoke cases with a zero-warning release build. A real
+OBS 32.1.2 run also passed module load, source create/destroy, and the
+configurable filter's `enabled` property callback.

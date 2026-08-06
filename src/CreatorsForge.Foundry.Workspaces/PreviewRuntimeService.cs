@@ -20,7 +20,30 @@ public sealed record PreviewRuntimeRequest(
     string SessionId,
     int Generation,
     DateTimeOffset RequestedAtUtc,
-    PreviewDesignSurface Surface);
+    PreviewDesignSurface Surface,
+    PreviewRuntimeExecution? Execution = null);
+
+public static class PreviewRuntimeExecutionKinds
+{
+    public const string StaticWeb = "static-web-live-v1";
+    public const string WinForms = "winforms-live-v1";
+    public const string ObsComponent = "obs-component-live-v1";
+}
+
+public sealed record PreviewRuntimeInput(
+    string Kind,
+    string ProjectRoot,
+    string Source,
+    string? ArtifactPath = null,
+    string? ObsRoot = null,
+    string? ComponentId = null);
+
+public sealed record PreviewRuntimeExecution(
+    string Kind,
+    string EntryPath,
+    string? ArtifactPath = null,
+    string? ObsRoot = null,
+    string? ComponentId = null);
 
 public sealed record PreviewRuntimeElement(
     string Kind,
@@ -43,7 +66,9 @@ public sealed record PreviewRuntimeFrame(
     string SourceSha256,
     IReadOnlyList<PreviewRuntimeElement> Elements,
     string AdapterId = PreviewAdapterIds.Generic,
-    string AdapterDisplayName = "Generic isolated renderer");
+    string AdapterDisplayName = "Generic isolated renderer",
+    string ExecutionMode = "structural",
+    string? ImagePngBase64 = null);
 
 public sealed record PreviewRuntimeHostResult(
     bool Succeeded,
@@ -70,7 +95,11 @@ public sealed record PreviewRuntimeState(
 public sealed class PreviewRuntimeSession : IAsyncDisposable
 {
     private const int MaximumOutputCharacters = 64 * 1024;
-    private const int MaximumResultBytes = 2 * 1024 * 1024;
+    private const int MaximumResultBytes = 16 * 1024 * 1024;
+    private const int MaximumStagedFiles = 128;
+    private const long MaximumStagedFileBytes = 4 * 1024 * 1024;
+    private const long MaximumStagedTotalBytes = 24 * 1024 * 1024;
+    private const long MaximumStagedBinaryBytes = 64 * 1024 * 1024;
     private static readonly JsonSerializerOptions WriteOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -110,6 +139,18 @@ public sealed class PreviewRuntimeSession : IAsyncDisposable
     public async Task<PreviewRuntimeResult> RefreshAsync(
         PreviewDesignSurface surface,
         CancellationToken cancellationToken = default)
+        => await RunAsync(surface, null, cancellationToken).ConfigureAwait(false);
+
+    public async Task<PreviewRuntimeResult> RefreshExecutableAsync(
+        PreviewDesignSurface surface,
+        PreviewRuntimeInput input,
+        CancellationToken cancellationToken = default)
+        => await RunAsync(surface, input, cancellationToken).ConfigureAwait(false);
+
+    private async Task<PreviewRuntimeResult> RunAsync(
+        PreviewDesignSurface surface,
+        PreviewRuntimeInput? input,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(surface);
         CancellationTokenSource runCancellation;
@@ -143,7 +184,10 @@ public sealed class PreviewRuntimeSession : IAsyncDisposable
             Directory.CreateDirectory(runDirectory);
             var requestPath = Path.Combine(runDirectory, "request.json");
             var resultPath = Path.Combine(runDirectory, "result.json");
-            var request = new PreviewRuntimeRequest(SessionId, currentGeneration, DateTimeOffset.UtcNow, surface);
+            var execution = input is null
+                ? null
+                : await StageExecutionAsync(input, runDirectory, runCancellation.Token).ConfigureAwait(false);
+            var request = new PreviewRuntimeRequest(SessionId, currentGeneration, DateTimeOffset.UtcNow, surface, execution);
             await File.WriteAllTextAsync(
                 requestPath,
                 JsonSerializer.Serialize(request, WriteOptions) + "\n",
@@ -285,6 +329,15 @@ public sealed class PreviewRuntimeSession : IAsyncDisposable
         return RefreshAsync(surface, cancellationToken);
     }
 
+    public Task<PreviewRuntimeResult> RestartExecutableAsync(
+        PreviewDesignSurface surface,
+        PreviewRuntimeInput input,
+        CancellationToken cancellationToken = default)
+    {
+        Stop();
+        return RefreshExecutableAsync(surface, input, cancellationToken);
+    }
+
     public void Stop()
     {
         lock (sync)
@@ -346,6 +399,162 @@ public sealed class PreviewRuntimeSession : IAsyncDisposable
         value.Length <= MaximumOutputCharacters
             ? value
             : value[..MaximumOutputCharacters] + "\n[output truncated]";
+
+    private static async Task<PreviewRuntimeExecution> StageExecutionAsync(
+        PreviewRuntimeInput input,
+        string runDirectory,
+        CancellationToken cancellationToken)
+    {
+        var projectRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(input.ProjectRoot));
+        if (!Directory.Exists(projectRoot) || IsReparsePoint(projectRoot))
+        {
+            throw new InvalidOperationException("The executable preview project root is unavailable or linked.");
+        }
+        var entry = ResolveContainedPath(projectRoot, input.Source);
+        if (!File.Exists(entry) || HasReparsePoint(projectRoot, entry))
+        {
+            throw new InvalidOperationException("The executable preview entry source is unavailable or linked.");
+        }
+
+        var executionRoot = Path.Combine(runDirectory, "execution");
+        Directory.CreateDirectory(executionRoot);
+        if (string.Equals(input.Kind, PreviewRuntimeExecutionKinds.StaticWeb, StringComparison.Ordinal))
+        {
+            var sourceDirectory = Path.GetDirectoryName(entry)!;
+            var contentRoot = Path.Combine(executionRoot, "web");
+            await CopyBoundedTreeAsync(sourceDirectory, contentRoot, cancellationToken).ConfigureAwait(false);
+            return new(
+                input.Kind,
+                Path.Combine("execution", "web", Path.GetFileName(entry)).Replace('\\', '/'));
+        }
+
+        if (string.IsNullOrWhiteSpace(input.ArtifactPath))
+        {
+            throw new InvalidOperationException("Executable preview requires a successful build artifact.");
+        }
+        var artifact = Path.GetFullPath(input.ArtifactPath);
+        var buildRoot = Path.Combine(projectRoot, "build");
+        if (!artifact.StartsWith(buildRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+            !File.Exists(artifact) || HasReparsePoint(projectRoot, artifact) ||
+            new FileInfo(artifact).Length > MaximumStagedBinaryBytes)
+        {
+            throw new InvalidOperationException("The executable preview artifact is unavailable, linked, or too large.");
+        }
+        var binaryRoot = Path.Combine(executionRoot, "bin");
+        Directory.CreateDirectory(binaryRoot);
+        var stagedArtifact = Path.Combine(binaryRoot, Path.GetFileName(artifact));
+        File.Copy(artifact, stagedArtifact, overwrite: true);
+        long stagedBinaryBytes = new FileInfo(artifact).Length;
+        if (string.Equals(input.Kind, PreviewRuntimeExecutionKinds.WinForms, StringComparison.Ordinal))
+        {
+            var artifactDirectory = Path.GetDirectoryName(artifact)!;
+            foreach (var dependency in Directory.EnumerateFiles(artifactDirectory, "*.dll")
+                         .Where(path => !string.Equals(path, artifact, StringComparison.OrdinalIgnoreCase))
+                         .Take(32))
+            {
+                if (!IsReparsePoint(dependency) && new FileInfo(dependency).Length <= MaximumStagedFileBytes)
+                {
+                    stagedBinaryBytes += new FileInfo(dependency).Length;
+                    if (stagedBinaryBytes > MaximumStagedBinaryBytes)
+                    {
+                        throw new InvalidOperationException("Executable preview dependencies exceed the 64 MiB staging limit.");
+                    }
+                    File.Copy(dependency, Path.Combine(binaryRoot, Path.GetFileName(dependency)), overwrite: true);
+                }
+            }
+        }
+        return new(
+            input.Kind,
+            input.Source.Replace('\\', '/'),
+            Path.Combine("execution", "bin", Path.GetFileName(artifact)).Replace('\\', '/'),
+            input.ObsRoot,
+            input.ComponentId);
+    }
+
+    private static async Task CopyBoundedTreeAsync(
+        string sourceRoot,
+        string destinationRoot,
+        CancellationToken cancellationToken)
+    {
+        var allowed = new HashSet<string>(
+            [".html", ".htm", ".css", ".js", ".json", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".woff", ".woff2", ".ttf"],
+            StringComparer.OrdinalIgnoreCase);
+        long total = 0;
+        var files = EnumerateFilesWithoutLinks(sourceRoot)
+            .Where(path => allowed.Contains(Path.GetExtension(path)))
+            .Take(MaximumStagedFiles + 1)
+            .ToArray();
+        if (files.Length > MaximumStagedFiles)
+        {
+            throw new InvalidOperationException($"Executable web preview exceeds the {MaximumStagedFiles}-file staging limit.");
+        }
+        foreach (var file in files)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (IsReparsePoint(file))
+            {
+                throw new InvalidOperationException("Executable web preview does not follow file-system links.");
+            }
+            var length = new FileInfo(file).Length;
+            total += length;
+            if (length > MaximumStagedFileBytes || total > MaximumStagedTotalBytes)
+            {
+                throw new InvalidOperationException("Executable web preview exceeds its bounded staging size.");
+            }
+            var relative = Path.GetRelativePath(sourceRoot, file);
+            var destination = Path.Combine(destinationRoot, relative);
+            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            await using var source = File.OpenRead(file);
+            await using var target = File.Create(destination);
+            await source.CopyToAsync(target, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static IEnumerable<string> EnumerateFilesWithoutLinks(string root)
+    {
+        var pending = new Queue<string>();
+        pending.Enqueue(root);
+        while (pending.Count > 0)
+        {
+            var directory = pending.Dequeue();
+            if (IsReparsePoint(directory))
+            {
+                throw new InvalidOperationException("Executable web preview does not follow directory links.");
+            }
+            foreach (var file in Directory.EnumerateFiles(directory)) yield return file;
+            foreach (var child in Directory.EnumerateDirectories(directory)) pending.Enqueue(child);
+        }
+    }
+
+    private static string ResolveContainedPath(string root, string relative)
+    {
+        if (string.IsNullOrWhiteSpace(relative) || Path.IsPathRooted(relative))
+        {
+            throw new InvalidOperationException("Executable preview paths must be project-relative.");
+        }
+        var full = Path.GetFullPath(Path.Combine(root, relative.Replace('/', Path.DirectorySeparatorChar)));
+        if (!full.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Executable preview path escaped the project root.");
+        }
+        return full;
+    }
+
+    private static bool IsReparsePoint(string path) =>
+        (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0;
+
+    private static bool HasReparsePoint(string root, string path)
+    {
+        var boundary = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
+        var current = new FileInfo(Path.GetFullPath(path)).Directory;
+        while (current is not null && current.FullName.Length >= boundary.Length)
+        {
+            if (IsReparsePoint(current.FullName)) return true;
+            if (string.Equals(current.FullName, boundary, StringComparison.OrdinalIgnoreCase)) break;
+            current = current.Parent;
+        }
+        return IsReparsePoint(path);
+    }
 
     private void DeleteOwnedRunDirectory(string? path)
     {

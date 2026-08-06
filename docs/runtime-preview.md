@@ -26,6 +26,11 @@ composition, WinForms design-model composition, and OBS component composition.
 They use this isolation boundary without embedding a browser engine, loading a
 managed project assembly, loading libobs, or loading a plugin DLL.
 
+Phase 22D adds a separate, explicit opt-in executable mode. It stages bounded
+copies and executes them only in disposable browser, managed, or native child
+hosts. Structural mode remains the default. See
+[executable-preview-runtimes.md](executable-preview-runtimes.md).
+
 ## Refresh and recovery workflow
 
 - **Refresh preview** re-analyzes the selected source and starts a fresh host

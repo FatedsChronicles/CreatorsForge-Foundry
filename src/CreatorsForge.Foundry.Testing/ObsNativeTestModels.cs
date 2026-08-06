@@ -18,8 +18,11 @@ public sealed record ObsNativeHostResult
     public bool SourceLifecycleAttempted { get; init; }
     public bool SourceCreated { get; init; }
     public bool SourceDestroyed { get; init; }
+    public IReadOnlyList<ObsNativeProperty> Properties { get; init; } = [];
     public string? Error { get; init; }
 }
+
+public sealed record ObsNativeProperty(string Name, string Description, int Type);
 
 public sealed record ObsAbiInspection(
     bool IsPortableExecutable,
