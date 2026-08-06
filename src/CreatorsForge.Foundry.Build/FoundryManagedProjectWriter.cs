@@ -56,6 +56,16 @@ public static class FoundryManagedProjectWriter
                     new XAttribute("Include", "Microsoft.NETFramework.ReferenceAssemblies"),
                     new XAttribute("Version", ReferenceAssembliesVersion),
                     new XAttribute("PrivateAssets", "all"))),
+            manifest.Features.WinForms
+                ? new XElement(
+                    "ItemGroup",
+                    new XElement(
+                        "Reference",
+                        new XAttribute("Include", "System.Drawing")),
+                    new XElement(
+                        "Reference",
+                        new XAttribute("Include", "System.Windows.Forms")))
+                : null,
             new XElement(
                 "ItemGroup",
                 build.Sources.Select(source =>

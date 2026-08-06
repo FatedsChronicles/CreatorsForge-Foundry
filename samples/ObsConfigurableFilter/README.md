@@ -6,3 +6,7 @@ source-lifecycle test, complete the publishing checklist, and deploy only while
 OBS is closed. Add the filter, toggle Enabled, restart and close OBS, then check
 health and exercise repair, rollback, and uninstall.
 
+For Phase 22C preview acceptance, press **Ctrl+Shift+P** and confirm the
+`obs-component-v1` adapter renders an OBS program canvas, component frame, and
+properties panel without loading libobs or the plugin DLL.
+

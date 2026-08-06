@@ -49,6 +49,13 @@
     "winForms": false,
     "mockRuntime": false
   },
+  "preview": {
+    "enabled": true,
+    "kind": "obs-component",
+    "source": "src/plugin.c",
+    "width": 1280,
+    "height": 720
+  },
   "nativeBuild": {
     "language": "c17",
     "architecture": "x64",

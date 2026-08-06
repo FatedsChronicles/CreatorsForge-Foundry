@@ -49,10 +49,14 @@ try {
     $sampleProjects = @(
         (Join-Path $PSScriptRoot "samples\HelloFoundry\HelloFoundry.foundryproj"),
         (Join-Path $PSScriptRoot "samples\ObsPassthroughFilter\ObsPassthroughFilter.foundryproj"),
+        (Join-Path $PSScriptRoot "samples\ObsCompatibilityProbe\ObsCompatibilityProbe.foundryproj"),
         (Join-Path $PSScriptRoot "samples\FoundrySamples.foundryworkspace"),
         (Join-Path $PSScriptRoot "samples\StreamerBotCreatorToolkit\StreamerBotCreatorToolkit.foundryproj"),
         (Join-Path $PSScriptRoot "samples\ObsConfigurableFilter\ObsConfigurableFilter.foundryproj"),
-        (Join-Path $PSScriptRoot "samples\PrivateAlphaSamples.foundryworkspace")
+        (Join-Path $PSScriptRoot "samples\PrivateAlphaSamples.foundryworkspace"),
+        (Join-Path $PSScriptRoot "samples\VisualWebOverlay\VisualWebOverlay.foundryproj"),
+        (Join-Path $PSScriptRoot "samples\VisualWinFormsPanel\VisualWinFormsPanel.foundryproj"),
+        (Join-Path $PSScriptRoot "samples\VisualPreviewSamples.foundryworkspace")
     )
     foreach ($sampleProject in $sampleProjects) {
         $desktopProcess = Start-Process `

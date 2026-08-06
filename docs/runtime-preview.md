@@ -21,8 +21,10 @@ The generic Phase 22B host:
 - limits captured output and result files;
 - removes per-run request and result files after Foundry reads them.
 
-Actual browser, WinForms assembly, and OBS plugin adapters remain Phase 22C
-work. Phase 22B establishes the isolation and lifecycle they must use.
+Phase 22C now supplies provider-specific adapters for safe static-web document
+composition, WinForms design-model composition, and OBS component composition.
+They use this isolation boundary without embedding a browser engine, loading a
+managed project assembly, loading libobs, or loading a plugin DLL.
 
 ## Refresh and recovery workflow
 

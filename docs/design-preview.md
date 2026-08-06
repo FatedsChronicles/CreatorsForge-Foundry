@@ -34,9 +34,10 @@ ignore scripts. WinForms previews recognize supported control declarations,
 text, locations, and sizes without compiling them. OBS previews visualize the
 persisted component and template metadata without loading the plugin.
 
-Phase 22B now passes this sanitized structural frame to a crash-isolated generic
-renderer. Provider-specific runtime interaction remains reserved for Phase 22C;
-see [runtime-preview.md](runtime-preview.md).
+Phase 22B passes this sanitized structural frame to a crash-isolated host.
+Phase 22C selects a bounded provider adapter for static web, WinForms, or OBS
+composition while preserving the same no-code-execution boundary; see
+[provider-preview-adapters.md](provider-preview-adapters.md).
 
 ## Diagnostics
 
