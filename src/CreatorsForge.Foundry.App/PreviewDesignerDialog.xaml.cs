@@ -30,6 +30,7 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
     private CancellationTokenSource? refreshCancellation;
     private FileSystemWatcher? sourceWatcher;
     private PreviewDesignSurface? lastSurface;
+    private PreviewRuntimeFrame? lastRuntimeFrame;
     private bool initialized;
     private bool disposed;
 
@@ -89,8 +90,9 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
             !StopRuntimeButton.IsEnabled &&
             DesignCanvas.Children.Count > 0 &&
             lastSurface is not null &&
+            lastRuntimeFrame?.AdapterId == (lastSurface.Adapter?.Id ?? PreviewAdapterIds.Generic) &&
             runtimeSession.State.Status == PreviewRuntimeStatus.Stopped &&
-            RuntimeLogTextBox.Text.Contains("scripts were not loaded", StringComparison.Ordinal);
+            RuntimeLogTextBox.Text.Contains("were not loaded", StringComparison.Ordinal);
     }
 
     private static string InferKind(FoundryWorkspace workspace, FoundryPreview? configured)
@@ -175,6 +177,7 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
         DesignCanvas.Width = surface.ViewportWidth;
         DesignCanvas.Height = surface.ViewportHeight;
         SurfaceTitleText.Text = $"{workspace.Manifest.Name} - {surface.Kind}";
+        AdapterStatusText.Text = surface.Adapter?.DisplayName ?? "Generic structural renderer";
         ViewportStatusText.Text = $"{surface.ViewportWidth} x {surface.ViewportHeight}";
         foreach (var element in surface.Elements)
         {
@@ -194,10 +197,12 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
 
     private void RenderRuntime(PreviewRuntimeFrame frame)
     {
+        lastRuntimeFrame = frame;
         DesignCanvas.Children.Clear();
         DesignCanvas.Width = frame.ViewportWidth;
         DesignCanvas.Height = frame.ViewportHeight;
-        SurfaceTitleText.Text = $"{workspace.Manifest.Name} - isolated {frame.Kind}";
+        SurfaceTitleText.Text = $"{workspace.Manifest.Name} - {frame.AdapterDisplayName}";
+        AdapterStatusText.Text = $"{frame.AdapterId} - isolated generation {frame.Generation}";
         ViewportStatusText.Text = $"{frame.ViewportWidth} x {frame.ViewportHeight}";
         foreach (var element in frame.Elements)
         {
@@ -212,7 +217,8 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
             Margin = new Thickness(element.VisualRole == "badge" ? 6 : 10),
             Text = element.Label,
             TextWrapping = TextWrapping.Wrap,
-            FontWeight = element.VisualRole is "heading" or "action" or "badge"
+            FontWeight = element.VisualRole is "heading" or "action" or "badge" or
+                "browser-chrome" or "form-chrome" or "obs-chrome"
                 ? FontWeights.Bold
                 : FontWeights.SemiBold,
             VerticalAlignment = element.VisualRole == "action"
@@ -227,7 +233,7 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
         {
             Width = Math.Max(20, element.Width),
             Height = Math.Max(20, element.Height),
-            BorderThickness = new Thickness(element.VisualRole is "action" or "canvas" ? 3 : 1.5),
+            BorderThickness = new Thickness(element.VisualRole is "action" or "canvas" or "obs-preview" ? 3 : 1.5),
             CornerRadius = new CornerRadius(element.VisualRole is "action" or "badge" ? 7 : 3),
             Child = label,
             ToolTip = $"{element.Kind}: {element.Name} ({element.VisualRole})",
@@ -235,7 +241,7 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
         };
         border.SetResourceReference(
             Border.BackgroundProperty,
-            element.VisualRole is "input" or "media"
+            element.VisualRole is "input" or "media" or "obs-preview" or "form-surface"
                 ? "EditorBackgroundBrush"
                 : "ButtonBackgroundBrush");
         border.SetResourceReference(Border.BorderBrushProperty, "AccentBrush");

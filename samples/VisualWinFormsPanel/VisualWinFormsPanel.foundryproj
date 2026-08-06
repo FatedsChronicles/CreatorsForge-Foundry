@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "name": "Streamer Control Panel",
+  "id": "dev.creatorsforge.samples.visual-winforms-panel",
+  "version": "0.1.0",
+  "target": {
+    "provider": "streamerbot",
+    "profile": "1.0.4-stable"
+  },
+  "features": {
+    "winForms": true,
+    "mockRuntime": false
+  },
+  "preview": {
+    "enabled": true,
+    "kind": "winforms",
+    "source": "src/ControlPanel.cs",
+    "width": 800,
+    "height": 600
+  },
+  "managedBuild": {
+    "targetFramework": "net481",
+    "languageVersion": "7.3",
+    "assemblyName": "CreatorsForge.Samples.VisualWinFormsPanel",
+    "sources": [
+      "src/ControlPanel.cs"
+    ]
+  },
+  "outputs": [
+    "managedLibrary"
+  ]
+}

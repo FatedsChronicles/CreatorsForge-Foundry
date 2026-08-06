@@ -504,14 +504,31 @@ Implemented and accepted by the product owner on 2026-08-05:
 - in-window lifecycle controls and bounded runtime logs;
 - cleanup of isolated request/result files after each run.
 
-The generic Phase 22B host still does not load project assemblies, execute
-JavaScript, or invoke native plugin code. Those provider-specific adapters are
-reserved for Phase 22C. Manual acceptance is defined in
+The Phase 22B host does not load project assemblies, execute JavaScript, or
+invoke native plugin code. Phase 22C builds provider-specific visual composition
+on that same isolation boundary. Manual acceptance is defined in
 [runtime-preview.md](runtime-preview.md).
 The implementation gate passes all 271 automated tests and all seven sample
 project/workspace desktop smoke cases with a zero-warning solution build.
 
-### Planned Phase 22 increments
+### Phase 22C - Provider adapters and visual samples
 
-- **22C:** provider-specific runtime adapters and representative visual sample
-  projects.
+Implemented on 2026-08-06 and awaiting product-owner manual acceptance:
+
+- bounded adapter descriptors emitted by structural analysis without complete
+  source text or binary paths;
+- a static-web adapter with safe browser-like chrome, semantic roles, and an
+  explicit scripts-blocked state;
+- a WinForms adapter with form chrome and native-control composition without
+  loading the managed assembly;
+- an OBS component adapter with program-canvas and properties composition
+  without loading libobs or a plugin DLL;
+- visible adapter identity and generation information in Design Preview;
+- buildable Creator Goal Overlay and Streamer Control Panel samples plus the
+  existing OBS Configurable Filter, collected in a visual-preview workspace;
+- conditional `System.Drawing` and `System.Windows.Forms` framework references
+  for managed projects declaring `features.winForms`.
+
+Manual acceptance is defined in [provider-preview-adapters.md](provider-preview-adapters.md).
+The implementation gate passes all 279 automated tests and all ten sample
+project/workspace desktop smoke cases with a zero-warning release build.

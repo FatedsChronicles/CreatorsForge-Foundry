@@ -41,7 +41,9 @@ public sealed record PreviewRuntimeFrame(
     int ViewportWidth,
     int ViewportHeight,
     string SourceSha256,
-    IReadOnlyList<PreviewRuntimeElement> Elements);
+    IReadOnlyList<PreviewRuntimeElement> Elements,
+    string AdapterId = PreviewAdapterIds.Generic,
+    string AdapterDisplayName = "Generic isolated renderer");
 
 public sealed record PreviewRuntimeHostResult(
     bool Succeeded,

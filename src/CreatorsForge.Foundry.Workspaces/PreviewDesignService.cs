@@ -16,6 +16,19 @@ public sealed record PreviewDesignElement(
     double Width,
     double Height);
 
+public static class PreviewAdapterIds
+{
+    public const string StaticWeb = "static-web-v1";
+    public const string WinForms = "winforms-v1";
+    public const string ObsComponent = "obs-component-v1";
+    public const string Generic = "generic-v1";
+}
+
+public sealed record PreviewAdapterDescriptor(
+    string Id,
+    string DisplayName,
+    IReadOnlyDictionary<string, string> Metadata);
+
 public sealed record PreviewDesignSurface(
     string Kind,
     string Source,
@@ -24,7 +37,8 @@ public sealed record PreviewDesignSurface(
     long SourceLength,
     string SourceSha256,
     IReadOnlyList<PreviewDesignElement> Elements,
-    string Notice);
+    string Notice,
+    PreviewAdapterDescriptor? Adapter = null);
 
 public static class PreviewDesignService
 {
@@ -41,6 +55,14 @@ public static class PreviewDesignService
         @"(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*new\s+(?:System\.Windows\.Forms\.)?(?<type>Button|Label|TextBox|RichTextBox|Panel|GroupBox|PictureBox|CheckBox|ComboBox|ListBox|DataGridView|ProgressBar)\s*\(",
         RegexOptions.CultureInvariant,
         TimeSpan.FromMilliseconds(100));
+    private static readonly Regex HtmlTitlePattern = new(
+        @"<title\b[^>]*>(?<text>[^<]{0,160})</title>",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,
+        TimeSpan.FromMilliseconds(50));
+    private static readonly Regex WinFormsTitlePattern = new(
+        "\\b(?:this\\.)?Text\\s*=\\s*\"(?<text>[^\"]{0,160})\"",
+        RegexOptions.CultureInvariant,
+        TimeSpan.FromMilliseconds(50));
 
     public static IReadOnlyList<string> GetCandidateSources(
         FoundryWorkspace workspace,
@@ -131,6 +153,7 @@ public static class PreviewDesignService
                 FoundryPreview.ObsComponentKind => AnalyzeObsComponent(workspace, preview),
                 _ => [],
             };
+            var adapter = CreateAdapterDescriptor(workspace, preview, source);
             var hash = Convert.ToHexString(SHA256.HashData(bytes))
                 .ToLowerInvariant();
             return new(
@@ -142,7 +165,8 @@ public static class PreviewDesignService
                     bytes.LongLength,
                     hash,
                     elements,
-                    "Static structural preview only. Foundry did not execute project code or scripts."),
+                    "Static structural preview only. Foundry did not execute project code or scripts.",
+                    adapter),
                 diagnostics);
         }
         catch (OperationCanceledException)
@@ -231,6 +255,55 @@ public static class PreviewDesignService
             new("obs-template", design.Template, $"Template: {design.Template}",
                 24, 24, Math.Min(420, preview.Width - 48), 48),
         ];
+    }
+
+    private static PreviewAdapterDescriptor CreateAdapterDescriptor(
+        FoundryWorkspace workspace,
+        FoundryPreview preview,
+        string source)
+    {
+        if (preview.Kind == FoundryPreview.StaticWebKind)
+        {
+            var titleMatch = HtmlTitlePattern.Match(source);
+            var title = titleMatch.Success
+                ? WebUtility.HtmlDecode(titleMatch.Groups["text"].Value).Trim()
+                : workspace.Manifest.Name;
+            return new(
+                PreviewAdapterIds.StaticWeb,
+                "Static web - safe document",
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["documentTitle"] = TrimLabel(title),
+                    ["scriptMode"] = "blocked",
+                });
+        }
+        if (preview.Kind == FoundryPreview.WinFormsKind)
+        {
+            var titleMatch = WinFormsTitlePattern.Match(source);
+            var title = titleMatch.Success
+                ? titleMatch.Groups["text"].Value
+                : workspace.Manifest.Name;
+            return new(
+                PreviewAdapterIds.WinForms,
+                "WinForms - isolated design model",
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["windowTitle"] = TrimLabel(title),
+                    ["assemblyMode"] = "not-loaded",
+                });
+        }
+
+        var design = workspace.Manifest.ObsPlugin!.Design!;
+        return new(
+            PreviewAdapterIds.ObsComponent,
+            "OBS Studio - component model",
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["componentName"] = TrimLabel(design.ComponentName),
+                ["componentId"] = TrimLabel(design.ComponentId),
+                ["template"] = design.Template,
+                ["pluginMode"] = "not-loaded",
+            });
     }
 
     private static (int, int)? ReadPair(string source, string name, string property)

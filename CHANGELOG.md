@@ -6,6 +6,12 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 22C provider-specific isolated preview adapters for static-web
+  documents, WinForms design models, and OBS components, with visible adapter
+  identity and distinct browser, form, program-canvas, and properties layouts.
+- Buildable Creator Goal Overlay and Streamer Control Panel visual samples plus
+  a Visual Preview Samples workspace containing those projects and the OBS
+  Configurable Filter.
 - Phase 22B crash-isolated runtime preview hosting with explicit lifecycle
   states, an eight-second timeout, stop/restart recovery, bounded logs, and
   cleanup of per-run request/result files.
@@ -68,6 +74,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Changed
 
+- Managed projects with `features.winForms` now receive deterministic
+  `System.Drawing` and `System.Windows.Forms` framework references so their
+  declared UI source builds as well as previews.
 - Design Preview selectors now show concise kind and viewport names, select the
   inferred source visibly, and choose the HD preset for a new 1280x720 preview
   instead of displaying generated record representations or a blank source.
@@ -102,6 +111,10 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Security
 
+- Phase 22C adapter descriptors are limited to 12 metadata entries with bounded
+  keys and values. Provider adapters never receive project binary paths or full
+  source text and never embed a browser engine, load managed project code,
+  initialize libobs, or load a native plugin.
 - Phase 22B sends only bounded visual-frame data to a separate process, never a
   project binary path or complete source text. The host is time-limited,
   process-tree isolated, output-bounded, and removes its protocol files after
@@ -133,6 +146,11 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 22C passes all 279 automated tests and all ten representative
+  project/workspace desktop smoke cases with a zero-warning release build.
+  Focused coverage runs each real provider adapter, verifies distinct visual
+  roles and the no-load boundary, validates all three sample projects, and
+  builds both new managed visual samples.
 - Phase 22B product-owner acceptance passed on 2026-08-05, including runtime
   lifecycle transitions, retained frames after Stop, restart generations,
   automatic/manual refresh, bounded logs, responsive close, and readable

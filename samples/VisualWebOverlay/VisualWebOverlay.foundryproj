@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "name": "Creator Goal Overlay",
+  "id": "dev.creatorsforge.samples.visual-web-overlay",
+  "version": "0.1.0",
+  "target": {
+    "provider": "streamerbot",
+    "profile": "1.0.4-stable"
+  },
+  "features": {
+    "winForms": false,
+    "mockRuntime": false
+  },
+  "preview": {
+    "enabled": true,
+    "kind": "static-web",
+    "source": "ui/index.html",
+    "width": 1280,
+    "height": 720
+  },
+  "managedBuild": {
+    "targetFramework": "net481",
+    "languageVersion": "7.3",
+    "assemblyName": "CreatorsForge.Samples.VisualWebOverlay",
+    "sources": [
+      "src/OverlayExtension.cs"
+    ]
+  },
+  "outputs": [
+    "managedLibrary"
+  ]
+}

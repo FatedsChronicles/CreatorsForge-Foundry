@@ -102,8 +102,14 @@ hashed structural frame. Phase 22B sends only that sanitized frame to a
 separate preview-host process for richer role-aware rendering. The desktop can
 stop or restart the host, contains crashes and eight-second timeouts, exposes
 bounded logs, and refreshes automatically when the selected source is saved.
-Project assemblies, scripts, and plugins remain unexecuted until the explicit
-provider adapters planned for Phase 22C.
+Phase 22C supplies distinct static-web, WinForms, and OBS component adapters:
+safe browser-like document chrome, Windows form/control composition, and OBS
+program-canvas/properties composition. The adapters operate only on sanitized
+design metadata; project assemblies, scripts, browser engines, libobs, and
+plugin DLLs remain unexecuted.
+
+Representative visual projects are available in
+`samples/VisualPreviewSamples.foundryworkspace`.
 
 ## Integrated editors
 

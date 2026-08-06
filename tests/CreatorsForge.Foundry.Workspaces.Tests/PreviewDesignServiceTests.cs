@@ -17,7 +17,7 @@ public sealed class PreviewDesignServiceTests
         using var project = await TemporaryPreviewProject.CreateAsync();
         await project.WriteAsync(
             "ui/index.html",
-            "<header>Creator Dashboard</header><main><button>Start</button><script>throw new Error('never run')</script></main>");
+            "<title>Creator Dashboard</title><header>Creator Dashboard</header><main><button>Start</button><script>throw new Error('never run')</script></main>");
         var workspace = await project.OpenAsync();
 
         var result = await PreviewDesignService.AnalyzeAsync(
@@ -36,6 +36,9 @@ public sealed class PreviewDesignServiceTests
         Assert.DoesNotContain(result.Value.Elements, item => item.Kind == "script");
         Assert.Equal(64, result.Value.SourceSha256.Length);
         Assert.Contains("did not execute", result.Value.Notice, StringComparison.Ordinal);
+        Assert.Equal(PreviewAdapterIds.StaticWeb, result.Value.Adapter!.Id);
+        Assert.Equal("Creator Dashboard", result.Value.Adapter.Metadata["documentTitle"]);
+        Assert.Equal("blocked", result.Value.Adapter.Metadata["scriptMode"]);
     }
 
     [Fact]
@@ -44,7 +47,7 @@ public sealed class PreviewDesignServiceTests
         using var project = await TemporaryPreviewProject.CreateAsync(winForms: true);
         await project.WriteAsync(
             "src/EntryPoint.cs",
-            "buttonStart = new System.Windows.Forms.Button(); buttonStart.Location = new System.Drawing.Point(25, 40); buttonStart.Size = new System.Drawing.Size(160, 45); buttonStart.Text = \"Start stream\";");
+            "this.Text = \"Stream Controls\"; buttonStart = new System.Windows.Forms.Button(); buttonStart.Location = new System.Drawing.Point(25, 40); buttonStart.Size = new System.Drawing.Size(160, 45); buttonStart.Text = \"Start stream\";");
         var workspace = await project.OpenAsync();
 
         var result = await PreviewDesignService.AnalyzeAsync(
@@ -64,6 +67,9 @@ public sealed class PreviewDesignServiceTests
         Assert.Equal(40, button.Y);
         Assert.Equal(160, button.Width);
         Assert.Equal(45, button.Height);
+        Assert.Equal(PreviewAdapterIds.WinForms, result.Value.Adapter!.Id);
+        Assert.Equal("Stream Controls", result.Value.Adapter.Metadata["windowTitle"]);
+        Assert.Equal("not-loaded", result.Value.Adapter.Metadata["assemblyMode"]);
     }
 
     [Fact]

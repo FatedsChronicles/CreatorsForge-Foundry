@@ -14,7 +14,7 @@
     <StackPanel>
       <TextBlock FontSize="20" FontWeight="SemiBold" Text="Isolated runtime preview"/>
       <TextBlock Margin="0,6,0,0" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap"
-          Text="Foundry analyzes the declared source, then sends only a bounded visual frame to a crash-isolated host. Provider runtime adapters remain disabled until Phase 22C."/>
+          Text="Foundry analyzes the declared source, then sends only a bounded visual frame to a crash-isolated provider adapter. Project assemblies, scripts, browser engines, libobs, and plugin DLLs are never loaded."/>
     </StackPanel>
 
     <Grid Grid.Row="1" Margin="0,14,0,0">
@@ -52,8 +52,11 @@
         <Grid>
           <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
           <DockPanel Margin="0,0,0,10">
-            <TextBlock x:Name="SurfaceTitleText" FontWeight="SemiBold" Text="Design surface"/>
             <TextBlock x:Name="ViewportStatusText" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="{DynamicResource MutedTextBrush}"/>
+            <StackPanel>
+              <TextBlock x:Name="SurfaceTitleText" FontWeight="SemiBold" Text="Design surface"/>
+              <TextBlock x:Name="AdapterStatusText" Margin="0,3,0,0" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Text="Generic structural renderer"/>
+            </StackPanel>
           </DockPanel>
           <Border Grid.Row="1" Padding="8" Background="{DynamicResource WindowBackgroundBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1">
             <Viewbox x:Name="PreviewViewbox" Stretch="Uniform" StretchDirection="DownOnly">

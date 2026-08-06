@@ -44,22 +44,13 @@ internal static class Program
             }
             if (request.Surface.ViewportWidth is < 240 or > 3840 ||
                 request.Surface.ViewportHeight is < 180 or > 2160 ||
-                request.Surface.Elements.Count > MaximumElements)
+                request.Surface.Elements.Count > MaximumElements ||
+                !IsAdapterDescriptorBounded(request.Surface.Adapter))
             {
                 return await WriteFailureAsync(resultPath, "Preview frame exceeds the bounded runtime contract.");
             }
 
-            var elements = request.Surface.Elements
-                .Select(element => new PreviewRuntimeElement(
-                    element.Kind,
-                    element.Name,
-                    element.Label,
-                    GetVisualRole(element.Kind),
-                    Math.Clamp(element.X, 0, request.Surface.ViewportWidth),
-                    Math.Clamp(element.Y, 0, request.Surface.ViewportHeight),
-                    Math.Clamp(element.Width, 20, request.Surface.ViewportWidth),
-                    Math.Clamp(element.Height, 20, request.Surface.ViewportHeight)))
-                .ToArray();
+            var adapterResult = PreviewProviderAdapterRegistry.Render(request.Surface);
             var frame = new PreviewRuntimeFrame(
                 request.SessionId,
                 request.Generation,
@@ -69,13 +60,17 @@ internal static class Program
                 request.Surface.ViewportWidth,
                 request.Surface.ViewportHeight,
                 request.Surface.SourceSha256,
-                elements);
-            var logs = new[]
+                adapterResult.Elements,
+                adapterResult.AdapterId,
+                adapterResult.DisplayName);
+            var logs = new List<string>
             {
                 $"Accepted bounded {request.Surface.Kind} frame generation {request.Generation}.",
-                $"Rendered {elements.Length} visual elements at {frame.ViewportWidth} x {frame.ViewportHeight}.",
-                "Project assemblies and scripts were not loaded by the generic Phase 22B host.",
+                $"Selected provider adapter {adapterResult.AdapterId}: {adapterResult.DisplayName}.",
+                $"Rendered {adapterResult.Elements.Count} visual elements at {frame.ViewportWidth} x {frame.ViewportHeight}.",
             };
+            logs.AddRange(adapterResult.Logs);
+            logs.Add("Project assemblies, scripts, browser engines, and native plugins were not loaded by the Phase 22C adapters.");
             await WriteAsync(resultPath, new PreviewRuntimeHostResult(true, frame, logs, null));
             Console.WriteLine($"Preview generation {request.Generation} completed.");
             return 0;
@@ -86,17 +81,19 @@ internal static class Program
         }
     }
 
-    private static string GetVisualRole(string kind) => kind.ToLowerInvariant() switch
+    private static bool IsAdapterDescriptorBounded(PreviewAdapterDescriptor? adapter)
     {
-        "button" => "action",
-        "input" or "textbox" or "richtextbox" or "combobox" or "listbox" => "input",
-        "header" or "nav" or "footer" => "chrome",
-        "h1" or "h2" or "h3" or "h4" or "h5" or "h6" or "label" => "heading",
-        "img" or "picturebox" => "media",
-        "obs-canvas" => "canvas",
-        "obs-template" => "badge",
-        _ => "panel",
-    };
+        if (adapter is null)
+        {
+            return true;
+        }
+        return adapter.Id.Length is > 0 and <= 64 &&
+            adapter.DisplayName.Length is > 0 and <= 128 &&
+            adapter.Metadata.Count <= 12 &&
+            adapter.Metadata.All(item =>
+                item.Key.Length is > 0 and <= 64 &&
+                item.Value.Length <= 256);
+    }
 
     private static async Task<int> WriteFailureAsync(string resultPath, string message)
     {

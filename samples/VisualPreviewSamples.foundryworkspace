@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "name": "Visual Preview Samples",
+  "projects": [
+    "VisualWebOverlay/VisualWebOverlay.foundryproj",
+    "VisualWinFormsPanel/VisualWinFormsPanel.foundryproj",
+    "ObsConfigurableFilter/ObsConfigurableFilter.foundryproj"
+  ],
+  "startupProject": "VisualWebOverlay/VisualWebOverlay.foundryproj"
+}
