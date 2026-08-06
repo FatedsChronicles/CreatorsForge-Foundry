@@ -146,6 +146,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 22C product-owner acceptance passed on 2026-08-06, covering all twelve
+  static-web, WinForms, and OBS adapter checks, live refresh, isolation logs,
+  lifecycle controls, sample builds, and host cleanup.
 - Phase 22C passes all 279 automated tests and all ten representative
   project/workspace desktop smoke cases with a zero-warning release build.
   Focused coverage runs each real provider adapter, verifies distinct visual

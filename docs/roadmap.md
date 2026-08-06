@@ -513,7 +513,7 @@ project/workspace desktop smoke cases with a zero-warning solution build.
 
 ### Phase 22C - Provider adapters and visual samples
 
-Implemented on 2026-08-06 and awaiting product-owner manual acceptance:
+Implemented and accepted by the product owner on 2026-08-06:
 
 - bounded adapter descriptors emitted by structural analysis without complete
   source text or binary paths;
@@ -532,3 +532,4 @@ Implemented on 2026-08-06 and awaiting product-owner manual acceptance:
 Manual acceptance is defined in [provider-preview-adapters.md](provider-preview-adapters.md).
 The implementation gate passes all 279 automated tests and all ten sample
 project/workspace desktop smoke cases with a zero-warning release build.
+All twelve provider-adapter manual acceptance checks passed on 2026-08-06.
