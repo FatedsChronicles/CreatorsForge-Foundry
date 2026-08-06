@@ -4,6 +4,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using CreatorsForge.Foundry.Build;
+using CreatorsForge.Foundry.Core.Compatibility;
 using CreatorsForge.Foundry.Core.Packaging;
 using CreatorsForge.Foundry.Core.Projects;
 using CreatorsForge.Foundry.PreviewHost;
@@ -139,7 +140,15 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
     {
         var installations = ObsInstallationDiscovery.Discover(
             settings?.ObsInstallations ?? [],
-            workspace.ProjectRoot);
+            workspace.ProjectRoot)
+            .Where(item => FoundryObsCompatibility.IsSupportedRuntime(item.Version))
+            .OrderByDescending(item => string.Equals(
+                item.Version.Split(['-', '+'], 2)[0],
+                workspace.Manifest.ObsPlugin?.ApiVersion,
+                StringComparison.Ordinal))
+            .ThenByDescending(item => item.Version, StringComparer.Ordinal)
+            .ThenBy(item => item.RootPath, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         ObsRuntimeComboBox.ItemsSource = installations
             .Select(item => new ObsRuntimeOption(item.RootPath, $"OBS {item.Version} - {item.RootPath}"))
             .ToArray();
@@ -475,6 +484,12 @@ public partial class PreviewDesignerDialog : Window, IAsyncDisposable
         if (ObsRuntimeComboBox.SelectedItem is not ObsRuntimeOption obsRuntime)
         {
             throw new InvalidOperationException("Select a disposable OBS Studio runtime for executable preview.");
+        }
+        var installation = ObsInstallationDiscovery.TryInspect(obsRuntime.RootPath);
+        if (installation is null || !FoundryObsCompatibility.IsSupportedRuntime(installation.Version))
+        {
+            throw new InvalidOperationException(
+                $"Select a supported OBS runtime ({FoundryObsCompatibility.SupportedRuntimeDisplay}).");
         }
         return new(
             PreviewRuntimeExecutionKinds.ObsComponent,

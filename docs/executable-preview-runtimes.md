@@ -12,6 +12,9 @@ with **Run live executable preview (untrusted code)**.
 | Streamer.bot WinForms | Deterministic build, copied managed DLL, isolated STA process and collectible load context | Captured live PNG |
 | Applicable OBS component | Deterministic native build, copied plugin DLL, disposable libobs module/source/property lifecycle | Declared visual composition plus live lifecycle and property controls |
 
+The OBS selector lists only supported 32.1.2 and 32.2.1 installations and
+prefers an exact match for the project's declared API version.
+
 Structural mode remains non-executing and is always the default.
 
 ## Isolation and limits

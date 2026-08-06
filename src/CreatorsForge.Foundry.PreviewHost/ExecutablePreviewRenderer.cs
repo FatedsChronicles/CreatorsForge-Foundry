@@ -197,8 +197,17 @@ internal static class ExecutablePreviewRenderer
                 SourceDestroyed: true,
             })
         {
-            throw new InvalidOperationException(nativeResult.Failure ?? nativeResult.HostResult?.Error ??
-                "The OBS module lifecycle did not complete.");
+            var failedHost = nativeResult.HostResult;
+            var detail = failedHost is null
+                ? "No native-host result was returned."
+                : $"module opened={failedHost.ModuleOpened}, module initialized={failedHost.ModuleLoadSucceeded}, " +
+                  $"lifecycle attempted={failedHost.SourceLifecycleAttempted}, source created={failedHost.SourceCreated}, " +
+                  $"source destroyed={failedHost.SourceDestroyed}, registered IDs=" +
+                  $"[{string.Join(", ", failedHost.RegisteredSourceIds.Take(12))}].";
+            throw new InvalidOperationException(
+                nativeResult.Failure ?? failedHost?.Error ??
+                $"The OBS module lifecycle did not complete in '{execution.ObsRoot}': {detail} " +
+                "Choose a supported disposable OBS runtime that matches the project API.");
         }
         var structural = PreviewProviderAdapterRegistry.Render(request.Surface);
         var host = nativeResult.HostResult;

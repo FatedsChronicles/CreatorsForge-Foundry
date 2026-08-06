@@ -79,6 +79,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Changed
 
+- OBS executable preview now offers only supported 32.1.2/32.2.1 runtimes,
+  prefers the project API match instead of the oldest discovered installation,
+  and reports module/open/init/source flags when lifecycle execution fails.
 - Managed projects with `features.winForms` now receive deterministic
   `System.Drawing` and `System.Windows.Forms` framework references so their
   declared UI source builds as well as previews.
