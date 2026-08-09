@@ -113,6 +113,7 @@
       </MenuItem>
       <MenuItem Header="_View">
         <MenuItem Header="Design _Preview..." InputGestureText="Ctrl+Shift+P" Click="PreviewDesigner_Click" />
+        <MenuItem Header="Integrated _Terminal" InputGestureText="Ctrl+`" Click="ToggleTerminal_Click" />
       </MenuItem>
       <MenuItem Header="_Tools">
         <MenuItem Header="Reusable _Components..." Click="ReusableComponents_Click" />
@@ -358,7 +359,7 @@
             ResizeBehavior="PreviousAndNext"
             ResizeDirection="Rows" />
 
-        <TabControl Grid.Row="2">
+        <TabControl x:Name="BottomTabs" Grid.Row="2">
           <TabItem Header="Problems">
             <ListBox
                 x:Name="ProblemsList"
@@ -411,6 +412,93 @@
                 Text="{Binding ConsoleLog, Mode=OneWay}"
                 TextWrapping="Wrap"
                 VerticalScrollBarVisibility="Auto" />
+          </TabItem>
+          <TabItem x:Name="TerminalTab" Header="Terminal">
+            <Grid AutomationProperties.Name="Integrated PowerShell terminal">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+              </Grid.RowDefinitions>
+              <Border
+                  Grid.Row="0"
+                  Padding="8,5"
+                  Background="{DynamicResource PanelBackgroundBrush}"
+                  BorderBrush="{DynamicResource PanelBorderBrush}"
+                  BorderThickness="0,0,0,1">
+                <DockPanel>
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button
+                        x:Name="StartTerminalButton"
+                        MinWidth="58"
+                        Content="Start"
+                        Click="StartTerminal_Click" />
+                    <Button
+                        x:Name="StopTerminalButton"
+                        MinWidth="58"
+                        Content="Stop"
+                        Click="StopTerminal_Click" />
+                    <Button
+                        x:Name="RestartTerminalButton"
+                        MinWidth="64"
+                        Content="Restart"
+                        Click="RestartTerminal_Click" />
+                    <Button
+                        MinWidth="58"
+                        Content="Clear"
+                        Click="ClearTerminal_Click" />
+                  </StackPanel>
+                  <StackPanel>
+                    <TextBlock
+                        x:Name="TerminalStatus"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource AccentBrush}"
+                        Text="STOPPED" />
+                    <TextBlock
+                        x:Name="TerminalWorkingDirectory"
+                        Margin="0,2,12,0"
+                        FontSize="11"
+                        Foreground="{DynamicResource MutedTextBrush}"
+                        TextTrimming="CharacterEllipsis"
+                        ToolTip="Terminal working directory" />
+                  </StackPanel>
+                </DockPanel>
+              </Border>
+              <TextBox
+                  x:Name="TerminalOutput"
+                  Grid.Row="1"
+                  Padding="10"
+                  AutomationProperties.LiveSetting="Polite"
+                  AutomationProperties.Name="PowerShell output"
+                  FontFamily="Cascadia Mono, Consolas"
+                  IsReadOnly="True"
+                  TextWrapping="Wrap"
+                  HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollBarVisibility="Auto" />
+              <Border
+                  Grid.Row="2"
+                  Padding="8,5"
+                  Background="{DynamicResource PanelBackgroundBrush}"
+                  BorderBrush="{DynamicResource PanelBorderBrush}"
+                  BorderThickness="0,1,0,0">
+                <DockPanel>
+                  <TextBlock
+                      DockPanel.Dock="Left"
+                      Margin="0,0,8,0"
+                      VerticalAlignment="Center"
+                      FontFamily="Cascadia Mono, Consolas"
+                      Foreground="{DynamicResource AccentBrush}"
+                      Text="PS&gt;" />
+                  <TextBox
+                      x:Name="TerminalInput"
+                      AutomationProperties.HelpText="Press Enter to run the PowerShell command. Use Up and Down for command history."
+                      AutomationProperties.Name="PowerShell command"
+                      FontFamily="Cascadia Mono, Consolas"
+                      KeyDown="TerminalInput_KeyDown"
+                      SpellCheck.IsEnabled="False" />
+                </DockPanel>
+              </Border>
+            </Grid>
           </TabItem>
         </TabControl>
       </Grid>

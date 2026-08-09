@@ -6,6 +6,12 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 23 integrated PowerShell terminal in the resizable desktop tool area,
+  with project-root startup, command history, bounded output, explicit
+  start/stop/restart/clear controls, and **Ctrl+Backtick** navigation.
+- A non-elevated terminal process boundary with redirected standard streams,
+  automatic project-change shutdown, and process-tree termination when the
+  user stops the session or Foundry closes.
 - Phase 22D opt-in executable previews: real staged HTML/CSS/JavaScript through
   disposable WebView2, real built WinForms capture in an isolated STA host, and
   real OBS module/source/property callback execution through libobs.
@@ -158,6 +164,14 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 23 passes all 287 automated tests and all ten representative desktop
+  smoke cases with a zero-warning release build. Focused integration coverage
+  executes a real PowerShell command in the project root, replaces sessions
+  across project roots, rejects missing roots, and terminates a running child
+  process tree.
+- Phase 22D product-owner acceptance passed on 2026-08-06, including all live
+  static-web, WinForms, and OBS execution checks, lifecycle recovery, supported
+  OBS runtime selection, and process cleanup.
 - Phase 22D passes all 283 automated tests and all ten representative desktop
   smoke cases with a zero-warning release build. Real integration coverage
   executes JavaScript while proving outbound requests are blocked, captures the
