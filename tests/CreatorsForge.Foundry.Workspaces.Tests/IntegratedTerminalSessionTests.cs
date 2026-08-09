@@ -11,11 +11,20 @@ public sealed class IntegratedTerminalSessionTests
         await using var session = new IntegratedTerminalSession();
         var output = new TaskCompletionSource<string>(
             TaskCreationOptions.RunContinuationsAsynchronously);
+        var formattedLocation = new TaskCompletionSource<string>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
         session.OutputReceived += (_, args) =>
         {
             if (args.Text.StartsWith("foundry-terminal:", StringComparison.Ordinal))
             {
                 output.TrySetResult(args.Text);
+            }
+            if (string.Equals(
+                args.Text.Trim(),
+                Path.GetFullPath(fixture.Root),
+                StringComparison.OrdinalIgnoreCase))
+            {
+                formattedLocation.TrySetResult(args.Text.Trim());
             }
         };
 
@@ -28,9 +37,41 @@ public sealed class IntegratedTerminalSessionTests
         Assert.Equal(Path.GetFullPath(fixture.Root), session.WorkingDirectory);
         Assert.Contains(Path.GetFullPath(fixture.Root), line, StringComparison.OrdinalIgnoreCase);
 
+        await session.SendCommandAsync("Get-Location");
+        Assert.Equal(
+            Path.GetFullPath(fixture.Root),
+            await formattedLocation.Task.WaitAsync(TimeSpan.FromSeconds(10)),
+            ignoreCase: true);
+
         await session.StopAsync();
         Assert.False(session.IsRunning);
         Assert.Null(session.WorkingDirectory);
+    }
+
+    [Fact]
+    public void CommandHistoryNavigatesBackwardAndForward()
+    {
+        var history = new TerminalCommandHistory();
+        history.Record("Get-Location");
+        history.Record("Get-ChildItem");
+
+        Assert.Equal("Get-ChildItem", history.Previous());
+        Assert.Equal("Get-Location", history.Previous());
+        Assert.Equal("Get-Location", history.Previous());
+        Assert.Equal("Get-ChildItem", history.Next());
+        Assert.Equal(string.Empty, history.Next());
+        Assert.Equal(string.Empty, history.Next());
+    }
+
+    [Fact]
+    public void CommandHistoryDoesNotDuplicateConsecutiveCommands()
+    {
+        var history = new TerminalCommandHistory();
+        history.Record("dotnet --info");
+        history.Record("dotnet --info");
+
+        Assert.Equal(1, history.Count);
+        Assert.Equal("dotnet --info", history.Previous());
     }
 
     [Fact]
@@ -109,9 +150,16 @@ public sealed class IntegratedTerminalSessionTests
 
         public void Dispose()
         {
-            if (Directory.Exists(Root))
+            for (var attempt = 0; attempt < 10 && Directory.Exists(Root); attempt++)
             {
-                Directory.Delete(Root, recursive: true);
+                try
+                {
+                    Directory.Delete(Root, recursive: true);
+                }
+                catch (IOException) when (attempt < 9)
+                {
+                    Thread.Sleep(100);
+                }
             }
         }
     }

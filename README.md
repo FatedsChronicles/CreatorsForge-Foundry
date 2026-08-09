@@ -119,7 +119,7 @@ Representative visual projects are available in
 
 ### Integrated PowerShell terminal
 
-Open **View > Integrated Terminal** or press **Ctrl+Backtick** to use a PowerShell
+Open **View > Integrated Terminal** or press **Ctrl+T** to use a PowerShell
 session inside the resizable bottom tool area. The session starts in the active
 project root, keeps command history for the current Foundry window, streams
 bounded output, and provides explicit start, stop, restart, and clear actions.

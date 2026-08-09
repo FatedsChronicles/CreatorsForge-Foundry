@@ -8,7 +8,7 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 - Phase 23 integrated PowerShell terminal in the resizable desktop tool area,
   with project-root startup, command history, bounded output, explicit
-  start/stop/restart/clear controls, and **Ctrl+Backtick** navigation.
+  start/stop/restart/clear controls, and **Ctrl+T** navigation.
 - A non-elevated terminal process boundary with redirected standard streams,
   automatic project-change shutdown, and process-tree termination when the
   user stops the session or Foundry closes.
@@ -85,6 +85,11 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Changed
 
+- **Ctrl+T** now opens Integrated Terminal. Test Explorer moves to
+  **Ctrl+Shift+T** so both tools retain a direct keyboard command.
+- Terminal commands are Base64-transported into the persistent PowerShell
+  runspace and explicitly rendered as text so object, native-command, and error
+  output appears immediately without executing inside the Foundry process.
 - OBS executable preview now offers only supported 32.1.2/32.2.1 runtimes,
   prefers the project API match instead of the oldest discovered installation,
   and reports module/open/init/source flags when lifecycle execution fails.
@@ -164,7 +169,7 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
-- Phase 23 passes all 287 automated tests and all ten representative desktop
+- Phase 23 passes all 289 automated tests and all ten representative desktop
   smoke cases with a zero-warning release build. Focused integration coverage
   executes a real PowerShell command in the project root, replaces sessions
   across project roots, rejects missing roots, and terminates a running child

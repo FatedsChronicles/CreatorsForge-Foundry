@@ -125,7 +125,16 @@ public sealed class IntegratedTerminalSession : IAsyncDisposable
                 throw new InvalidOperationException("Start the terminal before running a command.");
             }
 
-            await activeProcess.StandardInput.WriteLineAsync(command.AsMemory(), cancellationToken)
+            var encodedCommand = Convert.ToBase64String(
+                Encoding.Unicode.GetBytes(command));
+            var invocation =
+                "$__foundryCommand=[Text.Encoding]::Unicode.GetString(" +
+                $"[Convert]::FromBase64String('{encodedCommand}'));" +
+                ". ([ScriptBlock]::Create($__foundryCommand)) *>&1 | " +
+                "Out-String -Stream | ForEach-Object { [Console]::Out.WriteLine($_) }";
+            await activeProcess.StandardInput.WriteLineAsync(
+                    invocation.AsMemory(),
+                    cancellationToken)
                 .ConfigureAwait(false);
             await activeProcess.StandardInput.FlushAsync(cancellationToken).ConfigureAwait(false);
         }

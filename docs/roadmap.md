@@ -566,7 +566,8 @@ process.
 Implemented for product-owner acceptance:
 
 - a dedicated Terminal tab and **View > Integrated Terminal** command with
-  **Ctrl+Backtick** keyboard navigation;
+  **Ctrl+T** keyboard navigation, with Test Explorer moved to
+  **Ctrl+Shift+T**;
 - explicit start, stop, restart, and clear controls plus Up/Down command
   history;
 - non-elevated Windows PowerShell with redirected input, output, and error
@@ -579,7 +580,7 @@ Implemented for product-owner acceptance:
 - theme-aware controls and named keyboard-accessible terminal elements.
 
 Manual acceptance is defined in [integrated-terminal.md](integrated-terminal.md).
-The implementation gate passes all 287 automated tests and all ten
+The implementation gate passes all 289 automated tests and all ten
 representative desktop smoke cases with a zero-warning release build. Focused
 coverage executes real PowerShell commands and verifies working-directory,
 restart, invalid-root, and child-process-tree cleanup behavior.

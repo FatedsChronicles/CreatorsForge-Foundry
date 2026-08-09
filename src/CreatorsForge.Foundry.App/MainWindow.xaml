@@ -82,7 +82,7 @@
         <MenuItem Header="Publishing _Metadata..." Click="PublishingMetadata_Click" />
         <MenuItem Header="_Validate Publishing" Click="ValidatePublishing_Click" />
         <MenuItem Header="_Publish Release" Click="Publish_Click" />
-        <MenuItem Header="_Test Explorer..." InputGestureText="Ctrl+T" Click="TestExplorer_Click" />
+        <MenuItem Header="_Test Explorer..." InputGestureText="Ctrl+Shift+T" Click="TestExplorer_Click" />
         <Separator />
         <MenuItem Header="Streamer.bot _Designer..." Click="StreamerBotDesigner_Click" />
         <MenuItem Header="OBS Plugin D_esigner..." Click="ObsPluginDesigner_Click" />
@@ -113,7 +113,7 @@
       </MenuItem>
       <MenuItem Header="_View">
         <MenuItem Header="Design _Preview..." InputGestureText="Ctrl+Shift+P" Click="PreviewDesigner_Click" />
-        <MenuItem Header="Integrated _Terminal" InputGestureText="Ctrl+`" Click="ToggleTerminal_Click" />
+        <MenuItem Header="Integrated _Terminal" InputGestureText="Ctrl+T" Click="ToggleTerminal_Click" />
       </MenuItem>
       <MenuItem Header="_Tools">
         <MenuItem Header="Reusable _Components..." Click="ReusableComponents_Click" />
@@ -494,7 +494,7 @@
                       AutomationProperties.HelpText="Press Enter to run the PowerShell command. Use Up and Down for command history."
                       AutomationProperties.Name="PowerShell command"
                       FontFamily="Cascadia Mono, Consolas"
-                      KeyDown="TerminalInput_KeyDown"
+                      PreviewKeyDown="TerminalInput_KeyDown"
                       SpellCheck.IsEnabled="False" />
                 </DockPanel>
               </Border>

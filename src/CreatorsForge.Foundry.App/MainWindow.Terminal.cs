@@ -9,8 +9,7 @@ public partial class MainWindow
 {
     private const int MaximumTerminalCharacters = 250_000;
     private readonly IntegratedTerminalSession terminalSession = new();
-    private readonly List<string> terminalHistory = [];
-    private int terminalHistoryIndex;
+    private readonly TerminalCommandHistory terminalHistory = new();
 
     private void InitializeTerminal()
     {
@@ -96,12 +95,7 @@ public partial class MainWindow
             }
 
             TerminalInput.Clear();
-            if (terminalHistory.Count == 0 ||
-                !string.Equals(terminalHistory[^1], command, StringComparison.Ordinal))
-            {
-                terminalHistory.Add(command);
-            }
-            terminalHistoryIndex = terminalHistory.Count;
+            terminalHistory.Record(command);
 
             try
             {
@@ -117,23 +111,22 @@ public partial class MainWindow
                 AppendTerminalLine($"[Foundry] Command failed: {exception.Message}");
             }
         }
-        else if (e.Key == Key.Up && terminalHistory.Count > 0)
+        else if (e.Key == Key.Up)
         {
-            e.Handled = true;
-            terminalHistoryIndex = Math.Max(0, terminalHistoryIndex - 1);
-            SetTerminalHistoryEntry();
-        }
-        else if (e.Key == Key.Down && terminalHistory.Count > 0)
-        {
-            e.Handled = true;
-            terminalHistoryIndex = Math.Min(terminalHistory.Count, terminalHistoryIndex + 1);
-            if (terminalHistoryIndex == terminalHistory.Count)
+            var command = terminalHistory.Previous();
+            if (command is not null)
             {
-                TerminalInput.Clear();
+                e.Handled = true;
+                SetTerminalHistoryEntry(command);
             }
-            else
+        }
+        else if (e.Key == Key.Down)
+        {
+            var command = terminalHistory.Next();
+            if (command is not null)
             {
-                SetTerminalHistoryEntry();
+                e.Handled = true;
+                SetTerminalHistoryEntry(command);
             }
         }
     }
@@ -249,9 +242,9 @@ public partial class MainWindow
         TerminalOutput.ScrollToEnd();
     }
 
-    private void SetTerminalHistoryEntry()
+    private void SetTerminalHistoryEntry(string command)
     {
-        TerminalInput.Text = terminalHistory[terminalHistoryIndex];
+        TerminalInput.Text = command;
         TerminalInput.CaretIndex = TerminalInput.Text.Length;
     }
 }

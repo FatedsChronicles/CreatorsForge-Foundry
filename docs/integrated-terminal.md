@@ -1,7 +1,7 @@
 # Phase 23 integrated terminal
 
 Phase 23 embeds a PowerShell terminal in Foundry's resizable bottom tool area.
-Open it through **View > Integrated Terminal** or press **Ctrl+Backtick**.
+Open it through **View > Integrated Terminal** or press **Ctrl+T**.
 
 ## Runtime boundary
 
@@ -20,7 +20,7 @@ PowerShell process tree. Visible output is capped at 250,000 characters.
 
 1. Launch the Phase 23 desktop and open any disposable Foundry sample project.
 2. Choose **View > Integrated Terminal** and confirm the Terminal tab is
-   selected; repeat with **Ctrl+Backtick**.
+   selected; repeat with **Ctrl+T**.
 3. Confirm the displayed working directory is the active project's root.
 4. Enter `Write-Output "Foundry terminal ready"` and confirm the text appears.
 5. Enter `Get-Location` and confirm it reports the same project root.

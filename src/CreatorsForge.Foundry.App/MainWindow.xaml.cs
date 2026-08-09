@@ -178,7 +178,7 @@ public partial class MainWindow : Window
             Key.P,
             ModifierKeys.Control | ModifierKeys.Shift);
         var terminalShortcutReady = IsTerminalShortcut(
-            Key.Oem3,
+            Key.T,
             ModifierKeys.Control);
         var terminalReady = TerminalInput is not null &&
             TerminalOutput is not null &&
@@ -1544,7 +1544,9 @@ public partial class MainWindow : Window
             e.Handled = true;
             Build_Click(sender, e);
         }
-        else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.T)
+        else if (Keyboard.Modifiers ==
+                     (ModifierKeys.Control | ModifierKeys.Shift) &&
+                 e.Key == Key.T)
         {
             e.Handled = true;
             TestExplorer_Click(sender, e);
@@ -1601,7 +1603,7 @@ public partial class MainWindow : Window
         modifiers == (ModifierKeys.Control | ModifierKeys.Shift);
 
     internal static bool IsTerminalShortcut(Key key, ModifierKeys modifiers) =>
-        key == Key.Oem3 && modifiers == ModifierKeys.Control;
+        key == Key.T && modifiers == ModifierKeys.Control;
 
     private async Task<bool> NavigateToSourceAsync(EditorSourceLocation location)
     {
