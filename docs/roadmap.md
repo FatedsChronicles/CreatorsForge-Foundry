@@ -621,3 +621,38 @@ all pass. The clean `1.0.0-rc.2` candidate and unsigned-publication waiver were
 accepted by the product owner on 2026-08-10. Phase 24B is complete pending only
 the automated publication of the accepted commit as tag and stable GitHub
 Release `v1.0.0`.
+
+## Phase 25 - Visual Streamer.bot extension builder
+
+### Phase 25A - Streamer.bot import-to-project foundation
+
+Phase 25A adds a non-executing importer for verified Streamer.bot payload-v23
+and payload-v24 exports. The desktop accepts pasted import code or a file,
+shows the decoded provenance, entity inventory, editable and preserved items,
+C# sources, references, paths, and blocking security findings before any
+project files are written.
+
+Imported projects use Streamer.bot definition schema v2 and may be package-only:
+they do not invent a managed DLL or CPHInline bridge. Execute C# bodies are
+confined beneath `streamerbot/code`, remain outside managed build inputs, and
+are re-embedded as text without execution. A separate preservation sidecar
+retains opaque nodes, unknown fields, original ordering, source GUIDs, payload
+version, and `exportedFrom` provenance. Same-format export patches supported
+edits into a clone of that payload; unknown versions remain analysis-only and
+cross-version conversion is blocked when opaque content exists.
+
+The importer assigns no licence to third-party work and creates no invented
+behavioral tests. Publishing therefore remains blocked until the developer
+reviews the imported workflow, supplies an authorised licence, resolves
+machine-specific paths, and adds appropriate tests. Automated envelope,
+adapter, migration, preservation, package-only build, C# re-embedding,
+credential-redaction, and desktop smoke coverage form the implementation gate.
+
+Product-owner acceptance passed on 2026-08-10 with representative exports from
+Streamer.bot 1.0.4, 1.0.5-alpha.34, 1.0.5-beta.1, 1.0.5-beta.6, and 1.0.7.
+The verified payload-v23 and payload-v24 adapters completed the required real
+third-party-style multi-action decode, project creation, supported-field and
+C# editing, path-resolution, deterministic same-format re-export, exact-host
+import, compile, execution, persistence, and opaque-content preservation
+checks. The dark-mode designer and guided compiler-reference repair follow-up
+also passed. **Phase 25A is complete.**

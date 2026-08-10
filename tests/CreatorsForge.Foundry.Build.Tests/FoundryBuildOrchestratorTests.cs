@@ -144,7 +144,7 @@ public sealed class FoundryBuildOrchestratorTests
     }
 
     [Fact]
-    public async Task BuildAsyncRejectsPackageWithoutRequiredInputs()
+    public async Task BuildAsyncRejectsPackageWithoutDefinition()
     {
         using var project = TemporaryProject.Create();
         var runner = new SuccessfulBuildRunner(AssemblyBytes);
@@ -160,7 +160,6 @@ public sealed class FoundryBuildOrchestratorTests
             CancellationToken.None);
 
         Assert.False(result.IsSuccess);
-        Assert.Contains(result.Diagnostics, item => item.Code == "CFP0026");
         Assert.Contains(result.Diagnostics, item => item.Code == "CFP0027");
         Assert.Equal(0, runner.InvocationCount);
     }

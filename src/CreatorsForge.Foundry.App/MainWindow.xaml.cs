@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using CreatorsForge.Foundry.Build.StreamerBot;
 using CreatorsForge.Foundry.Core.Diagnostics;
 using CreatorsForge.Foundry.Editor;
 using CreatorsForge.Foundry.Workspaces;
@@ -189,6 +190,22 @@ public partial class MainWindow : Window
                 string.Equals(option.ToString(), option.DisplayName, StringComparison.Ordinal));
         newProjectItemDialog.Close();
 
+        var importDialog = new StreamerBotImportDialog(viewModel.Settings);
+        var importFixture = StreamerBotStableV23Adapter.Encode(
+            new StreamerBotDefinition
+            {
+                Metadata = new() { Author = "Smoke", Description = "Safe import smoke fixture" },
+                Queues = [new("queue", "Default", false)],
+                Commands = [new("command", "Hello", ["!hello"], true, false, 0, 0)],
+                Actions = [new("action", "Hello", true, "queue", false, false,
+                    [new("trigger", "command", true, "command")],
+                    [new("argument", "setArgument", true, "message", "Hello", true)])],
+            },
+            "com.creatorsforge.smoke.import", "Import Smoke", "1.0.0", string.Empty);
+        var streamerBotImportReady = importDialog.Content is not null &&
+            importDialog.AnalyzeForSmokeTest(importFixture.ImportCode);
+        importDialog.Close();
+
         var previewDesignerReady = true;
         if (viewModel.Workspace is not null)
         {
@@ -225,6 +242,7 @@ public partial class MainWindow : Window
             deploymentReady &&
             testExplorerReady &&
             newProjectItemDialogReady &&
+            streamerBotImportReady &&
             previewDesignerReady &&
             previewShortcutReady &&
             terminalShortcutReady &&
@@ -739,6 +757,13 @@ public partial class MainWindow : Window
                 await viewModel.OpenProjectAsync(
                     workspace.ProjectPath,
                     lifetimeCancellation.Token);
+                if (dialog.RequestedSourcePath is { Length: > 0 } sourcePath)
+                {
+                    await NavigateToSourceAsync(new(
+                        Path.Combine(workspace.ProjectRoot, sourcePath.Replace('/', Path.DirectorySeparatorChar)),
+                        1,
+                        1));
+                }
             }
         }
         catch (Exception exception) when (
@@ -746,6 +771,15 @@ public partial class MainWindow : Window
                 InvalidDataException)
         {
             ShowUnexpectedError(exception);
+        }
+    }
+
+    private async void ImportStreamerBotCode_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new StreamerBotImportDialog(viewModel.Settings) { Owner = this };
+        if (dialog.ShowDialog() == true && dialog.CreatedProjectPath is { Length: > 0 } projectPath)
+        {
+            await RunBusyAsync(() => viewModel.OpenProjectAsync(projectPath, lifetimeCancellation.Token));
         }
     }
 

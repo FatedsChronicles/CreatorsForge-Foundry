@@ -7,14 +7,17 @@ namespace CreatorsForge.Foundry.App;
 
 public partial class StreamerBotDesignerDialog : Window
 {
-    public static IReadOnlyList<string> TriggerKinds { get; } = ["command", "test"];
+    public static IReadOnlyList<string> TriggerKinds { get; } = ["command", "test", "opaque"];
     public static IReadOnlyList<string> SubActionKinds { get; } =
-        ["setArgument", "executeBridge"];
+        ["setArgument", "executeBridge", "executeCSharp", "opaque"];
 
     private readonly string definitionPath;
     private readonly ObservableCollection<ActionRow> actions = [];
     private readonly ObservableCollection<CommandRow> commands = [];
     private readonly ObservableCollection<QueueRow> queues = [];
+    private StreamerBotImportProvenance? import;
+
+    public string? RequestedSourcePath { get; private set; }
 
     public StreamerBotDesignerDialog(string definitionPath)
     {
@@ -33,11 +36,12 @@ public partial class StreamerBotDesignerDialog : Window
         }
 
         var definition = result.Definition!;
+        import = definition.Import;
         AuthorTextBox.Text = definition.Metadata.Author;
         DescriptionTextBox.Text = definition.Metadata.Description;
         foreach (var item in definition.Queues)
         {
-            queues.Add(new(item.Id, item.Name, item.Blocking));
+            queues.Add(new(item.Id, item.Name, item.Blocking, item.SourceId, item.ReadOnly, item.PreservationKey));
         }
 
         foreach (var item in definition.Commands)
@@ -49,7 +53,7 @@ public partial class StreamerBotDesignerDialog : Window
                 item.Enabled,
                 item.CaseSensitive,
                 item.GlobalCooldown,
-                item.UserCooldown));
+                item.UserCooldown, item.SourceId, item.ReadOnly, item.PreservationKey));
         }
 
         foreach (var item in definition.Actions)
@@ -180,11 +184,15 @@ public partial class StreamerBotDesignerDialog : Window
                 Author = AuthorTextBox.Text,
                 Description = DescriptionTextBox.Text,
             },
+            Import = import,
             Queues = queues.Select(item =>
                 new StreamerBotQueueDefinition(
                     item.Id.Trim(),
                     item.Name.Trim(),
-                    item.Blocking)).ToArray(),
+                    item.Blocking,
+                    item.SourceId,
+                    item.ReadOnly,
+                    item.PreservationKey)).ToArray(),
             Commands = commands.Select(item =>
                 new StreamerBotCommand(
                     item.Id.Trim(),
@@ -196,7 +204,10 @@ public partial class StreamerBotDesignerDialog : Window
                     item.Enabled,
                     item.CaseSensitive,
                     item.GlobalCooldown,
-                    item.UserCooldown)).ToArray(),
+                    item.UserCooldown,
+                    item.SourceId,
+                    item.ReadOnly,
+                    item.PreservationKey)).ToArray(),
             Actions = actions.Select(item => item.ToDefinition()).ToArray(),
         };
         var errors = StreamerBotDefinitionLoader.Validate(definition);
@@ -253,17 +264,61 @@ public partial class StreamerBotDesignerDialog : Window
         ObservableCollection<T> collection,
         DataGrid grid)
     {
-        if (grid.SelectedItem is T item)
+        if (grid.SelectedItem is T item && item is not IDesignerRow { ReadOnly: true })
         {
             collection.Remove(item);
         }
     }
 
-    private sealed class QueueRow(string id, string name, bool blocking)
+    private void OpenCSharpSource_Click(object sender, RoutedEventArgs e)
+    {
+        if (SubActionsGrid.SelectedItem is SubActionRow { Kind: "executeCSharp", SourcePath: { Length: > 0 } sourcePath })
+        {
+            RequestedSourcePath = sourcePath;
+            DialogResult = true;
+        }
+    }
+
+    private void RemoveAbsoluteReferences_Click(object sender, RoutedEventArgs e)
+    {
+        if (SubActionsGrid.SelectedItem is not SubActionRow { Kind: "executeCSharp" } subAction)
+        {
+            StatusText.Text = "Select an editable Execute C# sub-action first.";
+            return;
+        }
+
+        var existing = subAction.References ?? [];
+        var portable = existing.Where(reference =>
+            !Path.IsPathFullyQualified(reference) &&
+            !reference.StartsWith("\\\\", StringComparison.Ordinal)).ToArray();
+        var removed = existing.Count - portable.Length;
+        subAction.References = portable;
+        SubActionsGrid.Items.Refresh();
+        StatusText.Text = removed == 0
+            ? "The selected Execute C# sub-action has no absolute references."
+            : $"Removed {removed} absolute reference(s). Save the definition, then build again.";
+    }
+
+    private void Grid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
+    {
+        if (e.Row.Item is IDesignerRow { ReadOnly: true }) e.Cancel = true;
+    }
+
+    private interface IDesignerRow
+    {
+        bool ReadOnly { get; }
+    }
+
+    private sealed class QueueRow(string id, string name, bool blocking, string? sourceId = null,
+        bool readOnly = false, string? preservationKey = null) : IDesignerRow
     {
         public string Id { get; set; } = id;
         public string Name { get; set; } = name;
         public bool Blocking { get; set; } = blocking;
+        public string? SourceId { get; } = sourceId;
+        public bool ReadOnly { get; } = readOnly;
+        public string? PreservationKey { get; } = preservationKey;
+        public string Mode => ReadOnly ? "Read-only" : "Editable";
     }
 
     private sealed class CommandRow(
@@ -273,7 +328,10 @@ public partial class StreamerBotDesignerDialog : Window
         bool enabled,
         bool caseSensitive,
         int globalCooldown,
-        int userCooldown)
+        int userCooldown,
+        string? sourceId = null,
+        bool readOnly = false,
+        string? preservationKey = null) : IDesignerRow
     {
         public string Id { get; set; } = id;
         public string Name { get; set; } = name;
@@ -282,9 +340,13 @@ public partial class StreamerBotDesignerDialog : Window
         public bool CaseSensitive { get; set; } = caseSensitive;
         public int GlobalCooldown { get; set; } = globalCooldown;
         public int UserCooldown { get; set; } = userCooldown;
+        public string? SourceId { get; } = sourceId;
+        public bool ReadOnly { get; } = readOnly;
+        public string? PreservationKey { get; } = preservationKey;
+        public string Mode => ReadOnly ? "Read-only" : "Editable";
     }
 
-    private sealed class ActionRow
+    private sealed class ActionRow : IDesignerRow
     {
         public ActionRow()
         {
@@ -298,6 +360,9 @@ public partial class StreamerBotDesignerDialog : Window
             QueueId = value.QueueId;
             Concurrent = value.Concurrent;
             AlwaysRun = value.AlwaysRun;
+            SourceId = value.SourceId;
+            ReadOnly = value.ReadOnly;
+            PreservationKey = value.PreservationKey;
             foreach (var item in value.Triggers)
             {
                 Triggers.Add(new()
@@ -306,6 +371,10 @@ public partial class StreamerBotDesignerDialog : Window
                     Kind = item.Kind,
                     Enabled = item.Enabled,
                     CommandId = item.CommandId,
+                    SourceType = item.SourceType,
+                    SourceId = item.SourceId,
+                    ReadOnly = item.ReadOnly,
+                    PreservationKey = item.PreservationKey,
                 });
             }
 
@@ -319,6 +388,12 @@ public partial class StreamerBotDesignerDialog : Window
                     VariableName = item.VariableName,
                     Value = item.Value,
                     AutoType = item.AutoType,
+                    SourcePath = item.SourcePath,
+                    SourceType = item.SourceType,
+                    SourceId = item.SourceId,
+                    ReadOnly = item.ReadOnly,
+                    PreservationKey = item.PreservationKey,
+                    References = item.References,
                 });
             }
         }
@@ -329,6 +404,10 @@ public partial class StreamerBotDesignerDialog : Window
         public string? QueueId { get; set; }
         public bool Concurrent { get; set; }
         public bool AlwaysRun { get; set; }
+        public string? SourceId { get; set; }
+        public bool ReadOnly { get; set; }
+        public string? PreservationKey { get; set; }
+        public string Mode => ReadOnly ? "Read-only" : "Editable";
         public ObservableCollection<TriggerRow> Triggers { get; } = [];
         public ObservableCollection<SubActionRow> SubActions { get; } = [];
 
@@ -345,7 +424,11 @@ public partial class StreamerBotDesignerDialog : Window
                 item.Enabled,
                 string.IsNullOrWhiteSpace(item.CommandId)
                     ? null
-                    : item.CommandId.Trim())).ToArray(),
+                    : item.CommandId.Trim(),
+                item.SourceType,
+                item.SourceId,
+                item.ReadOnly,
+                item.PreservationKey)).ToArray(),
             SubActions.Select(item => new StreamerBotSubAction(
                 item.Id.Trim(),
                 item.Kind,
@@ -354,18 +437,32 @@ public partial class StreamerBotDesignerDialog : Window
                     ? null
                     : item.VariableName.Trim(),
                 item.Value,
-                item.AutoType)).ToArray());
+                item.AutoType,
+                item.SourcePath,
+                item.SourceType,
+                item.SourceId,
+                item.ReadOnly,
+                item.PreservationKey,
+                item.References)).ToArray(),
+            SourceId,
+            ReadOnly,
+            PreservationKey);
     }
 
-    private sealed class TriggerRow
+    private sealed class TriggerRow : IDesignerRow
     {
         public string Id { get; set; } = string.Empty;
         public string Kind { get; set; } = "test";
         public bool Enabled { get; set; }
         public string? CommandId { get; set; }
+        public int? SourceType { get; set; }
+        public string? SourceId { get; set; }
+        public bool ReadOnly { get; set; }
+        public string? PreservationKey { get; set; }
+        public string Mode => ReadOnly ? "Read-only" : "Editable";
     }
 
-    private sealed class SubActionRow
+    private sealed class SubActionRow : IDesignerRow
     {
         public string Id { get; set; } = string.Empty;
         public string Kind { get; set; } = "executeBridge";
@@ -373,5 +470,17 @@ public partial class StreamerBotDesignerDialog : Window
         public string? VariableName { get; set; }
         public string? Value { get; set; }
         public bool AutoType { get; set; }
+        public string? SourcePath { get; set; }
+        public int? SourceType { get; set; }
+        public string? SourceId { get; set; }
+        public bool ReadOnly { get; set; }
+        public string? PreservationKey { get; set; }
+        public IReadOnlyList<string>? References { get; set; }
+        public string ReferenceList
+        {
+            get => string.Join("; ", References ?? []);
+            set => References = value.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        }
+        public string Mode => ReadOnly ? "Read-only" : "Editable";
     }
 }

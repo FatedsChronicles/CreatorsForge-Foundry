@@ -44,6 +44,7 @@ public static class FoundryPackageArtifactKinds
     public const string CphInlineBridge = "cphInlineBridge";
     public const string StreamerBotPackage = "streamerBotPackage";
     public const string StreamerBotPackageReport = "streamerBotPackageReport";
+    public const string StreamerBotImportReport = "streamerBotImportReport";
     public const string NativeObsPlugin = "nativeObsPlugin";
     public const string ObsPluginPackage = "obsPluginPackage";
 }

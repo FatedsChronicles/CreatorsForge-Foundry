@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/streamerbot/definition/v2",
+  "title": "Creators Forge Foundry Streamer.bot definition v2",
+  "type": "object",
+  "required": ["schemaVersion", "metadata", "queues", "commands", "actions"],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "metadata": {
+      "type": "object",
+      "required": ["author", "description"],
+      "properties": { "author": { "type": "string" }, "description": { "type": "string" } },
+      "additionalProperties": false
+    },
+    "import": {
+      "type": ["object", "null"],
+      "required": ["adapter", "payloadVersion", "exportedFrom", "sourceSha256", "preservationFile", "hasOpaqueContent"],
+      "properties": {
+        "adapter": { "const": "streamerbot-preserved-v1" },
+        "payloadVersion": { "enum": [23, 24] },
+        "exportedFrom": { "type": "string", "minLength": 1 },
+        "minimumVersion": { "type": ["string", "null"] },
+        "sourceSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "preservationFile": { "$ref": "#/$defs/jsonPath" },
+        "hasOpaqueContent": { "type": "boolean" },
+        "sourceAttribution": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "queues": { "type": "array", "items": { "$ref": "#/$defs/queue" } },
+    "commands": { "type": "array", "items": { "$ref": "#/$defs/command" } },
+    "actions": { "type": "array", "items": { "$ref": "#/$defs/action" } }
+  },
+  "$defs": {
+    "logicalId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
+    "name": { "type": "string", "minLength": 1 },
+    "nullableString": { "type": ["string", "null"] },
+    "jsonPath": { "type": "string", "pattern": "^(?![A-Za-z]:)(?![\\\\/])(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$)).+\\.json$" },
+    "sourceFields": {
+      "type": "object",
+      "properties": {
+        "sourceId": { "$ref": "#/$defs/nullableString" },
+        "readOnly": { "type": "boolean" },
+        "preservationKey": { "$ref": "#/$defs/nullableString" }
+      }
+    },
+    "queue": {
+      "type": "object", "required": ["id", "name", "blocking"],
+      "properties": {
+        "id": { "$ref": "#/$defs/logicalId" }, "name": { "$ref": "#/$defs/name" }, "blocking": { "type": "boolean" },
+        "sourceId": { "$ref": "#/$defs/nullableString" }, "readOnly": { "type": "boolean" }, "preservationKey": { "$ref": "#/$defs/nullableString" }
+      }, "additionalProperties": false
+    },
+    "command": {
+      "type": "object", "required": ["id", "name", "commands", "enabled", "caseSensitive", "globalCooldown", "userCooldown"],
+      "properties": {
+        "id": { "$ref": "#/$defs/logicalId" }, "name": { "$ref": "#/$defs/name" },
+        "commands": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "enabled": { "type": "boolean" }, "caseSensitive": { "type": "boolean" },
+        "globalCooldown": { "type": "integer", "minimum": 0 }, "userCooldown": { "type": "integer", "minimum": 0 },
+        "sourceId": { "$ref": "#/$defs/nullableString" }, "readOnly": { "type": "boolean" }, "preservationKey": { "$ref": "#/$defs/nullableString" }
+      }, "additionalProperties": false
+    },
+    "trigger": {
+      "type": "object", "required": ["id", "kind", "enabled", "commandId"],
+      "properties": {
+        "id": { "$ref": "#/$defs/logicalId" }, "kind": { "enum": ["command", "test", "opaque"] },
+        "enabled": { "type": "boolean" }, "commandId": { "$ref": "#/$defs/nullableString" },
+        "sourceType": { "type": ["integer", "null"] }, "sourceId": { "$ref": "#/$defs/nullableString" },
+        "readOnly": { "type": "boolean" }, "preservationKey": { "$ref": "#/$defs/nullableString" }
+      }, "additionalProperties": false
+    },
+    "subAction": {
+      "type": "object", "required": ["id", "kind", "enabled", "variableName", "value", "autoType"],
+      "properties": {
+        "id": { "$ref": "#/$defs/logicalId" }, "kind": { "enum": ["setArgument", "executeBridge", "executeCSharp", "opaque"] },
+        "enabled": { "type": "boolean" }, "variableName": { "$ref": "#/$defs/nullableString" },
+        "value": { "$ref": "#/$defs/nullableString" }, "autoType": { "type": "boolean" },
+        "sourcePath": { "type": ["string", "null"] }, "sourceType": { "type": ["integer", "null"] },
+        "sourceId": { "$ref": "#/$defs/nullableString" }, "readOnly": { "type": "boolean" },
+        "preservationKey": { "$ref": "#/$defs/nullableString" },
+        "references": { "type": ["array", "null"], "items": { "type": "string" } }
+      }, "additionalProperties": false
+    },
+    "action": {
+      "type": "object", "required": ["id", "name", "enabled", "queueId", "concurrent", "alwaysRun", "triggers", "subActions"],
+      "properties": {
+        "id": { "$ref": "#/$defs/logicalId" }, "name": { "$ref": "#/$defs/name" }, "enabled": { "type": "boolean" },
+        "queueId": { "$ref": "#/$defs/nullableString" }, "concurrent": { "type": "boolean" }, "alwaysRun": { "type": "boolean" },
+        "triggers": { "type": "array", "items": { "$ref": "#/$defs/trigger" } },
+        "subActions": { "type": "array", "items": { "$ref": "#/$defs/subAction" } },
+        "sourceId": { "$ref": "#/$defs/nullableString" }, "readOnly": { "type": "boolean" }, "preservationKey": { "$ref": "#/$defs/nullableString" }
+      }, "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

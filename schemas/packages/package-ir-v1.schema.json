@@ -97,6 +97,7 @@
               "cphInlineBridge",
               "streamerBotPackage",
               "streamerBotPackageReport",
+              "streamerBotImportReport",
               "nativeObsPlugin",
               "obsPluginPackage"
             ]
