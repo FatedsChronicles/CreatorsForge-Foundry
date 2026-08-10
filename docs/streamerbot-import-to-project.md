@@ -24,6 +24,9 @@ source. Absolute compiler paths and machine paths must be resolved before
 export. For an imported Execute C# node, edit its `references` array in
 `streamerbot/streamerbot.json`: remove machine-specific framework paths and
 retain or replace required dependencies with portable project-relative entries.
+The designer also provides **Remove absolute references** for the selected
+editable Execute C# sub-action; review the remaining relative entries before
+saving and building.
 
 Imported projects intentionally contain no generated DLL, CPHInline bridge,
 automatic licence, or invented tests. Review the author's terms, add an

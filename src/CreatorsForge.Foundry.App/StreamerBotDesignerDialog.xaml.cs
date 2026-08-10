@@ -279,6 +279,26 @@ public partial class StreamerBotDesignerDialog : Window
         }
     }
 
+    private void RemoveAbsoluteReferences_Click(object sender, RoutedEventArgs e)
+    {
+        if (SubActionsGrid.SelectedItem is not SubActionRow { Kind: "executeCSharp" } subAction)
+        {
+            StatusText.Text = "Select an editable Execute C# sub-action first.";
+            return;
+        }
+
+        var existing = subAction.References ?? [];
+        var portable = existing.Where(reference =>
+            !Path.IsPathFullyQualified(reference) &&
+            !reference.StartsWith("\\\\", StringComparison.Ordinal)).ToArray();
+        var removed = existing.Count - portable.Length;
+        subAction.References = portable;
+        SubActionsGrid.Items.Refresh();
+        StatusText.Text = removed == 0
+            ? "The selected Execute C# sub-action has no absolute references."
+            : $"Removed {removed} absolute reference(s). Save the definition, then build again.";
+    }
+
     private void Grid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
     {
         if (e.Row.Item is IDesignerRow { ReadOnly: true }) e.Cancel = true;
@@ -456,6 +476,11 @@ public partial class StreamerBotDesignerDialog : Window
         public bool ReadOnly { get; set; }
         public string? PreservationKey { get; set; }
         public IReadOnlyList<string>? References { get; set; }
+        public string ReferenceList
+        {
+            get => string.Join("; ", References ?? []);
+            set => References = value.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        }
         public string Mode => ReadOnly ? "Read-only" : "Editable";
     }
 }

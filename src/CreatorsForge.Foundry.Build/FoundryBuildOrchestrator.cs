@@ -416,10 +416,12 @@ public sealed class FoundryBuildOrchestrator
             {
                 diagnostics.Add(Error(
                     "CFB0012",
-                    $"The stable-v23 Streamer.bot package could not be generated: {exception.Message}",
+                    $"The Streamer.bot package could not be generated: {exception.Message}",
                     fullProjectPath,
                     "$.targetDefinition",
-                    "Correct the target definition and try again."));
+                    streamerBotDefinition?.Import is not null
+                        ? "Review the imported definition in Streamer.bot Designer, resolve absolute references or paths, save, and try again."
+                        : "Correct the target definition and try again."));
                 return new(outputRoot, null, null, diagnostics);
             }
         }

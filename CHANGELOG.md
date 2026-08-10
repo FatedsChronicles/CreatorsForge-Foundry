@@ -24,6 +24,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
   project creation without being printed, while absolute machine paths block
   export until resolved. Cleaned Execute C# reference lists are patched before
   the final portability check so users can safely resolve imported paths.
+- Dark-mode-safe Streamer.bot Designer kind editors, visible imported compiler
+  references, a guided absolute-reference removal action, and an
+  adapter-neutral `CFB0012` repair message.
 
 The post-v1 development line uses `1.1.0-beta.1` as its initial prerelease
 identity.

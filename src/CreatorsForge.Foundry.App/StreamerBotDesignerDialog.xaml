@@ -82,11 +82,22 @@
                     CanUserAddRows="False">
                   <DataGrid.Columns>
                     <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
-                    <DataGridComboBoxColumn
-                        Width="*"
-                        Header="Kind"
-                        SelectedItemBinding="{Binding Kind}"
-                        ItemsSource="{x:Static local:StreamerBotDesignerDialog.TriggerKinds}" />
+                    <DataGridTemplateColumn Width="*" Header="Kind">
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <TextBlock Foreground="{DynamicResource TextBrush}" Text="{Binding Kind}" />
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                      <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                          <ComboBox
+                              Background="{DynamicResource EditorBackgroundBrush}"
+                              Foreground="{DynamicResource TextBrush}"
+                              ItemsSource="{x:Static local:StreamerBotDesignerDialog.TriggerKinds}"
+                              SelectedItem="{Binding Kind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" />
                     <DataGridTextColumn Width="*" Header="Command ID" Binding="{Binding CommandId}" />
                     <DataGridTextColumn Header="Source type" IsReadOnly="True" Binding="{Binding SourceType}" />
@@ -101,6 +112,7 @@
                   <Button Content="Add" Click="AddSubAction_Click" />
                   <Button Content="Remove" Click="RemoveSubAction_Click" />
                   <Button Content="Open C# source" Click="OpenCSharpSource_Click" />
+                  <Button Content="Remove absolute references" Click="RemoveAbsoluteReferences_Click" />
                 </StackPanel>
                 <DataGrid
                     x:Name="SubActionsGrid"
@@ -109,16 +121,28 @@
                     CanUserAddRows="False">
                   <DataGrid.Columns>
                     <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
-                    <DataGridComboBoxColumn
-                        Width="*"
-                        Header="Kind"
-                        SelectedItemBinding="{Binding Kind}"
-                        ItemsSource="{x:Static local:StreamerBotDesignerDialog.SubActionKinds}" />
+                    <DataGridTemplateColumn Width="*" Header="Kind">
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <TextBlock Foreground="{DynamicResource TextBrush}" Text="{Binding Kind}" />
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                      <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                          <ComboBox
+                              Background="{DynamicResource EditorBackgroundBrush}"
+                              Foreground="{DynamicResource TextBrush}"
+                              ItemsSource="{x:Static local:StreamerBotDesignerDialog.SubActionKinds}"
+                              SelectedItem="{Binding Kind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" />
                     <DataGridTextColumn Width="*" Header="Variable" Binding="{Binding VariableName}" />
                     <DataGridTextColumn Width="*" Header="Value" Binding="{Binding Value}" />
                     <DataGridCheckBoxColumn Header="Auto type" Binding="{Binding AutoType}" />
                     <DataGridTextColumn Width="2*" Header="C# source" IsReadOnly="True" Binding="{Binding SourcePath}" />
+                    <DataGridTextColumn Width="2*" Header="References (; separated)" Binding="{Binding ReferenceList}" />
                     <DataGridTextColumn Header="Source type" IsReadOnly="True" Binding="{Binding SourceType}" />
                     <DataGridTextColumn Header="Mode" IsReadOnly="True" Binding="{Binding Mode}" />
                   </DataGrid.Columns>
