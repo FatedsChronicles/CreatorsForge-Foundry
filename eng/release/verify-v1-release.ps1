@@ -23,8 +23,13 @@ foreach ($asset in $manifest.assets) {
 }
 $desktop = @($manifest.assets | Where-Object { $_.path -match '^CreatorsForge-Foundry-.+-win-x64\.zip$' })
 if ($desktop.Count -ne 1) { throw 'Exactly one desktop archive is required.' }
+$setup = @($manifest.assets | Where-Object { $_.path -match '^CreatorsForge-Foundry-.+-Setup\.exe$' })
+if ($setup.Count -ne 1) { throw 'Exactly one native setup executable is required.' }
+$updater = @($manifest.assets | Where-Object { $_.path -match '^CreatorsForge-Foundry-.+-Update\.exe$' })
+if ($updater.Count -ne 1) { throw 'Exactly one native updater executable is required.' }
+if ($setup[0].size -ne $updater[0].size -or $setup[0].sha256 -ne $updater[0].sha256) { throw 'The setup and updater do not contain the same verified payload.' }
 $update = Get-Content -LiteralPath (Join-Path $root 'foundry-update.json') -Raw | ConvertFrom-Json
-if ($update.version -ne $manifest.version -or $update.packageUrl -ne [IO.Path]::GetFileName($desktop[0].path) -or [long]$update.size -ne [long]$desktop[0].size -or $update.sha256 -ne $desktop[0].sha256) { throw 'The update manifest does not match the desktop archive.' }
+if ($update.version -ne $manifest.version -or $update.packageUrl -ne [IO.Path]::GetFileName($updater[0].path) -or [long]$update.size -ne [long]$updater[0].size -or $update.sha256 -ne $updater[0].sha256) { throw 'The update manifest does not match the native updater.' }
 $inventoryHash = (Get-FileHash -LiteralPath (Join-Path $root 'source-inventory.json') -Algorithm SHA256).Hash.ToLowerInvariant()
 if ($inventoryHash -ne $manifest.sourceInventorySha256) { throw 'The source inventory does not match the v1 manifest.' }
 Write-Host "Verified Creators Forge Foundry $($manifest.version) $($manifest.channel) bundle."

@@ -23,12 +23,16 @@ public sealed class FinalAcceptanceReadinessTests
         Assert.Contains("v1-release-manifest.json", package, StringComparison.Ordinal);
         Assert.Contains("SHA256", package, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("LICENSE", package, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("LICENSE.md", package, StringComparison.Ordinal);
+        Assert.Contains("-Setup.exe", package, StringComparison.Ordinal);
+        Assert.Contains("-Update.exe", package, StringComparison.Ordinal);
         Assert.Contains("CHANGELOG", package, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("v1-matrix.json", package, StringComparison.Ordinal);
 
         Assert.Contains("ExpectedManifestSha256", verify, StringComparison.Ordinal);
         Assert.Contains("v1-release-manifest.json", verify, StringComparison.Ordinal);
         Assert.Contains("Modified asset", verify, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("native updater", verify, StringComparison.OrdinalIgnoreCase);
 
         Assert.Contains("final-acceptance-report.json", acceptance, StringComparison.Ordinal);
         Assert.Contains("streamerbot", acceptance, StringComparison.OrdinalIgnoreCase);

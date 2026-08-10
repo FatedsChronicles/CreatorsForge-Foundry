@@ -51,7 +51,7 @@ public sealed class DesktopPackagingTests
     }
 
     [Fact]
-    public void GitHubReleaseWorkflowIsManualGuardedAndUploadsExactNativeAssets()
+    public void GitHubReleaseWorkflowIsManualGuardedAndUploadsVerifiedAssets()
     {
         var root = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Desktop");
         var workflow = File.ReadAllText(Path.Combine(root, "publish-foundry-release.yml"));
@@ -74,7 +74,13 @@ public sealed class DesktopPackagingTests
         Assert.Contains("-Setup.exe", workflow, StringComparison.Ordinal);
         Assert.Contains("-Update.exe", workflow, StringComparison.Ordinal);
         Assert.Contains("foundry-update.json", workflow, StringComparison.Ordinal);
-        Assert.DoesNotContain("-win-x64.zip", workflow, StringComparison.Ordinal);
+        Assert.Contains("allow_unsigned_stable", workflow, StringComparison.Ordinal);
+        Assert.Contains("package-v1.ps1", workflow, StringComparison.Ordinal);
+        Assert.Contains("verify-v1-release.ps1", workflow, StringComparison.Ordinal);
+        Assert.Contains("CreatorsForge-Foundry-1.0.0-release.zip", workflow, StringComparison.Ordinal);
+        Assert.Contains("CreatorsForge-Foundry-1.0.0-win-x64.zip", workflow, StringComparison.Ordinal);
+        Assert.Contains("V1-RELEASE-SHA256.txt", workflow, StringComparison.Ordinal);
+        Assert.Contains("docs/release/v1.0.0.md", workflow, StringComparison.Ordinal);
     }
 
     [Fact]

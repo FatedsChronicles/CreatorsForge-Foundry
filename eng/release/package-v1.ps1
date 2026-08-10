@@ -1,8 +1,8 @@
 [CmdletBinding()]
 param(
     [string]$Configuration = 'Release',
-    [string]$Version = '1.0.0-rc.1',
-    [DateTimeOffset]$PublishedAtUtc = [DateTimeOffset]'2026-07-29T00:00:00Z',
+    [string]$Version = '1.0.0',
+    [DateTimeOffset]$PublishedAtUtc = [DateTimeOffset]::UtcNow,
     [string]$OutputDirectory = (Join-Path $PSScriptRoot '..\..\artifacts\v1-release'),
     [switch]$AllowUnsignedStable
 )
@@ -19,15 +19,18 @@ $release = Join-Path $output ('CreatorsForge-Foundry-' + $Version)
 $releaseArchive = $release + '-release.zip'
 $utf8 = New-Object Text.UTF8Encoding($false)
 
-if ($channel -eq 'stable' -and -not (Test-Path -LiteralPath (Join-Path $repository 'LICENSE.txt'))) { throw 'Stable v1 packaging requires an approved root LICENSE.txt.' }
+if ($channel -eq 'stable' -and -not (Test-Path -LiteralPath (Join-Path $repository 'LICENSE.md'))) { throw 'Stable v1 packaging requires the approved root LICENSE.md.' }
 $revision = 'uncommitted-source-inventory'
+$trackedChanges = $null
 try {
     $gitErrorPreference = $ErrorActionPreference
     $ErrorActionPreference = 'SilentlyContinue'
     $candidateRevision = (& git -C $repository rev-parse HEAD 2>$null)
     if ($LASTEXITCODE -eq 0 -and $candidateRevision) { $revision = $candidateRevision }
+    $trackedChanges = (& git -C $repository status --porcelain --untracked-files=no 2>$null)
 } finally { $ErrorActionPreference = $gitErrorPreference }
 if ($channel -eq 'stable' -and $revision -eq 'uncommitted-source-inventory') { throw 'Stable v1 packaging requires a committed source revision.' }
+if ($channel -eq 'stable' -and $trackedChanges) { throw 'Stable v1 packaging requires a clean tracked worktree. Commit or restore the listed changes first.' }
 
 foreach ($path in @($release, $releaseArchive, $desktopA, $desktopB)) {
     if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path -Recurse -Force }
@@ -37,6 +40,8 @@ if (-not $?) { throw 'First desktop packaging run failed.' }
 & (Join-Path $repository 'eng\desktop\package-desktop.ps1') -Configuration $Configuration -Version $Version -PublishedAtUtc $PublishedAtUtc -OutputDirectory $desktopB
 if (-not $?) { throw 'Second desktop packaging run failed.' }
 $desktopName = 'CreatorsForge-Foundry-' + $Version + '-win-x64.zip'
+$setupName = 'CreatorsForge-Foundry-' + $Version + '-Setup.exe'
+$updaterName = 'CreatorsForge-Foundry-' + $Version + '-Update.exe'
 $firstHash = (Get-FileHash -LiteralPath (Join-Path $desktopA $desktopName) -Algorithm SHA256).Hash.ToLowerInvariant()
 $secondHash = (Get-FileHash -LiteralPath (Join-Path $desktopB $desktopName) -Algorithm SHA256).Hash.ToLowerInvariant()
 if ($firstHash -ne $secondHash) { throw 'The two clean desktop packages are not byte-identical.' }
@@ -45,11 +50,14 @@ if ($firstHash -ne $secondHash) { throw 'The two clean desktop packages are not 
 [IO.Directory]::CreateDirectory((Join-Path $release 'docs')) | Out-Null
 [IO.Directory]::CreateDirectory((Join-Path $release 'samples')) | Out-Null
 Copy-Item -LiteralPath (Join-Path $desktopA $desktopName) -Destination $release
+Copy-Item -LiteralPath (Join-Path $desktopA $setupName) -Destination $release
+Copy-Item -LiteralPath (Join-Path $desktopA $updaterName) -Destination $release
 Copy-Item -LiteralPath (Join-Path $desktopA 'foundry-update.json') -Destination $release
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'verify-v1-release.ps1') -Destination $release
 Copy-Item -LiteralPath (Join-Path $repository 'CHANGELOG.md') -Destination $release
 Copy-Item -LiteralPath (Join-Path $repository 'THIRD-PARTY-NOTICES.md') -Destination $release
-if (Test-Path -LiteralPath (Join-Path $repository 'LICENSE.txt')) { Copy-Item -LiteralPath (Join-Path $repository 'LICENSE.txt') -Destination $release }
+Copy-Item -LiteralPath (Join-Path $repository 'LICENSE.md') -Destination $release
+Copy-Item -LiteralPath (Join-Path $repository 'docs\release\v1.0.0.md') -Destination (Join-Path $release 'RELEASE-NOTES.md')
 Copy-Item -LiteralPath (Join-Path $repository 'docs\release\v1-release.md') -Destination (Join-Path $release 'docs\RELEASE.md')
 Copy-Item -LiteralPath (Join-Path $repository 'docs\final-acceptance\acceptance-checklist.md') -Destination (Join-Path $release 'docs\FINAL-ACCEPTANCE.md')
 Copy-Item -LiteralPath (Join-Path $repository 'docs\compatibility\v1-matrix.md') -Destination (Join-Path $release 'docs\COMPATIBILITY.md')
@@ -78,7 +86,7 @@ $inventoryHash = (Get-FileHash -LiteralPath $inventoryPath -Algorithm SHA256).Ha
 $publishedExe = Join-Path $desktopA 'publish\CreatorsForge.Foundry.exe'
 $signature = (Get-AuthenticodeSignature -LiteralPath $publishedExe).Status.ToString()
 $blockers = @()
-if (-not (Test-Path -LiteralPath (Join-Path $repository 'LICENSE.txt'))) { $blockers += 'Product licence has not been approved.' }
+if (-not (Test-Path -LiteralPath (Join-Path $repository 'LICENSE.md'))) { $blockers += 'Product licence has not been approved.' }
 if ($revision -eq 'uncommitted-source-inventory') { $blockers += 'Source has no committed revision or release tag.' }
 if ($signature -ne 'Valid') { $blockers += 'Desktop binaries are not Authenticode signed.' }
 if ($channel -eq 'stable' -and $blockers.Count -gt 0 -and -not $AllowUnsignedStable) { throw ('Stable v1 release blockers: ' + ($blockers -join '; ')) }

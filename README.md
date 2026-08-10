@@ -2,6 +2,10 @@
 
 Creators Forge Foundry is a local-first Windows development environment for content creators and developers building extensions for Streamer.bot and native plugins for OBS Studio.
 
+The current stable release line is **1.0.0**. See the
+[1.0.0 release notes](docs/release/v1.0.0.md), [full changelog](CHANGELOG.md),
+and [exact v1 compatibility matrix](docs/compatibility/v1-matrix.md).
+
 Foundry brings project creation, source editing, code intelligence, testing, packaging, publishing, deployment, health monitoring, repair, rollback, and uninstall into one integrated desktop workspace. It is designed to make creator-tool development more approachable while retaining the structured, deterministic workflows expected from a professional software-development environment.
 
 The repository includes a WPF desktop workspace and CLI. It contains the

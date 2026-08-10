@@ -45,7 +45,7 @@ Run the harness on the release commit:
 
 ```powershell
 .\eng\release\invoke-final-acceptance.ps1 `
-  -ProductVersion 1.0.0-rc.1 `
+  -ProductVersion 1.0.0 `
   -ObsRoot 'PATH_TO_DISPOSABLE_OBS_32.2.1' `
   -CleanMachineAttested
 ```

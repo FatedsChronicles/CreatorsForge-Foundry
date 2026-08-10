@@ -6,14 +6,16 @@ the repository's default branch before GitHub exposes **Run workflow**.
 
 ## Release assets
 
-Every run builds, verifies, and attaches exactly these public release assets:
+Every run builds, verifies, and attaches these public update assets:
 
 - `CreatorsForge-Foundry-<version>-Setup.exe`;
 - `CreatorsForge-Foundry-<version>-Update.exe`; and
 - `foundry-update.json`.
 
-The portable ZIP remains a local packaging artifact and is not attached to the
-GitHub Release. Setup and Update use the same native payload. The manifest names
+Stable `1.0.0` additionally publishes the portable ZIP, complete v1 release
+bundle, and `V1-RELEASE-SHA256.txt` so the packaged documentation, samples,
+licence, notices, source inventory, and independent asset manifest remain
+verifiable after download. Setup and Update use the same native payload. The manifest names
 the Update asset relatively and records its exact byte length and SHA-256 hash,
 allowing the stable URL below to resolve both files from the same release:
 
@@ -36,7 +38,10 @@ After the workflow is merged into `main`:
 3. Select **Run workflow** and choose `main`.
 4. Enter semantic version text without `v`, such as `1.0.0`.
 5. Select `draft`, `prerelease`, or `stable`.
-6. Run the workflow and review its build, test, package, and verification steps.
+6. For stable 1.0.0, enable **Approve unsigned stable release** only if the
+   release owner has explicitly accepted the missing Authenticode signature and
+   its Windows unknown-publisher warning.
+7. Run the workflow and review its build, test, package, and verification steps.
 
 `draft` is the default and safest first run. Draft releases do not become the
 public latest release. `prerelease` publishes an alpha, beta, or release
@@ -55,7 +60,11 @@ The workflow:
 - compiles the native setup and updater;
 - verifies filenames, version identity, size, SHA-256, identical installer
   payloads, Windows product metadata, and the official release-notes URL;
-- retains the three verified files as a 30-day workflow artifact; and
+- retains the native update files as a 30-day workflow artifact and stable v1
+  evidence as a 90-day artifact;
+- runs the dedicated deterministic v1 packager and independent manifest
+  verifier for stable 1.0.0;
+- uses `docs/release/v1.0.0.md` as the stable release notes; and
 - creates the GitHub Release and tag only after every preceding gate passes.
 
 GitHub release assets are immutable inputs to Foundry's update channel. If a
