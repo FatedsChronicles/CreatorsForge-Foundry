@@ -648,7 +648,11 @@ machine-specific paths, and adds appropriate tests. Automated envelope,
 adapter, migration, preservation, package-only build, C# re-embedding,
 credential-redaction, and desktop smoke coverage form the implementation gate.
 
-Manual host acceptance remains required with representative exports from
-Streamer.bot 1.0.4, 1.0.5-alpha.34, 1.0.5-beta.1, 1.0.5-beta.6, and 1.0.7,
-followed by a real third-party-style multi-action same-format round trip in
-every exact host claimed by its adapter.
+Product-owner acceptance passed on 2026-08-10 with representative exports from
+Streamer.bot 1.0.4, 1.0.5-alpha.34, 1.0.5-beta.1, 1.0.5-beta.6, and 1.0.7.
+The verified payload-v23 and payload-v24 adapters completed the required real
+third-party-style multi-action decode, project creation, supported-field and
+C# editing, path-resolution, deterministic same-format re-export, exact-host
+import, compile, execution, persistence, and opaque-content preservation
+checks. The dark-mode designer and guided compiler-reference repair follow-up
+also passed. **Phase 25A is complete.**

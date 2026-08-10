@@ -31,6 +31,14 @@ All notable changes to Creators Forge Foundry are documented in this file.
 The post-v1 development line uses `1.1.0-beta.1` as its initial prerelease
 identity.
 
+### Acceptance
+
+- Phase 25A product-owner acceptance passed on 2026-08-10 across disposable
+  Streamer.bot 1.0.4, 1.0.5-alpha.34, 1.0.5-beta.1, 1.0.5-beta.6, and 1.0.7
+  hosts. Required v23/v24 multi-action import, editable-field and C# changes,
+  absolute-reference resolution, same-format re-export, host compilation and
+  execution, restart persistence, and opaque-node preservation all passed.
+
 ## [1.0.0] - 2026-08-10
 
 Foundry 1.0.0 is the first stable release. It consolidates the accepted
