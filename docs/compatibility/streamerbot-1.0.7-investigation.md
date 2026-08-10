@@ -62,8 +62,11 @@ Automated compatibility passed on 2026-08-10:
 - the representative extension built and produced a valid stable-v23 package;
 - its four tests and all five mock-runtime matrix cells passed;
 - publishing validation passed;
-- the complete solution gate passed 294 tests and all managed, native, and
+- the complete solution gate passed 295 tests and all managed, native, and
   multi-project desktop smoke cases with a zero-warning release build.
 
-The real 1.0.7 GUI host gate remains pending. The exact version is added to
-`v1-matrix` only after that product-owner acceptance passes.
+The real 1.0.7 GUI host gate passed on 2026-08-10. Installation, import,
+compiler reference, compilation, action execution/logging, Healthy status,
+update, modified-file protection, repair, rollback, and uninstall were
+product-owner verified. OBS Studio 32.2.1 manual acceptance also passed. The
+exact versions are recorded in `v1-matrix`.

@@ -136,10 +136,25 @@ public partial class CodeEditor : UserControl
         if (document is not null)
         {
             document.PropertyChanged += Document_PropertyChanged;
+            ApplyDocumentLayout();
             ApplyEditorTheme();
             Editor.IsReadOnly = document.IsReadOnly;
             SetEditorText(document.Text);
         }
+    }
+
+    private void ApplyDocumentLayout()
+    {
+        var extension = document is null
+            ? string.Empty
+            : Path.GetExtension(document.FullPath);
+        var wraps = extension.Equals(".txt", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".md", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".markdown", StringComparison.OrdinalIgnoreCase);
+        Editor.WordWrap = wraps;
+        Editor.HorizontalScrollBarVisibility = wraps
+            ? ScrollBarVisibility.Disabled
+            : ScrollBarVisibility.Auto;
     }
 
     private void App_ThemeChanged(object? sender, EventArgs e) => ApplyEditorTheme();

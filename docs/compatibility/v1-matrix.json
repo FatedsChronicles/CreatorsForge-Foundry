@@ -1,12 +1,13 @@
 {
   "schemaVersion": 1,
-  "publishedAt": "2026-08-04",
+  "publishedAt": "2026-08-10",
   "productChannel": "v1",
   "supportPolicy": {
     "exactVersionsOnly": true,
     "notes": [
       "Automated checks do not replace real-host GUI acceptance.",
       "OBS Studio 32.1.2 and 32.2.1 Windows x64 are the exact OBS versions supported for v1.",
+      "Streamer.bot support is limited to the exact stable and prerelease versions listed in this matrix.",
       "The internal 32.x-windows-x64 profile does not imply support for every OBS 32.x release."
     ]
   },
@@ -46,6 +47,15 @@
       "status": "verified",
       "automatedGates": ["exact-cph-catalogue", "build", "stable-v23-package", "mock-matrix", "deterministic-package"],
       "realHostGates": ["install", "cross-version-import", "compiler-reference", "compile", "action-runtime", "log", "deployment-health", "update", "repair", "rollback", "modified-file-protection", "uninstall"]
+    },
+    {
+      "provider": "streamerbot",
+      "profile": "1.0.7-stable",
+      "runtimeVersion": "1.0.7",
+      "platform": "windows-x64",
+      "status": "verified",
+      "automatedGates": ["exact-cph-catalogue", "build", "stable-v23-package", "mock-matrix", "deterministic-package", "publishing-validation"],
+      "realHostGates": ["install", "import", "compiler-reference", "compile", "action-runtime", "log", "deployment-health", "update", "repair", "rollback", "modified-file-protection", "uninstall"]
     },
     {
       "provider": "obsstudio",

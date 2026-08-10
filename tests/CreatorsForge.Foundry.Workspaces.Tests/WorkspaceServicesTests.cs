@@ -178,6 +178,17 @@ public sealed class WorkspaceServicesTests
         Assert.Contains(
             FoundryOutputKinds.StreamerBotPackage,
             created.Value.Manifest.Outputs);
+        Assert.Equal(["Creator"], created.Value.Manifest.Publishing!.Authors);
+        Assert.Equal("LICENSE.txt", created.Value.Manifest.Publishing.LicenseFile);
+        Assert.Equal("CHANGELOG.md", created.Value.Manifest.Publishing.ChangelogFile);
+        Assert.Contains(
+            "MIT License",
+            await File.ReadAllTextAsync(Path.Combine(projectDirectory, "LICENSE.txt")),
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "## 0.1.0",
+            await File.ReadAllTextAsync(Path.Combine(projectDirectory, "CHANGELOG.md")),
+            StringComparison.Ordinal);
         Assert.True(File.Exists(
             Path.Combine(
                 projectDirectory,
@@ -252,6 +263,7 @@ public sealed class WorkspaceServicesTests
         using var temporary = TemporaryDirectory.Create();
         foreach (var template in FoundryProjectTemplateService.Templates)
         {
+            Assert.Equal(template.Name, template.ToString());
             var projectDirectory = Path.Combine(temporary.Path, template.Id);
             var profile = string.Equals(template.Provider, "obsstudio", StringComparison.Ordinal)
                 ? "32.x-windows-x64"
@@ -270,6 +282,10 @@ public sealed class WorkspaceServicesTests
             Assert.Equal(template.Id, created.Value!.Manifest.Template!.Id);
             Assert.Equal(template.Revision, created.Value.Manifest.Template.Revision);
             Assert.Equal("Template Author", created.Value.Manifest.Template.Parameters["author"]);
+            Assert.Equal(["Template Author"], created.Value.Manifest.Publishing!.Authors);
+            Assert.Equal("Parameterized description", created.Value.Manifest.Publishing.Summary);
+            Assert.True(File.Exists(Path.Combine(projectDirectory, "LICENSE.txt")));
+            Assert.True(File.Exists(Path.Combine(projectDirectory, "CHANGELOG.md")));
             if (string.Equals(template.Provider, "obsstudio", StringComparison.Ordinal))
             {
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "src", "plugin.c")));

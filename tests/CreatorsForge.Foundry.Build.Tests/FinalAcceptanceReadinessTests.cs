@@ -116,6 +116,7 @@ public sealed class FinalAcceptanceReadinessTests
             ("streamerbot", "1.0.5-alpha.34", "1.0.5-alpha.34"),
             ("streamerbot", "1.0.5-beta.1", "1.0.5-beta.1"),
             ("streamerbot", "1.0.5-beta.6", "1.0.5-beta.6"),
+            ("streamerbot", "1.0.7-stable", "1.0.7"),
             ("obsstudio", "32.x-windows-x64", "32.1.2"),
             ("obsstudio", "32.x-windows-x64", "32.2.1"),
         };

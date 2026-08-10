@@ -601,7 +601,8 @@ matrix and host verification script, and re-runs the retained OBS Studio
 The automated gate passed on 2026-08-10: the bridge compiled against all five
 exact Streamer.bot hosts, the five-profile mock matrix and representative
 publishing validation passed, OBS module/source lifecycle checks passed on
-32.2.1 and the retained 32.1.2 host, and the complete release build passed 294
-tests plus all desktop smoke cases with zero warnings. Product-owner acceptance
-remains required in disposable Streamer.bot 1.0.7 and OBS Studio 32.2.1 GUI
-hosts before the refresh is recorded as the stable v1 release gate.
+32.2.1 and the retained 32.1.2 host, and the complete release build passed 295
+tests plus all desktop smoke cases with zero warnings. Product-owner host
+acceptance passed on 2026-08-10 in disposable Streamer.bot 1.0.7 and OBS Studio
+32.2.1 installations. Final Phase 24A closure is waiting only on the manual
+check of the new-project publishing defaults and wrapped text-document editor.

@@ -8,7 +8,10 @@ public sealed record FoundryProjectTemplateDescriptor(
     string Provider,
     string Kind,
     string Description,
-    string Revision);
+    string Revision)
+{
+    public override string ToString() => Name;
+}
 
 public static class FoundryProjectTemplateService
 {
@@ -22,13 +25,13 @@ public static class FoundryProjectTemplateService
 
     public static IReadOnlyList<FoundryProjectTemplateDescriptor> Templates { get; } =
     [
-        new(StreamerBotExtension, "Streamer.bot extension", "streamerbot", "Extension", "Minimal test-triggered extension and CPHInline bridge.", "1.0.1"),
-        new(StreamerBotCommand, "Streamer.bot command workflow", "streamerbot", "Workflow", "Command, queue, action, and managed bridge starter.", "1.0.1"),
-        new(ObsModule, "OBS module", "obsstudio", "Module", "SDK-backed module without a registered component.", "1.0.1"),
-        new(ObsPassthroughFilter, "OBS passthrough filter", "obsstudio", "Filter", "Lifecycle-safe synchronous video filter.", "1.0.1"),
-        new(ObsConfigurableFilter, "OBS configurable filter", "obsstudio", "Filter", "Video filter with defaults and a property form.", "1.0.1"),
-        new(ObsVideoInput, "OBS video input", "obsstudio", "Source", "Lifecycle-safe 1920x1080 input source skeleton.", "1.0.1"),
-        new(ObsOutput, "OBS encoded output", "obsstudio", "Output", "Lifecycle-safe encoded output skeleton with start/stop callbacks.", "1.0.1"),
+        new(StreamerBotExtension, "Streamer.bot extension", "streamerbot", "Extension", "Minimal test-triggered extension and CPHInline bridge.", "1.0.2"),
+        new(StreamerBotCommand, "Streamer.bot command workflow", "streamerbot", "Workflow", "Command, queue, action, and managed bridge starter.", "1.0.2"),
+        new(ObsModule, "OBS module", "obsstudio", "Module", "SDK-backed module without a registered component.", "1.0.2"),
+        new(ObsPassthroughFilter, "OBS passthrough filter", "obsstudio", "Filter", "Lifecycle-safe synchronous video filter.", "1.0.2"),
+        new(ObsConfigurableFilter, "OBS configurable filter", "obsstudio", "Filter", "Video filter with defaults and a property form.", "1.0.2"),
+        new(ObsVideoInput, "OBS video input", "obsstudio", "Source", "Lifecycle-safe 1920x1080 input source skeleton.", "1.0.2"),
+        new(ObsOutput, "OBS encoded output", "obsstudio", "Output", "Lifecycle-safe encoded output skeleton with start/stop callbacks.", "1.0.2"),
     ];
 
     public static FoundryProjectTemplateDescriptor? Find(string provider, string? templateId)

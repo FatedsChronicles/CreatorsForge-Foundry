@@ -18,7 +18,7 @@ The exact supported host versions are published in the
 - Streamer.bot 1.0.5-alpha.34;
 - Streamer.bot 1.0.5-beta.1;
 - Streamer.bot 1.0.5-beta.6;
-- Streamer.bot 1.0.7 stable, pending Phase 24A real-host acceptance;
+- Streamer.bot 1.0.7 stable;
 - OBS Studio 32.1.2 and 32.2.1 on Windows x64.
 
 The OBS `32.x-windows-x64` profile is an internal compatibility family, not a
