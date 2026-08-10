@@ -70,3 +70,8 @@ compiler reference, compilation, action execution/logging, Healthy status,
 update, modified-file protection, repair, rollback, and uninstall were
 product-owner verified. OBS Studio 32.2.1 manual acceptance also passed. The
 exact versions are recorded in `v1-matrix`.
+
+The follow-up desktop acceptance also passed. Newly created projects expose
+the 1.0.7 profile immediately, display friendly template names, populate
+publishing authors, generate editable MIT and changelog files, validate cleanly
+after build, and wrap prose documents. Phase 24A is complete.

@@ -185,6 +185,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
   retained 32.1.2 source lifecycle, 295 tests, and all desktop smoke cases.
 - Product-owner acceptance passed in disposable Streamer.bot 1.0.7 and OBS
   Studio 32.2.1 hosts, including runtime and recoverable deployment checks.
+- Phase 24A final desktop acceptance passed for immediate profile population,
+  friendly project-template display, publishing author/default documents,
+  clean publishing validation, and wrapped text/Markdown editing.
 - Phase 23 product-owner acceptance passed on 2026-08-10. All thirteen manual
   checks passed, including **Ctrl+T** navigation, visible command output,
   Up/Down history, project-root switching, cancellation, process cleanup, and

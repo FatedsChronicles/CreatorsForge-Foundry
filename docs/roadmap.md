@@ -604,5 +604,7 @@ publishing validation passed, OBS module/source lifecycle checks passed on
 32.2.1 and the retained 32.1.2 host, and the complete release build passed 295
 tests plus all desktop smoke cases with zero warnings. Product-owner host
 acceptance passed on 2026-08-10 in disposable Streamer.bot 1.0.7 and OBS Studio
-32.2.1 installations. Final Phase 24A closure is waiting only on the manual
-check of the new-project publishing defaults and wrapped text-document editor.
+32.2.1 installations. The final desktop acceptance also passed: initial
+compatibility profiles, friendly template names, author-to-publishing metadata,
+generated MIT licence and versioned changelog, publishing validation, and
+wrapped prose documents all behaved as expected. **Phase 24A is complete.**
