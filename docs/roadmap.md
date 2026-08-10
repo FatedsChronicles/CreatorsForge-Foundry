@@ -656,3 +656,26 @@ C# editing, path-resolution, deterministic same-format re-export, exact-host
 import, compile, execution, persistence, and opaque-content preservation
 checks. The dark-mode designer and guided compiler-reference repair follow-up
 also passed. **Phase 25A is complete.**
+
+### Phase 25B - Expanded Streamer.bot action model and toggles
+
+Phase 25B expands definition schema v3 and the structured designer around the
+wire fields verified in retained payload-v23 and payload-v24 exports. Actions
+now retain groups, random selection, pending/history exclusions, concurrency,
+always-run state, enabled state, and ordered weighted sub-actions. Commands
+retain bot/internal-message filtering and source masks, while queues and the
+core entities can carry developer-facing descriptions.
+
+The designer provides explicit controls for these options, action and
+sub-action duplication, ordered movement, and a profile-aware Validation tab.
+The same central diagnostic policy runs during builds and detects unsafe
+weights, invalid or conflicting aliases, empty source masks, unverified
+profile features, ambiguous action names, unlinked commands, unused queues,
+and concurrent workflows that appear to depend on sequential arguments.
+
+Clean stable-v23 packages and preserved v23/v24 imports patch these fields and
+the edited action/sub-action ordering deterministically. Foundry still does not
+invent native sub-action type numbers: wider native action/trigger catalogues,
+resource binding, and native-to-C# conversions remain later Phase 25 work.
+Automated adapter, migration, diagnostic, ordering, golden-package, desktop,
+and complete regression coverage form the Phase 25B implementation gate.

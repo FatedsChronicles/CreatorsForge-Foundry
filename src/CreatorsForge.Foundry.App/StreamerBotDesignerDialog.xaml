@@ -48,20 +48,29 @@
               AutoGenerateColumns="False"
               CanUserAddRows="False"
               BeginningEdit="Grid_BeginningEdit"
+              CurrentCellChanged="ActionsGrid_CurrentCellChanged"
               SelectionChanged="ActionsGrid_SelectionChanged">
             <DataGrid.Columns>
               <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
               <DataGridTextColumn Width="2*" Header="Name" Binding="{Binding Name}" />
+              <DataGridTextColumn Width="*" Header="Group" Binding="{Binding Group}" />
+              <DataGridTextColumn Width="2*" Header="Description" Binding="{Binding Description}" />
               <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" />
               <DataGridTextColumn Width="*" Header="Queue ID" Binding="{Binding QueueId}" />
               <DataGridCheckBoxColumn Header="Concurrent" Binding="{Binding Concurrent}" />
               <DataGridCheckBoxColumn Header="Always run" Binding="{Binding AlwaysRun}" />
+              <DataGridCheckBoxColumn Header="Random" Binding="{Binding RandomAction}" />
+              <DataGridCheckBoxColumn Header="Exclude pending" Binding="{Binding ExcludeFromPending}" />
+              <DataGridCheckBoxColumn Header="Exclude history" Binding="{Binding ExcludeFromHistory}" />
               <DataGridTextColumn Header="Mode" IsReadOnly="True" Binding="{Binding Mode}" />
             </DataGrid.Columns>
           </DataGrid>
           <StackPanel Grid.Row="1" Margin="0,6" Orientation="Horizontal">
             <Button Content="Add action" Click="AddAction_Click" />
             <Button Content="Remove action" Click="RemoveAction_Click" />
+            <Button Content="Duplicate" Click="DuplicateAction_Click" />
+            <Button Content="Move up" Click="MoveActionUp_Click" />
+            <Button Content="Move down" Click="MoveActionDown_Click" />
           </StackPanel>
           <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
@@ -79,6 +88,7 @@
                     x:Name="TriggersGrid"
                     AutoGenerateColumns="False"
                     BeginningEdit="Grid_BeginningEdit"
+                    CurrentCellChanged="Grid_CurrentCellChanged"
                     CanUserAddRows="False">
                   <DataGrid.Columns>
                     <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
@@ -111,6 +121,9 @@
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
                   <Button Content="Add" Click="AddSubAction_Click" />
                   <Button Content="Remove" Click="RemoveSubAction_Click" />
+                  <Button Content="Duplicate" Click="DuplicateSubAction_Click" />
+                  <Button Content="Move up" Click="MoveSubActionUp_Click" />
+                  <Button Content="Move down" Click="MoveSubActionDown_Click" />
                   <Button Content="Open C# source" Click="OpenCSharpSource_Click" />
                   <Button Content="Remove absolute references" Click="RemoveAbsoluteReferences_Click" />
                 </StackPanel>
@@ -118,6 +131,7 @@
                     x:Name="SubActionsGrid"
                     AutoGenerateColumns="False"
                     BeginningEdit="Grid_BeginningEdit"
+                    CurrentCellChanged="Grid_CurrentCellChanged"
                     CanUserAddRows="False">
                   <DataGrid.Columns>
                     <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
@@ -141,6 +155,7 @@
                     <DataGridTextColumn Width="*" Header="Variable" Binding="{Binding VariableName}" />
                     <DataGridTextColumn Width="*" Header="Value" Binding="{Binding Value}" />
                     <DataGridCheckBoxColumn Header="Auto type" Binding="{Binding AutoType}" />
+                    <DataGridTextColumn x:Name="WeightColumn" Header="Weight" Binding="{Binding Weight}" />
                     <DataGridTextColumn Width="2*" Header="C# source" IsReadOnly="True" Binding="{Binding SourcePath}" />
                     <DataGridTextColumn Width="2*" Header="References (; separated)" Binding="{Binding ReferenceList}" />
                     <DataGridTextColumn Header="Source type" IsReadOnly="True" Binding="{Binding SourceType}" />
@@ -163,6 +178,7 @@
               x:Name="CommandsGrid"
               AutoGenerateColumns="False"
               BeginningEdit="Grid_BeginningEdit"
+              CurrentCellChanged="Grid_CurrentCellChanged"
               CanUserAddRows="False">
             <DataGrid.Columns>
               <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
@@ -170,6 +186,10 @@
               <DataGridTextColumn Width="2*" Header="Commands (comma separated)" Binding="{Binding Aliases}" />
               <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" />
               <DataGridCheckBoxColumn Header="Case sensitive" Binding="{Binding CaseSensitive}" />
+              <DataGridCheckBoxColumn Header="Ignore bot" Binding="{Binding IgnoreBotAccount}" />
+              <DataGridCheckBoxColumn Header="Ignore internal" Binding="{Binding IgnoreInternalMessages}" />
+              <DataGridTextColumn Header="Sources" Binding="{Binding Sources}" />
+              <DataGridTextColumn Width="2*" Header="Description" Binding="{Binding Description}" />
               <DataGridTextColumn Header="Global cooldown" Binding="{Binding GlobalCooldown}" />
               <DataGridTextColumn Header="User cooldown" Binding="{Binding UserCooldown}" />
               <DataGridTextColumn Header="Mode" IsReadOnly="True" Binding="{Binding Mode}" />
@@ -188,15 +208,35 @@
               x:Name="QueuesGrid"
               AutoGenerateColumns="False"
               BeginningEdit="Grid_BeginningEdit"
+              CurrentCellChanged="Grid_CurrentCellChanged"
               CanUserAddRows="False">
             <DataGrid.Columns>
               <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
               <DataGridTextColumn Width="2*" Header="Name" Binding="{Binding Name}" />
               <DataGridCheckBoxColumn Header="Blocking" Binding="{Binding Blocking}" />
+              <DataGridTextColumn Width="2*" Header="Description" Binding="{Binding Description}" />
               <DataGridTextColumn Header="Mode" IsReadOnly="True" Binding="{Binding Mode}" />
             </DataGrid.Columns>
           </DataGrid>
         </DockPanel>
+      </TabItem>
+
+      <TabItem Header="Validation">
+        <Grid Margin="8">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+          <TextBlock Margin="0,0,0,8" Text="Errors block saving. Warnings identify ambiguous or potentially order-dependent workflows." />
+          <DataGrid x:Name="ValidationGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" />
+              <DataGridTextColumn Header="Code" Binding="{Binding Code}" />
+              <DataGridTextColumn Width="3*" Header="Message" Binding="{Binding Message}" />
+              <DataGridTextColumn Width="2*" Header="Location" Binding="{Binding Path}" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </Grid>
       </TabItem>
     </TabControl>
 

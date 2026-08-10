@@ -111,6 +111,45 @@ public sealed class StreamerBotStableV23AdapterTests
     }
 
     [Fact]
+    public void StableV23RoundTripsExpandedActionAndCommandOptions()
+    {
+        var original = CreateDefinition();
+        original = original with
+        {
+            Metadata = original.Metadata with { MinimumVersion = "1.0.7" },
+            Commands = [original.Commands[0] with
+            {
+                IgnoreBotAccount = false,
+                IgnoreInternalMessages = false,
+                Sources = 7,
+            }],
+            Actions = [original.Actions[0] with
+            {
+                Group = "Moderation",
+                RandomAction = true,
+                ExcludeFromPending = true,
+                ExcludeFromHistory = true,
+                SubActions = original.Actions[0].SubActions.Select((item, index) =>
+                    item with { Weight = index + 1 }).ToArray(),
+            }],
+        };
+
+        var export = StreamerBotStableV23Adapter.Encode(original, "com.creatorsforge.tests",
+            "Expanded options", "1.1.0-beta.1", "public class CPHInline {}\n");
+        var decoded = StreamerBotStableV23Adapter.DecodeDefinition(export.ImportCode);
+
+        Assert.Equal("1.0.7", decoded.Metadata.MinimumVersion);
+        Assert.False(decoded.Commands[0].IgnoreBotAccount);
+        Assert.False(decoded.Commands[0].IgnoreInternalMessages);
+        Assert.Equal(7, decoded.Commands[0].Sources);
+        Assert.Equal("Moderation", decoded.Actions[0].Group);
+        Assert.True(decoded.Actions[0].RandomAction);
+        Assert.True(decoded.Actions[0].ExcludeFromPending);
+        Assert.True(decoded.Actions[0].ExcludeFromHistory);
+        Assert.Equal([1d, 2d], decoded.Actions[0].SubActions.Select(item => item.Weight));
+    }
+
+    [Fact]
     public void DefinitionLoaderRejectsBrokenReferences()
     {
         var invalid = CreateDefinition() with

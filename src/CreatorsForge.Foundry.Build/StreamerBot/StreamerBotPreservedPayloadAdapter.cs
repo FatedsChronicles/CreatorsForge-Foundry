@@ -67,6 +67,7 @@ public static class StreamerBotPreservedPayloadAdapter
         meta["version"] = version;
         meta["author"] = definition.Metadata.Author;
         meta["description"] = definition.Metadata.Description;
+        payload["minimumVersion"] = definition.Metadata.MinimumVersion;
     }
 
     private static void PatchQueues(JsonArray wireItems, IReadOnlyList<StreamerBotQueueDefinition> items, string projectId)
@@ -104,6 +105,10 @@ public static class StreamerBotPreservedPayloadAdapter
             target["caseSensitive"] = item.CaseSensitive;
             target["globalCooldown"] = item.GlobalCooldown;
             target["userCooldown"] = item.UserCooldown;
+            target["ignoreBotAccount"] = item.IgnoreBotAccount;
+            if (target.ContainsKey("ignoreInternal"))
+                target["ignoreInternal"] = item.IgnoreInternalMessages;
+            target["sources"] = item.Sources;
         }
     }
 
@@ -131,6 +136,10 @@ public static class StreamerBotPreservedPayloadAdapter
             target["enabled"] = action.Enabled;
             target["concurrent"] = action.Concurrent;
             target["alwaysRun"] = action.AlwaysRun;
+            target["group"] = action.Group ?? string.Empty;
+            target["randomAction"] = action.RandomAction;
+            target["excludeFromPending"] = action.ExcludeFromPending;
+            target["excludeFromHistory"] = action.ExcludeFromHistory;
             target["queue"] = action.QueueId is not null && queuesByLogicalId.TryGetValue(action.QueueId, out var queue)
                 ? queue.SourceId ?? DeterministicStreamerBotId.Create(projectId, "queue", queue.Id) : null;
 
@@ -175,6 +184,7 @@ public static class StreamerBotPreservedPayloadAdapter
                     subActionWire[subWireId] = subTarget;
                 }
                 subTarget["enabled"] = subAction.Enabled;
+                subTarget["weight"] = subAction.Weight;
                 if (subAction.Kind == "setArgument")
                 {
                     subTarget["variableName"] = subAction.VariableName;
@@ -192,7 +202,43 @@ public static class StreamerBotPreservedPayloadAdapter
                     subTarget["byteCode"] = Convert.ToBase64String(new UTF8Encoding(false, true).GetBytes(source));
                 }
             }
+
+            var orderedSubActions = new JsonArray();
+            var usedSubActionIds = new HashSet<string>(StringComparer.Ordinal);
+            for (var index = 0; index < action.SubActions.Count; index++)
+            {
+                var subAction = action.SubActions[index];
+                var id = subAction.SourceId ?? DeterministicStreamerBotId.Create(projectId, $"subAction:{action.Id}", subAction.Id);
+                if (!subActionWire.TryGetValue(id, out var orderedTarget)) continue;
+                var clone = orderedTarget.DeepClone().AsObject();
+                clone["index"] = index;
+                orderedSubActions.Add(clone);
+                usedSubActionIds.Add(id);
+            }
+            foreach (var leftover in subActionArray.OfType<JsonObject>())
+            {
+                var id = leftover["id"]?.GetValue<string>();
+                if (id is null || !usedSubActionIds.Contains(id)) orderedSubActions.Add(leftover.DeepClone());
+            }
+            target["subActions"] = orderedSubActions;
         }
+
+        var orderedActions = new JsonArray();
+        var usedActionIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var action in definition.Actions)
+        {
+            var id = action.SourceId ?? DeterministicStreamerBotId.Create(projectId, "action", action.Id);
+            if (!wire.TryGetValue(id, out var target)) continue;
+            orderedActions.Add(target.DeepClone());
+            usedActionIds.Add(id);
+        }
+        foreach (var leftover in wireItems.OfType<JsonObject>())
+        {
+            var id = leftover["id"]?.GetValue<string>();
+            if (id is null || !usedActionIds.Contains(id)) orderedActions.Add(leftover.DeepClone());
+        }
+        wireItems.Clear();
+        foreach (var item in orderedActions) wireItems.Add(item?.DeepClone());
     }
 
     private static Dictionary<string, JsonObject> ById(JsonArray items) => items

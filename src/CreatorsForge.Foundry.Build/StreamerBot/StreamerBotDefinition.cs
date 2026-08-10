@@ -5,7 +5,7 @@ namespace CreatorsForge.Foundry.Build.StreamerBot;
 
 public sealed record StreamerBotDefinition
 {
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 3;
 
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
     public StreamerBotMetadata Metadata { get; init; } = new();
@@ -19,6 +19,9 @@ public sealed record StreamerBotMetadata
 {
     public string Author { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
+    public string MinimumVersion { get; init; } = "1.0.0-alpha.1";
+    public string? MaximumTestedVersion { get; init; }
+    public string? Documentation { get; init; }
 }
 
 public sealed record StreamerBotImportProvenance(
@@ -37,7 +40,8 @@ public sealed record StreamerBotQueueDefinition(
     bool Blocking,
     string? SourceId = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool ReadOnly = false,
-    string? PreservationKey = null);
+    string? PreservationKey = null,
+    string? Description = null);
 
 public sealed record StreamerBotCommand(
     string Id,
@@ -49,7 +53,11 @@ public sealed record StreamerBotCommand(
     int UserCooldown,
     string? SourceId = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool ReadOnly = false,
-    string? PreservationKey = null);
+    string? PreservationKey = null,
+    bool IgnoreBotAccount = true,
+    bool IgnoreInternalMessages = true,
+    int Sources = 1,
+    string? Description = null);
 
 public sealed record StreamerBotAction(
     string Id,
@@ -62,7 +70,12 @@ public sealed record StreamerBotAction(
     IReadOnlyList<StreamerBotSubAction> SubActions,
     string? SourceId = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool ReadOnly = false,
-    string? PreservationKey = null);
+    string? PreservationKey = null,
+    string? Group = null,
+    string? Description = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool RandomAction = false,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool ExcludeFromPending = false,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool ExcludeFromHistory = false);
 
 public sealed record StreamerBotTrigger(
     string Id,
@@ -86,7 +99,8 @@ public sealed record StreamerBotSubAction(
     string? SourceId = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool ReadOnly = false,
     string? PreservationKey = null,
-    IReadOnlyList<string>? References = null);
+    IReadOnlyList<string>? References = null,
+    double Weight = 0);
 
 public sealed record StreamerBotDefinitionLoadResult(
     StreamerBotDefinition? Definition,
@@ -127,7 +141,7 @@ public static class StreamerBotDefinitionLoader
             return new(null, ["Definition JSON is empty."]);
         }
 
-        if (value.SchemaVersion == 1)
+        if (value.SchemaVersion is 1 or 2)
         {
             value = value with { SchemaVersion = StreamerBotDefinition.CurrentSchemaVersion };
         }
@@ -142,7 +156,7 @@ public static class StreamerBotDefinitionLoader
     public static string[] Validate(StreamerBotDefinition value)
     {
         var errors = new List<string>();
-        if (value.SchemaVersion is not (1 or StreamerBotDefinition.CurrentSchemaVersion))
+        if (value.SchemaVersion is not (1 or 2 or StreamerBotDefinition.CurrentSchemaVersion))
         {
             errors.Add($"Schema {value.SchemaVersion} is unsupported.");
         }
@@ -249,6 +263,10 @@ public static class StreamerBotDefinitionLoader
                 }
             }
         }
+
+        errors.AddRange(StreamerBotDefinitionDiagnostics.Analyze(value)
+            .Where(item => item.Severity == StreamerBotDefinitionDiagnosticSeverity.Error)
+            .Select(item => $"{item.Code}: {item.Message}"));
 
         return [.. errors];
     }

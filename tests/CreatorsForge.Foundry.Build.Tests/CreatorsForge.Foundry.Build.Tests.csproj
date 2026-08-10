@@ -112,6 +112,9 @@
     <None Include="..\..\schemas\streamerbot\streamerbot-definition-v2.schema.json"
           Link="Fixtures\Schemas\streamerbot-definition-v2.schema.json"
           CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\schemas\streamerbot\streamerbot-definition-v3.schema.json"
+          Link="Fixtures\Schemas\streamerbot-definition-v3.schema.json"
+          CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\samples\HelloFoundry\streamerbot\streamerbot.json"
           Link="Fixtures\streamerbot.json"
           CopyToOutputDirectory="PreserveNewest" />

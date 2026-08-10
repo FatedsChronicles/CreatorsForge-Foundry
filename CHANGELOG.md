@@ -6,6 +6,16 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 25B expanded Streamer.bot action model: action groups and execution
+  toggles, weighted ordered sub-actions, richer command/source options, queue
+  descriptions, and deterministic definition schema v3 migration.
+- Streamer.bot Designer controls for the verified toggles and weights, action
+  and sub-action duplication/reordering, plus a profile-aware Validation tab.
+- Central Streamer.bot workflow diagnostics shared by the designer and build
+  for invalid weights, aliases, sources, profile compatibility, ambiguous
+  names, unlinked commands, unused queues, and concurrent order dependencies.
+- Deterministic v23 and preserved v23/v24 mapping for the expanded fields and
+  edited action/sub-action order, without changing opaque build-specific data.
 - Phase 25A safe Streamer.bot import-to-project foundation. Foundry can decode
   bounded SBAE/Base64/GZip payload-v23 and payload-v24 exports without running
   imported code, preview their contents and safety findings, and atomically
