@@ -201,6 +201,10 @@ terminal, and stable-readiness increments described below.
 
 ### Validation
 
+- Phase 24B product-owner acceptance passed on 2026-08-10. The clean
+  `1.0.0-rc.2` candidate was accepted, and the release owner explicitly
+  approved publishing stable 1.0.0 without Authenticode signing, acknowledging
+  the Windows unknown-publisher warning.
 - Phase 24A automated checks pass: five exact Streamer.bot bridge builds, the
   1.0.7 CPH fingerprint and unchanged 512-method/564-overload surface, the
   five-profile mock matrix, package/publishing validation, OBS 32.2.1 and

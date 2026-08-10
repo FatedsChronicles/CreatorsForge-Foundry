@@ -617,5 +617,7 @@ inventory, hardens deterministic v1 packaging and independent verification,
 and extends GitHub Release automation with an explicit publisher-signing
 decision. The release workflow creates `v1.0.0` only after the clean committed
 source, complete regression gate, stable package, hashes, and release assets
-all pass. Phase 24B remains open until the generated 1.0.0 candidate completes
-the final checklist and the product owner approves publication.
+all pass. The clean `1.0.0-rc.2` candidate and unsigned-publication waiver were
+accepted by the product owner on 2026-08-10. Phase 24B is complete pending only
+the automated publication of the accepted commit as tag and stable GitHub
+Release `v1.0.0`.
