@@ -18,6 +18,8 @@ public sealed class StreamerBotImportServiceTests
         payload["version"] = version;
         payload["exportedFrom"] = version == 23 ? "1.0.4" : "1.0.7";
         payload["data"]!["actions"]![0]!["unknownActionField"] = "preserve-me";
+        payload["data"]!["actions"]![0]!["subActions"]![1]!["references"] =
+            new JsonArray("C:\\Developer\\Private\\Host.dll", ".\\Portable.Dependency.dll");
         payload["data"]!["actions"]![0]!["subActions"]!.AsArray().Add(new JsonObject
         {
             ["id"] = "opaque-wire-id", ["type"] = 456789, ["enabled"] = true, ["unknown"] = 42,
@@ -45,6 +47,18 @@ public sealed class StreamerBotImportServiceTests
             var source = Assert.Single(analysis.CSharpSources);
             var sourcePath = Path.Combine(root, source.Key.Replace('/', Path.DirectorySeparatorChar));
             await File.AppendAllTextAsync(sourcePath, "// edited safely\n");
+            var definitionPath = Path.Combine(root, "streamerbot", "streamerbot.json");
+            var importedDefinition = StreamerBotDefinitionLoader.Load(await File.ReadAllTextAsync(definitionPath)).Definition!;
+            importedDefinition = importedDefinition with
+            {
+                Actions = importedDefinition.Actions.Select(action => action with
+                {
+                    SubActions = action.SubActions.Select(subAction => subAction.Kind == "executeCSharp"
+                        ? subAction with { References = [".\\Portable.Dependency.dll"] }
+                        : subAction).ToArray(),
+                }).ToArray(),
+            };
+            await File.WriteAllTextAsync(definitionPath, StreamerBotDefinitionLoader.Serialize(importedDefinition));
             var runner = new RejectingRunner();
             var build = await new FoundryBuildOrchestrator(runner).BuildAsync(loaded.Manifest, created.ProjectPath!);
             Assert.True(build.IsSuccess, string.Join(Environment.NewLine, build.Diagnostics.Select(item => item.Message)));
@@ -58,6 +72,8 @@ public sealed class StreamerBotImportServiceTests
             var editedCode = Encoding.UTF8.GetString(Convert.FromBase64String(
                 reexported["data"]!["actions"]![0]!["subActions"]![1]!["byteCode"]!.GetValue<string>()));
             Assert.Contains("edited safely", editedCode, StringComparison.Ordinal);
+            Assert.Equal([".\\Portable.Dependency.dll"], reexported["data"]!["actions"]![0]!["subActions"]![1]!["references"]!
+                .AsArray().Select(item => item!.GetValue<string>()));
         }
         finally
         {

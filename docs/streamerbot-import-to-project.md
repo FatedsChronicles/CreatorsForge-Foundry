@@ -21,7 +21,9 @@ Execute C# bodies are extracted beneath `streamerbot/code/<action>/<subaction>.c
 and open in the normal Foundry editor. They are not managed-library build
 inputs. A matching adapter re-embeds edits during build without executing the
 source. Absolute compiler paths and machine paths must be resolved before
-export.
+export. For an imported Execute C# node, edit its `references` array in
+`streamerbot/streamerbot.json`: remove machine-specific framework paths and
+retain or replace required dependencies with portable project-relative entries.
 
 Imported projects intentionally contain no generated DLL, CPHInline bridge,
 automatic licence, or invented tests. Review the author's terms, add an

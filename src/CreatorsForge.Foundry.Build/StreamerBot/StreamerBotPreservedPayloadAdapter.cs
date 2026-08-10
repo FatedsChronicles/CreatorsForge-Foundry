@@ -40,14 +40,14 @@ public static class StreamerBotPreservedPayloadAdapter
         if (!string.Equals(sourceHash, import.SourceSha256, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("The preserved payload has changed since import. Analyze the original package again.");
 
-        if (ContainsAbsoluteMachinePath(payload))
-            throw new InvalidOperationException("The preserved import contains an absolute machine path. Remove, map, or explicitly resolve it before export.");
         RejectUnsafeReferences(definition);
         PatchMetadata(payload, definition, projectName, projectVersion);
         var data = payload["data"]!.AsObject();
         PatchQueues(data["queues"]!.AsArray(), definition.Queues, projectId);
         PatchCommands(data["commands"]!.AsArray(), definition.Commands, projectId);
         await PatchActionsAsync(data["actions"]!.AsArray(), definition, projectRoot, projectId, cancellationToken).ConfigureAwait(false);
+        if (ContainsAbsoluteMachinePath(payload))
+            throw new InvalidOperationException("The preserved import contains an absolute machine path. Remove, map, or explicitly resolve it before export.");
 
         var payloadJson = payload.ToJsonString(Indented) + "\n";
         var importCode = StreamerBotEnvelopeCodec.Encode(payload);
@@ -183,6 +183,8 @@ public static class StreamerBotPreservedPayloadAdapter
                 }
                 else if (subAction.Kind == "executeCSharp")
                 {
+                    subTarget["references"] = new JsonArray((subAction.References ?? [])
+                        .Select(value => (JsonNode?)JsonValue.Create(value)).ToArray());
                     var sourcePath = ResolveConfined(projectRoot, subAction.SourcePath!, ".cs");
                     var source = await File.ReadAllTextAsync(sourcePath, cancellationToken).ConfigureAwait(false);
                     if (Encoding.UTF8.GetByteCount(source) > 1024 * 1024)

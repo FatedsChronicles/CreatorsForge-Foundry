@@ -22,7 +22,8 @@ All notable changes to Creators Forge Foundry are documented in this file.
 - Import limits and validation for Base64, SBAE identity, GZip, strict UTF-8,
   JSON depth, decoded size, and entity count; credential-like values block
   project creation without being printed, while absolute machine paths block
-  export until resolved.
+  export until resolved. Cleaned Execute C# reference lists are patched before
+  the final portability check so users can safely resolve imported paths.
 
 The post-v1 development line uses `1.1.0-beta.1` as its initial prerelease
 identity.
