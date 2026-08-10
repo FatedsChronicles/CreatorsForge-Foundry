@@ -92,19 +92,20 @@
           Margin="0,6,0,0"
           Padding="7"
           SelectedIndex="0">
-        <ComboBoxItem Content="1.0.4-stable" />
-        <ComboBoxItem Content="1.0.5-alpha.34" />
-        <ComboBoxItem Content="1.0.5-beta.1" />
-        <ComboBoxItem Content="1.0.5-beta.6" />
       </ComboBox>
       <TextBlock Margin="0,12,0,0" Text="Project template" />
       <ComboBox
           x:Name="TemplateComboBox"
           Margin="0,6,0,0"
           Padding="7"
-          DisplayMemberPath="Name"
           SelectedValuePath="Id"
-          SelectionChanged="Template_SelectionChanged" />
+          SelectionChanged="Template_SelectionChanged">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding Name}" />
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
       <TextBlock Margin="0,12,0,0" Text="Author" />
       <TextBox x:Name="AuthorTextBox" Margin="0,6,0,0" Padding="7" Text="Creator" />
       <TextBlock Margin="0,12,0,0" Text="Description" />

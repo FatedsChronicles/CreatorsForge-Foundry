@@ -29,7 +29,10 @@ callback without retaining packet pointers.
 Choose **File > New Project**, select the provider and compatibility profile,
 then select a template. The form captures project identity, author, and
 description. Foundry generates the manifest and source-owned provider files,
-validates them, and opens the resulting project.
+validates them, and opens the resulting project. The author and description
+also initialize publishing metadata. Every new project includes an editable
+MIT `LICENSE.txt` and a starter `CHANGELOG.md` containing version `0.1.0`, so
+the release metadata is complete from the beginning.
 
 The manifest stores provenance as:
 

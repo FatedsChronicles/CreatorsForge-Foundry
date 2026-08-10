@@ -270,6 +270,7 @@ public sealed class FoundryProjectValidatorTests
     [InlineData("1.0.5-alpha.34")]
     [InlineData("1.0.5-beta.1")]
     [InlineData("1.0.5-beta.6")]
+    [InlineData("1.0.7-stable")]
     public void ValidateAcceptsPackageForSupportedProfiles(string profile)
     {
         var manifest = CreateValidManifest() with

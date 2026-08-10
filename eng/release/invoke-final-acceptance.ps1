@@ -104,7 +104,10 @@ $manualIds = @(
     'streamerbot.1.0.4.create-edit-deploy-runtime', 'streamerbot.1.0.4.update-repair-rollback-uninstall',
     'streamerbot.1.0.5-alpha.34.create-edit-deploy-runtime', 'streamerbot.1.0.5-alpha.34.update-repair-rollback-uninstall',
     'streamerbot.1.0.5-beta.1.create-edit-deploy-runtime', 'streamerbot.1.0.5-beta.1.update-repair-rollback-uninstall',
+    'streamerbot.1.0.5-beta.6.create-edit-deploy-runtime', 'streamerbot.1.0.5-beta.6.update-repair-rollback-uninstall',
+    'streamerbot.1.0.7.create-edit-deploy-runtime', 'streamerbot.1.0.7.update-repair-rollback-uninstall',
     'obsstudio.32.1.2.create-edit-deploy-runtime', 'obsstudio.32.1.2.restart-shutdown-repair-rollback-uninstall',
+    'obsstudio.32.2.1.create-edit-deploy-runtime', 'obsstudio.32.2.1.restart-shutdown-repair-rollback-uninstall',
     'release.licence-approved', 'release.source-committed-tagged', 'release.publisher-trust-approved'
 )
 $manual = @($manualIds | ForEach-Object { [ordered]@{ id = $_; outcome = 'pending'; details = 'Record this check on the clean-machine checklist.'; evidence = $null } })

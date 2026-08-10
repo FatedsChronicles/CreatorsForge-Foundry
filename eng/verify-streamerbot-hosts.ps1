@@ -15,6 +15,9 @@ param(
     [ValidateScript({ Test-Path -LiteralPath $_ -PathType Container })]
     [string] $Beta6Path,
 
+    [ValidateScript({ Test-Path -LiteralPath $_ -PathType Container })]
+    [string] $Stable107Path,
+
     [ValidateSet("Debug", "Release")]
     [string] $Configuration = "Release"
 )
@@ -91,6 +94,13 @@ if (-not [string]::IsNullOrWhiteSpace($Beta6Path)) {
         Name = "beta-1.0.5-beta.6"
         Path = $Beta6Path
         ExpectedVersion = "1.0.5-beta.6"
+    }
+}
+if (-not [string]::IsNullOrWhiteSpace($Stable107Path)) {
+    $profiles += [pscustomobject]@{
+        Name = "stable-1.0.7"
+        Path = $Stable107Path
+        ExpectedVersion = "1.0.7"
     }
 }
 

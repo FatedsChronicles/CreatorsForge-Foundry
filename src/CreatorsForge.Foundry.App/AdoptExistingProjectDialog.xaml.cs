@@ -71,7 +71,7 @@ public partial class AdoptExistingProjectDialog : Window
             analysis,
             name,
             id,
-            ProfileComboBox.SelectedItem?.ToString() ?? "1.0.4-stable",
+            ProfileComboBox.SelectedItem?.ToString() ?? FoundryStreamerBotProfiles.Stable107,
             provider,
             AuthorTextBox.Text.Trim());
         DialogResult = true;

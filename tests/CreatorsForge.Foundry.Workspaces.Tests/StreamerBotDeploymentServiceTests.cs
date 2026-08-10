@@ -20,6 +20,8 @@ public sealed class StreamerBotDeploymentServiceTests
     [InlineData("1.0.5-alpha.34", "1.0.5-alpha.34")]
     [InlineData("1.0.5 beta.1", "1.0.5-beta.1")]
     [InlineData("1.0.5 beta.6", "1.0.5-beta.6")]
+    [InlineData("1.0.7", "1.0.7-stable")]
+    [InlineData("1.0.7.0", "1.0.7-stable")]
     public void FileVersionsMapToExactCompatibilityProfiles(
         string fileVersion,
         string expectedProfile)

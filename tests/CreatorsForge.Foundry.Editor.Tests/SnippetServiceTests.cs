@@ -70,6 +70,21 @@ public sealed class SnippetServiceTests
     }
 
     [Fact]
+    public void Stable107ReceivesVerifiedBuiltInSnippets()
+    {
+        const string source = "cph.global.";
+
+        var completions = snippets.GetCompletions(
+            source,
+            source.Length,
+            "1.0.7-stable");
+
+        Assert.NotEmpty(completions);
+        Assert.All(completions, item =>
+            Assert.Contains("1.0.7-stable", item.Availability, StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void CompletionExcludesSnippetOutsideSelectedProfile()
     {
         var definition = snippets.Catalogue.Snippets[0] with

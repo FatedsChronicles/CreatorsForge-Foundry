@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using CreatorsForge.Foundry.Core.Compatibility;
 using CreatorsForge.Foundry.Core.Diagnostics;
 using CreatorsForge.Foundry.Core.Projects;
 
@@ -136,6 +137,14 @@ public static class FoundryWorkspaceService
         var description = string.IsNullOrWhiteSpace(request.Description)
             ? template.Description
             : request.Description.Trim();
+        var publishing = new FoundryPublishing
+        {
+            PackageName = request.Id.Trim(),
+            Summary = description,
+            Authors = [author],
+            LicenseFile = "LICENSE.txt",
+            ChangelogFile = "CHANGELOG.md",
+        };
         var templateReference = new FoundryProjectTemplateReference
         {
             Id = template.Id,
@@ -158,6 +167,7 @@ public static class FoundryWorkspaceService
                     Profile = request.TargetProfile.Trim(),
                 },
                 Template = templateReference,
+                Publishing = publishing,
                 NativeBuild = new FoundryNativeBuild
                 {
                     Sources = ["src/plugin.c"],
@@ -193,6 +203,7 @@ public static class FoundryWorkspaceService
                 Profile = request.TargetProfile.Trim(),
             },
             Template = templateReference,
+            Publishing = publishing,
             Features = new FoundryFeatures
             {
                 MockRuntime = true,
@@ -237,6 +248,14 @@ public static class FoundryWorkspaceService
             await AtomicFile.WriteTextAsync(
                 projectPath,
                 $"{manifestJson}\n",
+                cancellationToken).ConfigureAwait(false);
+            await AtomicFile.WriteTextAsync(
+                Path.Combine(projectDirectory, "LICENSE.txt"),
+                CreateMitLicense(author),
+                cancellationToken).ConfigureAwait(false);
+            await AtomicFile.WriteTextAsync(
+                Path.Combine(projectDirectory, "CHANGELOG.md"),
+                CreateInitialChangelog(manifest.Name, manifest.Version),
                 cancellationToken).ConfigureAwait(false);
             if (isObsProject)
             {
@@ -647,6 +666,49 @@ public static class FoundryWorkspaceService
         return builder.ToString();
     }
 
+    private static string CreateMitLicense(string author)
+    {
+        var copyrightOwner = author
+            .Replace('\r', ' ')
+            .Replace('\n', ' ')
+            .Trim();
+        return $$"""
+            MIT License
+
+            Copyright (c) {{DateTimeOffset.UtcNow.Year}} {{copyrightOwner}}
+
+            Permission is hereby granted, free of charge, to any person obtaining a copy
+            of this software and associated documentation files (the "Software"), to deal
+            in the Software without restriction, including without limitation the rights
+            to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+            copies of the Software, and to permit persons to whom the Software is
+            furnished to do so, subject to the following conditions:
+
+            The above copyright notice and this permission notice shall be included in all
+            copies or substantial portions of the Software.
+
+            THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+            IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+            FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+            AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+            LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+            OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+            SOFTWARE.
+
+            """;
+    }
+
+    private static string CreateInitialChangelog(string projectName, string version) => $$"""
+        # Changelog
+
+        All notable changes to {{projectName}} will be documented in this file.
+
+        ## {{version}}
+
+        - Initial project created with Creators Forge Foundry.
+
+        """;
+
     private static string CreateEntryPointSource(string namespaceName) => $$"""
         using System;
         using System.Collections.Generic;
@@ -836,7 +898,7 @@ public static class FoundryWorkspaceService
         {
             schemaVersion = 1,
             provider = "streamerbot",
-            profiles = new[] { "1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6" },
+            profiles = FoundryStreamerBotProfiles.Ordered.ToArray(),
             cases = new[]
             {
                 new

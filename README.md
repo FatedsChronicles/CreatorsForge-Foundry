@@ -399,13 +399,16 @@ Foundry v1 has been developed and verified against these exact hosts:
 | Streamer.bot | 1.0.4 Stable |
 | Streamer.bot | 1.0.5-alpha.34 |
 | Streamer.bot | 1.0.5-beta.1 |
-| OBS Studio | 32.1.2 on Windows x64 |
+| Streamer.bot | 1.0.5-beta.6 |
+| Streamer.bot | 1.0.7 Stable |
+| OBS Studio | 32.1.2 and 32.2.1 on Windows x64 |
 
 Important compatibility boundaries:
 
-- OBS Studio 32.1.2 Windows x64 is the only exact OBS release currently included in the v1 support matrix.
+- OBS Studio 32.1.2 and 32.2.1 Windows x64 are the exact OBS releases currently included in the v1 support matrix.
 - The internal `32.x-windows-x64` profile does not imply support for every OBS 32.x release.
 - Streamer.bot prerelease compatibility applies to the exact tested alpha and beta builds.
+- Streamer.bot 1.0.7 stable is verified as an exact Foundry v1 host.
 - Foundry emits the stable version-23 Streamer.bot package contract.
 - Automated compatibility tests supplement rather than replace real-host runtime verification.
 

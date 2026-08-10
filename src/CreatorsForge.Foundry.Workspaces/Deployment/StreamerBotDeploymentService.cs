@@ -273,8 +273,13 @@ public static class StreamerBotInstallationDiscovery
                 (build.Length == 0 ? string.Empty : $".{build}");
         }
 
-        return version.StartsWith("1.0.4", StringComparison.Ordinal)
-            ? "1.0.4-stable"
+        if (version.StartsWith("1.0.4", StringComparison.Ordinal))
+        {
+            return "1.0.4-stable";
+        }
+
+        return version.StartsWith("1.0.7", StringComparison.Ordinal)
+            ? "1.0.7-stable"
             : version;
     }
 

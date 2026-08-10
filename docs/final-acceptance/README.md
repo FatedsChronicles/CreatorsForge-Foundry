@@ -17,11 +17,13 @@ The exact supported host versions are published in the
 - Streamer.bot 1.0.4 stable;
 - Streamer.bot 1.0.5-alpha.34;
 - Streamer.bot 1.0.5-beta.1;
-- OBS Studio 32.1.2 on Windows x64.
+- Streamer.bot 1.0.5-beta.6;
+- Streamer.bot 1.0.7 stable;
+- OBS Studio 32.1.2 and 32.2.1 on Windows x64.
 
 The OBS `32.x-windows-x64` profile is an internal compatibility family, not a
-claim that every OBS 32.x release is supported. **OBS Studio 32.1.2 is the only
-exact OBS version in the v1 support matrix.**
+claim that every OBS 32.x release is supported. **OBS Studio 32.1.2 and 32.2.1
+are the only exact OBS versions in the v1 support matrix.**
 
 ## Acceptance environments
 
@@ -44,7 +46,7 @@ Run the harness on the release commit:
 ```powershell
 .\eng\release\invoke-final-acceptance.ps1 `
   -ProductVersion 1.0.0-rc.1 `
-  -ObsRoot 'PATH_TO_DISPOSABLE_OBS_32.1.2' `
+  -ObsRoot 'PATH_TO_DISPOSABLE_OBS_32.2.1' `
   -CleanMachineAttested
 ```
 
@@ -71,7 +73,7 @@ Complete both clean-machine workflows from the installed Foundry desktop:
 4. Exercise update, missing-file repair, rollback, modified-file protection,
    and uninstall.
 5. Create a new OBS filter plugin from a v1 template.
-6. Edit, build, test, package, publish, and deploy it to OBS Studio 32.1.2.
+6. Edit, build, test, package, publish, and deploy it to OBS Studio 32.2.1.
 7. Attach the filter, restart OBS, verify persistence, remove the filter, and
    close OBS normally without a module error or crash report.
 8. Exercise update, missing-file repair, rollback, modified-file protection,

@@ -2,11 +2,52 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using CreatorsForge.Foundry.Core.Packaging;
 using CreatorsForge.Foundry.Core.Projects;
+using CreatorsForge.Foundry.Workspaces;
 
 namespace CreatorsForge.Foundry.Build.Tests;
 
 public sealed class FoundryReleasePackagerTests
 {
+    [Fact]
+    public async Task NewlyCreatedProjectHasReadyMetadataLicenceAndChangelog()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "CreatorsForge.Foundry.NewPublishing",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            var created = await FoundryWorkspaceService.CreateAsync(new(
+                root,
+                "Ready Project",
+                "com.example.ready-project",
+                "1.0.7-stable",
+                Author: "Example Creator",
+                Description: "A release-ready project baseline."));
+
+            Assert.True(created.IsSuccess, string.Join(Environment.NewLine, created.Diagnostics));
+            var readiness = FoundryPublishingReadinessService.Inspect(
+                created.Value!.Manifest,
+                created.Value.ProjectPath);
+
+            Assert.All(
+                readiness.Checklist.Where(item => item.Id is "metadata" or "license" or "changelog"),
+                item => Assert.True(item.Passed, item.Details));
+            Assert.DoesNotContain(
+                readiness.Diagnostics,
+                item => item.Message.Contains("Release metadata", StringComparison.Ordinal) ||
+                    item.Message.Contains("Licence file", StringComparison.Ordinal) ||
+                    item.Message.Contains("Versioned changelog", StringComparison.Ordinal));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
     [Fact]
     public async Task StreamerBotReleaseContainsVerifiedPayloadManifestAndInstructions()
     {

@@ -12,6 +12,7 @@ public partial class NewProjectDialog : Window
     {
         InitializeComponent();
         ProjectLocationTextBox.Text = settings.DefaultProjectDirectory;
+        RefreshProviderOptions();
     }
 
     public FoundryProjectCreationRequest? Request { get; private set; }
@@ -26,6 +27,11 @@ public partial class NewProjectDialog : Window
             return;
         }
 
+        RefreshProviderOptions();
+    }
+
+    private void RefreshProviderOptions()
+    {
         var provider = (TargetProviderComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString();
         ProfileComboBox.Items.Clear();
         TemplateComboBox.ItemsSource = FoundryProjectTemplateService.Templates
@@ -110,7 +116,7 @@ public partial class NewProjectDialog : Window
         }
 
         var profile = (ProfileComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ??
-            "1.0.4-stable";
+            FoundryStreamerBotProfiles.Stable107;
         var provider = (TargetProviderComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString() ??
             "streamerbot";
         var template = TemplateComboBox.SelectedItem as FoundryProjectTemplateDescriptor;

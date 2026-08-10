@@ -14,7 +14,7 @@ public sealed class FoundryCompatibilityMatrixTests
             {
               "schemaVersion": 1,
               "provider": "streamerbot",
-              "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+              "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6", "1.0.7-stable"],
               "cases": [{
                 "id": "matrix-command",
                 "name": "Matrix command",
@@ -34,13 +34,13 @@ public sealed class FoundryCompatibilityMatrixTests
             []));
 
         Assert.True(result.IsSuccess, string.Join(Environment.NewLine, result.Diagnostics));
-        Assert.Equal(4, result.Cells.Count);
+        Assert.Equal(5, result.Cells.Count);
         Assert.All(result.Cells, cell => Assert.Equal(FoundryTestOutcome.Passed, cell.Outcome));
-        Assert.Equal(4, result.Cells.Select(cell => cell.Result.ResultPath).Distinct().Count());
+        Assert.Equal(5, result.Cells.Select(cell => cell.Result.ResultPath).Distinct().Count());
         Assert.All(result.Cells, cell => Assert.True(File.Exists(cell.Result.ResultPath)));
         Assert.True(File.Exists(result.ResultPath));
         using var document = JsonDocument.Parse(await File.ReadAllTextAsync(result.ResultPath!));
-        Assert.Equal(4, document.RootElement.GetProperty("cells").GetArrayLength());
+        Assert.Equal(5, document.RootElement.GetProperty("cells").GetArrayLength());
     }
 
     [Fact]

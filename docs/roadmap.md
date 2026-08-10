@@ -587,3 +587,24 @@ restart, invalid-root, and child-process-tree cleanup behavior.
 All thirteen manual acceptance checks passed on 2026-08-10, including keyboard
 navigation, command execution and output, command history, project switching,
 stop/restart and child-process cleanup, and theme readability.
+
+## Phase 24 - Stable v1.0.0 readiness and release
+
+### Phase 24A - Current-host compatibility refresh
+
+Phase 24A is the mandatory compatibility gate before stable release work. It
+adds an exact Streamer.bot `1.0.7-stable` project/test profile, regenerates the
+CPH catalogue from the official 1.0.7 interface assembly, expands the mock
+matrix and host verification script, and re-runs the retained OBS Studio
+32.2.1 ABI/source-lifecycle regression with the pinned 32.1.2 SDK.
+
+The automated gate passed on 2026-08-10: the bridge compiled against all five
+exact Streamer.bot hosts, the five-profile mock matrix and representative
+publishing validation passed, OBS module/source lifecycle checks passed on
+32.2.1 and the retained 32.1.2 host, and the complete release build passed 295
+tests plus all desktop smoke cases with zero warnings. Product-owner host
+acceptance passed on 2026-08-10 in disposable Streamer.bot 1.0.7 and OBS Studio
+32.2.1 installations. The final desktop acceptance also passed: initial
+compatibility profiles, friendly template names, author-to-publishing metadata,
+generated MIT licence and versioned changelog, publishing validation, and
+wrapped prose documents all behaved as expected. **Phase 24A is complete.**
