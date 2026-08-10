@@ -169,6 +169,10 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 23 product-owner acceptance passed on 2026-08-10. All thirteen manual
+  checks passed, including **Ctrl+T** navigation, visible command output,
+  Up/Down history, project-root switching, cancellation, process cleanup, and
+  Dark, Light, and System theme readability.
 - Phase 23 passes all 289 automated tests and all ten representative desktop
   smoke cases with a zero-warning release build. Focused integration coverage
   executes a real PowerShell command in the project root, replaces sessions

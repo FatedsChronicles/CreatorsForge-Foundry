@@ -563,7 +563,7 @@ Phase 23 adds a PowerShell terminal to the existing resizable desktop tool
 area without allowing command execution inside the Foundry application
 process.
 
-Implemented for product-owner acceptance:
+Implemented and accepted by the product owner on 2026-08-10:
 
 - a dedicated Terminal tab and **View > Integrated Terminal** command with
   **Ctrl+T** keyboard navigation, with Test Explorer moved to
@@ -584,3 +584,6 @@ The implementation gate passes all 289 automated tests and all ten
 representative desktop smoke cases with a zero-warning release build. Focused
 coverage executes real PowerShell commands and verifies working-directory,
 restart, invalid-root, and child-process-tree cleanup behavior.
+All thirteen manual acceptance checks passed on 2026-08-10, including keyboard
+navigation, command execution and output, command history, project switching,
+stop/restart and child-process cleanup, and theme readability.
