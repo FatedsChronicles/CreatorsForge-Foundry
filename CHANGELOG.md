@@ -6,6 +6,13 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 24A exact Streamer.bot 1.0.7 stable compatibility profile, generated
+  CPH catalogue fingerprint, five-profile mock matrix, schema support, host
+  discovery normalization, and disposable-host verification tooling.
+- A pre-v1 compatibility refresh gate that revalidates the pinned OBS 32.1.2
+  SDK output against the exact OBS Studio 32.2.1 Windows x64 runtime before
+  stable release approval.
+
 - Phase 23 integrated PowerShell terminal in the resizable desktop tool area,
   with project-root startup, command history, bounded output, explicit
   start/stop/restart/clear controls, and **Ctrl+T** navigation.
@@ -169,6 +176,11 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 24A automated checks pass: five exact Streamer.bot bridge builds, the
+  1.0.7 CPH fingerprint and unchanged 512-method/564-overload surface, the
+  five-profile mock matrix, package/publishing validation, OBS 32.2.1 and
+  retained 32.1.2 source lifecycle, 294 tests, and all desktop smoke cases.
+  Real Streamer.bot 1.0.7 GUI acceptance remains the release blocker.
 - Phase 23 product-owner acceptance passed on 2026-08-10. All thirteen manual
   checks passed, including **Ctrl+T** navigation, visible command output,
   Up/Down history, project-root switching, cancellation, process cleanup, and

@@ -5,18 +5,21 @@ help, documentation, compatibility diagnostics, and build metadata.
 
 ## Catalogue v1
 
-Revision `1.0.0+0b24468390c6` was generated from the physical
+Revision `1.0.0+af3f9feaf40b` was generated from the physical
 `Streamer.bot.Plugin.Interface.dll` files supplied for:
 
 - `1.0.4-stable`;
 - `1.0.5-alpha.34`;
 - `1.0.5-beta.1`;
-- `1.0.5-beta.6`.
+- `1.0.5-beta.6`;
+- `1.0.7-stable`.
 
 It contains 512 unique method names and 564 overloads. Five hundred methods are
 available to the stable profile. Twelve additional methods are present in all
-three 1.0.5 prerelease profiles. Beta.1 and beta.6 expose the same 564 public
-overloads; their interface assembly fingerprints differ.
+three 1.0.5 prerelease profiles. Beta.1, beta.6, and 1.0.7 stable expose the
+same 564 public overloads; their interface assembly fingerprints differ. The
+1.0.7 interface fingerprint is
+`aa6d8eeffa06eeb7f3e62bc6e296ce2301b67fcfdf538e46dc7676feb202bbbc`.
 
 Every overload records its signature, return type, parameters, optional
 defaults, and exact profile availability. Every method records category,
@@ -62,7 +65,8 @@ dotnet run --project `
   "PATH_TO_1.0.4_STABLE" `
   "PATH_TO_1.0.5_ALPHA" `
   "PATH_TO_1.0.5_BETA_1" `
-  "PATH_TO_1.0.5_BETA_6"
+  "PATH_TO_1.0.5_BETA_6" `
+  "PATH_TO_1.0.7_STABLE"
 ```
 
 Output ordering, formatting, interface fingerprints, and revision hashing are

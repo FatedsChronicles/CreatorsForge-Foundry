@@ -146,12 +146,17 @@ public sealed class CphIntelligenceServiceTests
     public void CatalogueContainsGeneratedProfileInventory()
     {
         Assert.StartsWith("1.0.0+", service.Catalogue.Revision);
-        Assert.Equal(4, service.Catalogue.Profiles.Count);
+        Assert.Equal(5, service.Catalogue.Profiles.Count);
         Assert.Contains(
             service.Catalogue.Profiles,
             profile =>
                 profile.Id == "1.0.5-beta.6" &&
                 profile.InterfaceSha256 == "d84df72080fe2dcecd2d82455930e350862dda637475f5e7458cd84a1e67be79");
+        Assert.Contains(
+            service.Catalogue.Profiles,
+            profile =>
+                profile.Id == "1.0.7-stable" &&
+                profile.InterfaceSha256 == "aa6d8eeffa06eeb7f3e62bc6e296ce2301b67fcfdf538e46dc7676feb202bbbc");
         Assert.True(service.Catalogue.Methods.Count >= 500);
         Assert.Contains(
             service.Catalogue.Methods,
@@ -241,6 +246,25 @@ public sealed class CphIntelligenceServiceTests
             "CPH.TwitchGet",
             "CPH.TwitchGet".Length,
             "1.0.5-beta.6");
+
+        Assert.DoesNotContain(result.Diagnostics, item => item.Code == "CFC0004");
+        Assert.DoesNotContain(result.Diagnostics, item => item.Code == "CFC0001");
+        Assert.Contains(completions, item => item.Name == "TwitchGetMods");
+    }
+
+    [Fact]
+    public void Stable107UsesExactCatalogueWithoutCompatibilityWarning()
+    {
+        const string source = "class Test { void Run() { CPH.TwitchGetMods(); } }";
+
+        var result = service.Analyze(
+            source,
+            @"C:\project\CPHInline.cs",
+            "1.0.7-stable");
+        var completions = service.GetCompletions(
+            "CPH.TwitchGet",
+            "CPH.TwitchGet".Length,
+            "1.0.7-stable");
 
         Assert.DoesNotContain(result.Diagnostics, item => item.Code == "CFC0004");
         Assert.DoesNotContain(result.Diagnostics, item => item.Code == "CFC0001");

@@ -31,27 +31,36 @@ internal static class CatalogueGenerator
 
     public static async Task<int> RunAsync(string[] arguments)
     {
-        if (arguments.Length is not (4 or 5))
+        if (arguments.Length is < 4 or > 6)
         {
             Console.Error.WriteLine(
-                "Usage: CphCatalog.Generator OUTPUT STABLE_DIR ALPHA_DIR BETA1_DIR [BETA6_DIR]");
+                "Usage: CphCatalog.Generator OUTPUT STABLE_DIR ALPHA_DIR BETA1_DIR [BETA6_DIR] [STABLE107_DIR]");
             return 2;
         }
 
         var outputPath = Path.GetFullPath(arguments[0]);
-        ProfileInput[] inputs =
-        arguments.Length == 5
-        ? [
+        var inputs = new List<ProfileInput>
+        {
             new("1.0.4-stable", "1.0.4", "stable", Path.GetFullPath(arguments[1])),
             new("1.0.5-alpha.34", "1.0.5-alpha.34", "alpha", Path.GetFullPath(arguments[2])),
             new("1.0.5-beta.1", "1.0.5-beta.1", "beta", Path.GetFullPath(arguments[3])),
-            new("1.0.5-beta.6", "1.0.5-beta.6", "beta", Path.GetFullPath(arguments[4])),
-        ]
-        : [
-            new("1.0.4-stable", "1.0.4", "stable", Path.GetFullPath(arguments[1])),
-            new("1.0.5-alpha.34", "1.0.5-alpha.34", "alpha", Path.GetFullPath(arguments[2])),
-            new("1.0.5-beta.1", "1.0.5-beta.1", "beta", Path.GetFullPath(arguments[3])),
-        ];
+        };
+        if (arguments.Length >= 5)
+        {
+            inputs.Add(new(
+                "1.0.5-beta.6",
+                "1.0.5-beta.6",
+                "beta",
+                Path.GetFullPath(arguments[4])));
+        }
+        if (arguments.Length == 6)
+        {
+            inputs.Add(new(
+                "1.0.7-stable",
+                "1.0.7",
+                "stable",
+                Path.GetFullPath(arguments[5])));
+        }
 
         var overloads = new Dictionary<string, OverloadBuilder>(StringComparer.Ordinal);
         var profiles = new List<CphCatalogueProfile>();
@@ -159,9 +168,11 @@ internal static class CatalogueGenerator
         var allProfiles = builders
             .SelectMany(builder => builder.Profiles)
             .ToHashSet(StringComparer.Ordinal);
+        var isStable = allProfiles.Contains("1.0.4-stable") ||
+            allProfiles.Contains("1.0.7-stable");
         var status = DeprecatedMethods.Contains(name)
             ? "deprecated"
-            : allProfiles.Contains("1.0.4-stable")
+            : isStable
                 ? "stable"
                 : "prerelease";
         var overloads = builders
@@ -176,7 +187,11 @@ internal static class CatalogueGenerator
             docs?.Platform ?? InferPlatform(name),
             docs?.Summary ?? $"Streamer.bot CPH method {name}.",
             status,
-            allProfiles.Contains("1.0.4-stable") ? "1.0.4" : "1.0.5-alpha.34",
+            allProfiles.Contains("1.0.4-stable")
+                ? "1.0.4"
+                : allProfiles.Contains("1.0.7-stable")
+                    ? "1.0.7"
+                    : "1.0.5-alpha.34",
             docs?.Url,
             docs?.Example,
             docs?.Related ?? [],

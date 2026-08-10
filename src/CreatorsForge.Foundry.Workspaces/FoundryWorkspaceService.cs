@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using CreatorsForge.Foundry.Core.Compatibility;
 using CreatorsForge.Foundry.Core.Diagnostics;
 using CreatorsForge.Foundry.Core.Projects;
 
@@ -836,7 +837,7 @@ public static class FoundryWorkspaceService
         {
             schemaVersion = 1,
             provider = "streamerbot",
-            profiles = new[] { "1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6" },
+            profiles = FoundryStreamerBotProfiles.Ordered.ToArray(),
             cases = new[]
             {
                 new

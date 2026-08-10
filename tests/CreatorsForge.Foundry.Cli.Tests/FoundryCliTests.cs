@@ -313,7 +313,8 @@ public sealed class FoundryCliTests
             Assert.Contains("[PASSED] 1.0.5-alpha.34 (mock-runtime-v1)", output.ToString(), StringComparison.Ordinal);
             Assert.Contains("[PASSED] 1.0.5-beta.1 (mock-runtime-v1)", output.ToString(), StringComparison.Ordinal);
             Assert.Contains("[PASSED] 1.0.5-beta.6 (mock-runtime-v1)", output.ToString(), StringComparison.Ordinal);
-            Assert.Contains("Matrix passed: 4 passed, 0 failed, 0 errors.", output.ToString(), StringComparison.Ordinal);
+            Assert.Contains("[PASSED] 1.0.7-stable (mock-runtime-v1)", output.ToString(), StringComparison.Ordinal);
+            Assert.Contains("Matrix passed: 5 passed, 0 failed, 0 errors.", output.ToString(), StringComparison.Ordinal);
             Assert.Empty(error.ToString());
         }
         finally

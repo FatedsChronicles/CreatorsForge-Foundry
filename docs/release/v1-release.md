@@ -22,7 +22,7 @@ gate:
 ```powershell
 .\eng\release\invoke-final-acceptance.ps1 `
   -ProductVersion 1.0.0-rc.1 `
-  -ObsRoot 'PATH_TO_DISPOSABLE_OBS_32.1.2' `
+  -ObsRoot 'PATH_TO_DISPOSABLE_OBS_32.2.1' `
   -OutputDirectory .\artifacts\final-acceptance `
   -CleanMachineAttested
 ```
@@ -81,10 +81,11 @@ Transfer the exact candidate bytes to the clean acceptance machine, verify the
 recorded hashes, install them, and complete every item in the
 [final acceptance checklist](../final-acceptance/acceptance-checklist.md).
 
-Real GUI verification is mandatory for all three exact Streamer.bot versions
-and OBS Studio 32.1.2 Windows x64. Do not treat the Streamer.bot mock matrix or
-the isolated OBS harness as a substitute. Retain sanitized logs and checklist
-results without credentials or production channel information.
+Real GUI verification is mandatory for all five exact Streamer.bot versions
+listed in the compatibility matrix and OBS Studio 32.1.2 plus 32.2.1 Windows
+x64. Do not treat the Streamer.bot mock matrix or isolated OBS harness as a
+substitute. Retain sanitized logs and checklist results without credentials or
+production channel information.
 
 ## 5. Review release blockers
 

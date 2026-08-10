@@ -92,10 +92,6 @@
           Margin="0,6,0,0"
           Padding="7"
           SelectedIndex="0">
-        <ComboBoxItem Content="1.0.4-stable" />
-        <ComboBoxItem Content="1.0.5-alpha.34" />
-        <ComboBoxItem Content="1.0.5-beta.1" />
-        <ComboBoxItem Content="1.0.5-beta.6" />
       </ComboBox>
       <TextBlock Margin="0,12,0,0" Text="Project template" />
       <ComboBox

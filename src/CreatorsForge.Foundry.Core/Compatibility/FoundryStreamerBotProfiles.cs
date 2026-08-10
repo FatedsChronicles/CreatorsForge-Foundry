@@ -6,11 +6,12 @@ public static class FoundryStreamerBotProfiles
     public const string Alpha10534 = "1.0.5-alpha.34";
     public const string Beta1051 = "1.0.5-beta.1";
     public const string Beta1056 = "1.0.5-beta.6";
+    public const string Stable107 = "1.0.7-stable";
 
     public static IReadOnlySet<string> Supported { get; } = new HashSet<string>(
-        [Stable104, Alpha10534, Beta1051, Beta1056],
+        [Stable104, Alpha10534, Beta1051, Beta1056, Stable107],
         StringComparer.Ordinal);
 
     public static IReadOnlyList<string> Ordered { get; } =
-        [Stable104, Alpha10534, Beta1051, Beta1056];
+        [Stable107, Beta1056, Beta1051, Alpha10534, Stable104];
 }

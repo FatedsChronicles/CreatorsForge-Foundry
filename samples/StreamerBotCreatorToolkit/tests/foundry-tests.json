@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "provider": "streamerbot",
-  "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6"],
+  "profiles": ["1.0.4-stable", "1.0.5-alpha.34", "1.0.5-beta.1", "1.0.5-beta.6", "1.0.7-stable"],
   "cases": [
     { "id": "welcome", "name": "Welcomes a named chatter", "event": { "kind": "command", "name": "!welcome", "arguments": { "workflow": "welcome", "user": "Avery" } }, "assertions": [{ "kind": "returnEquals", "expected": true }, { "kind": "logContains", "expected": "Welcome, Avery!" }, { "kind": "cphCallCount", "key": "CPH.LogInfo", "expected": 1 }] },
     { "id": "shoutout", "name": "Queues a shout-out", "event": { "kind": "command", "name": "!so", "arguments": { "workflow": "shoutout", "user": "Morgan" } }, "assertions": [{ "kind": "returnEquals", "expected": true }, { "kind": "logContains", "expected": "Shout-out queued for Morgan" }] },

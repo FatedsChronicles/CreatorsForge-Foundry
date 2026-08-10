@@ -72,6 +72,8 @@ uses a mock runtime and does not satisfy these rows.
 | Streamer.bot 1.0.4 stable | [ ] | [ ] | [ ] | [ ] | [ ] |
 | Streamer.bot 1.0.5-alpha.34 | [ ] | [ ] | [ ] | [ ] | [ ] |
 | Streamer.bot 1.0.5-beta.1 | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Streamer.bot 1.0.5-beta.6 | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Streamer.bot 1.0.7 stable | [ ] | [ ] | [ ] | [ ] | [ ] |
 
 - [ ] An update installed and reported the new installed version.
 - [ ] A deliberately missing Foundry-owned DLL was detected and repaired.
@@ -93,6 +95,8 @@ uses a mock runtime and does not satisfy these rows.
       dependency inventory, and reproducibility report were present and verified.
 - [ ] Real OBS Studio **32.1.2 Windows x64** loaded the installed module without
       a module-load error.
+- [ ] Real OBS Studio **32.2.1 Windows x64** loaded the installed module without
+      a module-load error.
 - [ ] A real source accepted the filter, the filter remained attached after an
       OBS restart, and its settings persisted.
 - [ ] Removing the filter and closing OBS completed without a crash report.
@@ -105,8 +109,9 @@ uses a mock runtime and does not satisfy these rows.
 - [ ] Uninstall removed only receipted Foundry files and left the disposable OBS
       installation and user-owned scene data intact.
 
-OBS 32.1.2 is the only exact OBS version supported for v1. Passing an internal
-`32.x-windows-x64` test profile is not evidence for other OBS 32.x releases.
+OBS 32.1.2 and 32.2.1 are the only exact OBS versions supported for v1. Passing
+an internal `32.x-windows-x64` test profile is not evidence for other OBS 32.x
+releases.
 
 ## Final release decision
 
