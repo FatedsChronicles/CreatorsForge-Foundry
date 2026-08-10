@@ -16,7 +16,7 @@ namespace CreatorsForge.Foundry.App;
 [SuppressMessage(
     "Design",
     "CA1001:Types that own disposable fields should be disposable",
-    Justification = "WPF owns the window lifetime; OnClosed cancels and disposes the token source.")]
+    Justification = "WPF owns the window lifetime; OnClosed disposes the terminal session and token source.")]
 public partial class MainWindow : Window
 {
     private const string ProjectTreeItemDataFormat = "CreatorsForge.Foundry.ProjectTreeItem";
@@ -46,9 +46,11 @@ public partial class MainWindow : Window
                 SnippetProvider.Reload(
                     SnippetProvider.UserDirectory,
                     viewModel.Workspace?.ProjectRoot);
+                TerminalWorkspaceChanged();
             }
         };
         InitializeComponent();
+        InitializeTerminal();
         if (!isSmokeTest)
         {
             Loaded += MainWindow_Loaded;
@@ -175,6 +177,12 @@ public partial class MainWindow : Window
         var previewShortcutReady = IsPreviewShortcut(
             Key.P,
             ModifierKeys.Control | ModifierKeys.Shift);
+        var terminalShortcutReady = IsTerminalShortcut(
+            Key.T,
+            ModifierKeys.Control);
+        var terminalReady = TerminalInput is not null &&
+            TerminalOutput is not null &&
+            TerminalTab is not null;
         var newProjectItemDialog = new NewProjectItemDialog("Folder: src");
         var newProjectItemDialogReady = newProjectItemDialog.Content is not null &&
             newProjectItemDialog.ItemTypes.All(option =>
@@ -219,6 +227,8 @@ public partial class MainWindow : Window
             newProjectItemDialogReady &&
             previewDesignerReady &&
             previewShortcutReady &&
+            terminalShortcutReady &&
+            terminalReady &&
             darkSyntaxHighlightingReady;
         allowClose = true;
         Close();
@@ -1534,7 +1544,9 @@ public partial class MainWindow : Window
             e.Handled = true;
             Build_Click(sender, e);
         }
-        else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.T)
+        else if (Keyboard.Modifiers ==
+                     (ModifierKeys.Control | ModifierKeys.Shift) &&
+                 e.Key == Key.T)
         {
             e.Handled = true;
             TestExplorer_Click(sender, e);
@@ -1568,6 +1580,11 @@ public partial class MainWindow : Window
             e.Handled = true;
             PreviewDesigner_Click(sender, e);
         }
+        else if (IsTerminalShortcut(e.Key, Keyboard.Modifiers))
+        {
+            e.Handled = true;
+            ToggleTerminal_Click(sender, e);
+        }
         else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.OemComma)
         {
             e.Handled = true;
@@ -1584,6 +1601,9 @@ public partial class MainWindow : Window
     internal static bool IsPreviewShortcut(Key key, ModifierKeys modifiers) =>
         key == Key.P &&
         modifiers == (ModifierKeys.Control | ModifierKeys.Shift);
+
+    internal static bool IsTerminalShortcut(Key key, ModifierKeys modifiers) =>
+        key == Key.T && modifiers == ModifierKeys.Control;
 
     private async Task<bool> NavigateToSourceAsync(EditorSourceLocation location)
     {
@@ -1676,6 +1696,7 @@ public partial class MainWindow : Window
             }
         }
 
+        await StopTerminalForShutdownAsync();
         allowClose = true;
         Close();
     }
@@ -1810,6 +1831,7 @@ public partial class MainWindow : Window
     {
         autosaveTimer.Stop();
         lifetimeCancellation.Cancel();
+        terminalSession.DisposeAsync().AsTask().GetAwaiter().GetResult();
         lifetimeCancellation.Dispose();
         base.OnClosed(e);
     }

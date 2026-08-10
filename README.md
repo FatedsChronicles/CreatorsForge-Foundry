@@ -117,6 +117,16 @@ remains the default.
 Representative visual projects are available in
 `samples/VisualPreviewSamples.foundryworkspace`.
 
+### Integrated PowerShell terminal
+
+Open **View > Integrated Terminal** or press **Ctrl+T** to use a PowerShell
+session inside the resizable bottom tool area. The session starts in the active
+project root, keeps command history for the current Foundry window, streams
+bounded output, and provides explicit start, stop, restart, and clear actions.
+Foundry never elevates the terminal or changes the machine environment. The
+separate PowerShell process and its child process tree are stopped when the
+session ends, the active project changes, or Foundry closes.
+
 ## Integrated editors
 
 ### Roslyn-powered C# editor

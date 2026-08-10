@@ -487,7 +487,7 @@ runtime testing. Use **Publish Release** for a distribution-ready bundle.
 
 ## 13. Run tests and compatibility matrices
 
-Choose **Build > Test Explorer...** or press `Ctrl+T`. Foundry saves all files,
+Choose **Build > Test Explorer...** or press `Ctrl+Shift+T`. Foundry saves all files,
 refreshes the project, and opens the testing workspace.
 
 ### Run the active profile
@@ -741,7 +741,8 @@ system summary unless you explicitly enabled path inclusion.
 | `Ctrl+S` | Save the selected document |
 | `Ctrl+Shift+S` | Save all documents |
 | `Ctrl+B` | Build the active project |
-| `Ctrl+T` | Open Test Explorer |
+| `Ctrl+T` | Open Integrated Terminal |
+| `Ctrl+Shift+T` | Open Test Explorer |
 | `Ctrl+Alt+F` | Format the active C# document |
 | `Ctrl+Shift+I` | Open the snippet browser |
 | `Ctrl+Space` | Request context-appropriate completion |

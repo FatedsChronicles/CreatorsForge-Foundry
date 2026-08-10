@@ -6,6 +6,12 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 23 integrated PowerShell terminal in the resizable desktop tool area,
+  with project-root startup, command history, bounded output, explicit
+  start/stop/restart/clear controls, and **Ctrl+T** navigation.
+- A non-elevated terminal process boundary with redirected standard streams,
+  automatic project-change shutdown, and process-tree termination when the
+  user stops the session or Foundry closes.
 - Phase 22D opt-in executable previews: real staged HTML/CSS/JavaScript through
   disposable WebView2, real built WinForms capture in an isolated STA host, and
   real OBS module/source/property callback execution through libobs.
@@ -79,6 +85,11 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Changed
 
+- **Ctrl+T** now opens Integrated Terminal. Test Explorer moves to
+  **Ctrl+Shift+T** so both tools retain a direct keyboard command.
+- Terminal commands are Base64-transported into the persistent PowerShell
+  runspace and explicitly rendered as text so object, native-command, and error
+  output appears immediately without executing inside the Foundry process.
 - OBS executable preview now offers only supported 32.1.2/32.2.1 runtimes,
   prefers the project API match instead of the oldest discovered installation,
   and reports module/open/init/source flags when lifecycle execution fails.
@@ -158,6 +169,18 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Validation
 
+- Phase 23 product-owner acceptance passed on 2026-08-10. All thirteen manual
+  checks passed, including **Ctrl+T** navigation, visible command output,
+  Up/Down history, project-root switching, cancellation, process cleanup, and
+  Dark, Light, and System theme readability.
+- Phase 23 passes all 289 automated tests and all ten representative desktop
+  smoke cases with a zero-warning release build. Focused integration coverage
+  executes a real PowerShell command in the project root, replaces sessions
+  across project roots, rejects missing roots, and terminates a running child
+  process tree.
+- Phase 22D product-owner acceptance passed on 2026-08-06, including all live
+  static-web, WinForms, and OBS execution checks, lifecycle recovery, supported
+  OBS runtime selection, and process cleanup.
 - Phase 22D passes all 283 automated tests and all ten representative desktop
   smoke cases with a zero-warning release build. Real integration coverage
   executes JavaScript while proving outbound requests are blocked, captures the

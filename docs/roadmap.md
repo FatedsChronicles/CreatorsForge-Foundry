@@ -536,7 +536,7 @@ All twelve provider-adapter manual acceptance checks passed on 2026-08-06.
 
 ### Phase 22D - Executable provider preview runtimes
 
-Implemented on 2026-08-06 and awaiting product-owner manual acceptance:
+Implemented and accepted by the product owner on 2026-08-06:
 
 - explicit, session-only live execution with structural preview retained as the
   non-executing default;
@@ -556,3 +556,34 @@ The implementation gate passes all 283 automated tests and all ten sample
 project/workspace desktop smoke cases with a zero-warning release build. A real
 OBS 32.1.2 run also passed module load, source create/destroy, and the
 configurable filter's `enabled` property callback.
+
+## Phase 23 - Integrated terminal
+
+Phase 23 adds a PowerShell terminal to the existing resizable desktop tool
+area without allowing command execution inside the Foundry application
+process.
+
+Implemented and accepted by the product owner on 2026-08-10:
+
+- a dedicated Terminal tab and **View > Integrated Terminal** command with
+  **Ctrl+T** keyboard navigation, with Test Explorer moved to
+  **Ctrl+Shift+T**;
+- explicit start, stop, restart, and clear controls plus Up/Down command
+  history;
+- non-elevated Windows PowerShell with redirected input, output, and error
+  streams;
+- active-project-root startup and automatic session shutdown when the active
+  project changes;
+- bounded visible output so long-running tools cannot grow the desktop buffer
+  without limit;
+- process-tree termination when the user stops the terminal or Foundry closes;
+- theme-aware controls and named keyboard-accessible terminal elements.
+
+Manual acceptance is defined in [integrated-terminal.md](integrated-terminal.md).
+The implementation gate passes all 289 automated tests and all ten
+representative desktop smoke cases with a zero-warning release build. Focused
+coverage executes real PowerShell commands and verifies working-directory,
+restart, invalid-root, and child-process-tree cleanup behavior.
+All thirteen manual acceptance checks passed on 2026-08-10, including keyboard
+navigation, command execution and output, command history, project switching,
+stop/restart and child-process cleanup, and theme readability.

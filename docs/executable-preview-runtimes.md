@@ -69,4 +69,5 @@ only code you trust.
 14. Confirm the disposable preview-runtime directory contains no completed run
     folders.
 
-Phase 22D exits after the complete automated gate and all fourteen checks pass.
+Phase 22D exited on 2026-08-06 after the complete automated gate and all
+fourteen product-owner checks passed.

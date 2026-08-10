@@ -130,7 +130,7 @@ and
 
 ## Desktop Test Explorer
 
-Open **Build > Test Explorer** or press `Ctrl+T`. Foundry saves and refreshes
+Open **Build > Test Explorer** or press `Ctrl+Shift+T`. Foundry saves and refreshes
 the workspace, performs a fresh build, and then runs either the selected
 profile or the complete declared compatibility matrix.
 
