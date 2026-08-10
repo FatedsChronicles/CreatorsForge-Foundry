@@ -11,6 +11,7 @@ each dependency.
 | AvalonEdit (`ICSharpCode.AvalonEdit`) | 6.3.1.120 | Desktop source editor | MIT |
 | Microsoft.CodeAnalysis.CSharp.Workspaces | 5.6.0 | C# parsing, diagnostics, completion, formatting, and workspace services | MIT |
 | Microsoft.NETFramework.ReferenceAssemblies.net481 | 1.0.3 | Offline .NET Framework 4.8.1 reference assemblies for Streamer.bot builds | Microsoft .NET library/reference-assembly terms; review the package licence |
+| Microsoft Edge WebView2 SDK | 1.0.4078.44 | Crash-isolated HTML/CSS/JavaScript executable preview | Microsoft software licence terms; the Evergreen WebView2 Runtime is installed separately |
 | .NET Desktop Runtime and framework files | 10.x self-contained publish | Foundry application runtime | Microsoft .NET library/runtime terms; review the files in the final publish |
 
 The Roslyn package has transitive Microsoft.CodeAnalysis and supporting
@@ -30,12 +31,12 @@ and is not redistributed in the Foundry desktop package. Streamer.bot and OBS
 Studio are separate third-party applications and are not bundled with Foundry.
 Their names identify compatible target hosts and do not imply endorsement.
 
-## Product licence release gate
+## Product licence
 
-This file does **not** grant a licence to Creators Forge Foundry itself. The
-project owner must select, review, and add the product licence before v1 is
-released. Do not infer a product licence from sample-project licences, package
-metadata, dependency licences, or this notice.
+Creators Forge Foundry is distributed under the proprietary End-User Licence
+Agreement in the repository root `LICENSE.md`. Sample projects may contain
+separate editable licences generated for those projects; those do not replace
+or modify the Foundry product licence.
 
 Release approval requires checking this inventory against the exact shipped
 bytes and obtaining appropriate legal review for the intended distribution.

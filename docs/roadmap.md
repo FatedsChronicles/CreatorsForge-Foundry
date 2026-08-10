@@ -608,3 +608,14 @@ acceptance passed on 2026-08-10 in disposable Streamer.bot 1.0.7 and OBS Studio
 compatibility profiles, friendly template names, author-to-publishing metadata,
 generated MIT licence and versioned changelog, publishing validation, and
 wrapped prose documents all behaved as expected. **Phase 24A is complete.**
+
+### Phase 24B - Stable release readiness and publication
+
+Phase 24B freezes the accepted source as version `1.0.0`, finalizes the product
+changelog and release notes, confirms the approved root EULA and third-party
+inventory, hardens deterministic v1 packaging and independent verification,
+and extends GitHub Release automation with an explicit publisher-signing
+decision. The release workflow creates `v1.0.0` only after the clean committed
+source, complete regression gate, stable package, hashes, and release assets
+all pass. Phase 24B remains open until the generated 1.0.0 candidate completes
+the final checklist and the product owner approves publication.

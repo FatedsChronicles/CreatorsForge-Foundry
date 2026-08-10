@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$ProductVersion = '1.0.0-rc.1',
+    [string]$ProductVersion = '1.0.0',
     [string]$ObsRoot,
     [string]$OutputDirectory = (Join-Path $PSScriptRoot '..\..\artifacts\final-acceptance'),
     [switch]$CleanMachineAttested,

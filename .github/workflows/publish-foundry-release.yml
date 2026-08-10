@@ -16,6 +16,11 @@ on:
           - draft
           - prerelease
           - stable
+      allow_unsigned_stable:
+        description: Release-owner approval to publish stable without Authenticode signing
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -28,10 +33,11 @@ jobs:
   publish:
     name: Build, verify, and publish
     runs-on: windows-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
     env:
       GH_TOKEN: ${{ github.token }}
       RELEASE_OUTPUT: ${{ github.workspace }}\artifacts\github-release
+      V1_RELEASE_OUTPUT: ${{ github.workspace }}\artifacts\v1-release
       RELEASE_VERSION_INPUT: ${{ inputs.version }}
       RELEASE_TYPE_INPUT: ${{ inputs.release_type }}
 
@@ -68,8 +74,10 @@ jobs:
             throw "Git tag $tag already exists without a release. Review it before continuing."
           }
           $global:LASTEXITCODE = 0
+          $publishedAtUtc = [DateTimeOffset]::UtcNow.ToUniversalTime().ToString('O')
           "version=$version" >> $env:GITHUB_OUTPUT
           "tag=$tag" >> $env:GITHUB_OUTPUT
+          "published_at_utc=$publishedAtUtc" >> $env:GITHUB_OUTPUT
 
       - name: Install Inno Setup 6
         shell: pwsh
@@ -89,7 +97,7 @@ jobs:
           .\eng\desktop\package-desktop.ps1 `
             -Configuration Release `
             -Version '${{ steps.release.outputs.version }}' `
-            -PublishedAtUtc ([DateTimeOffset]::UtcNow) `
+            -PublishedAtUtc ([DateTimeOffset]'${{ steps.release.outputs.published_at_utc }}') `
             -OutputDirectory $env:RELEASE_OUTPUT
 
       - name: Verify release assets
@@ -98,6 +106,26 @@ jobs:
           .\eng\desktop\verify-desktop-release.ps1 `
             -Version '${{ steps.release.outputs.version }}' `
             -ReleaseDirectory $env:RELEASE_OUTPUT
+
+      - name: Build and independently verify stable v1 bundle
+        if: ${{ inputs.release_type == 'stable' && inputs.version == '1.0.0' }}
+        shell: pwsh
+        run: |
+          $parameters = @{
+            Configuration = 'Release'
+            Version = '1.0.0'
+            PublishedAtUtc = [DateTimeOffset]'${{ steps.release.outputs.published_at_utc }}'
+            OutputDirectory = $env:V1_RELEASE_OUTPUT
+          }
+          if ('${{ inputs.allow_unsigned_stable }}' -eq 'true') {
+            $parameters.AllowUnsignedStable = $true
+          }
+          .\eng\release\package-v1.ps1 @parameters
+          $root = Join-Path $env:V1_RELEASE_OUTPUT 'CreatorsForge-Foundry-1.0.0'
+          $expectedHash = ((Get-Content -LiteralPath (Join-Path $root 'V1-RELEASE-SHA256.txt') -Raw).Trim() -split '\s+')[0]
+          .\eng\release\verify-v1-release.ps1 `
+            -ReleaseDirectory $root `
+            -ExpectedManifestSha256 $expectedHash
 
       - name: Retain verified workflow artifacts
         uses: actions/upload-artifact@v7
@@ -109,6 +137,18 @@ jobs:
             ${{ env.RELEASE_OUTPUT }}\CreatorsForge-Foundry-${{ steps.release.outputs.version }}-Setup.exe
             ${{ env.RELEASE_OUTPUT }}\CreatorsForge-Foundry-${{ steps.release.outputs.version }}-Update.exe
             ${{ env.RELEASE_OUTPUT }}\foundry-update.json
+
+      - name: Retain verified stable v1 evidence
+        if: ${{ inputs.release_type == 'stable' && inputs.version == '1.0.0' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: creators-forge-foundry-1.0.0-stable-evidence
+          if-no-files-found: error
+          retention-days: 90
+          path: |
+            ${{ env.V1_RELEASE_OUTPUT }}\CreatorsForge-Foundry-1.0.0\CreatorsForge-Foundry-1.0.0-win-x64.zip
+            ${{ env.V1_RELEASE_OUTPUT }}\CreatorsForge-Foundry-1.0.0-release.zip
+            ${{ env.V1_RELEASE_OUTPUT }}\CreatorsForge-Foundry-1.0.0\V1-RELEASE-SHA256.txt
 
       - name: Create GitHub Release and upload assets
         id: github_release
@@ -125,9 +165,18 @@ jobs:
             '--repo', $env:GITHUB_REPOSITORY,
             '--target', $env:GITHUB_SHA,
             '--title', "Creators Forge Foundry $version",
-            '--generate-notes',
             '--fail-on-no-commits'
           )
+          if ($env:RELEASE_TYPE_INPUT -eq 'stable' -and $version -eq '1.0.0') {
+            $v1Root = Join-Path $env:V1_RELEASE_OUTPUT 'CreatorsForge-Foundry-1.0.0'
+            $arguments += (Join-Path $v1Root 'CreatorsForge-Foundry-1.0.0-win-x64.zip')
+            $arguments += (Join-Path $env:V1_RELEASE_OUTPUT 'CreatorsForge-Foundry-1.0.0-release.zip')
+            $arguments += (Join-Path $v1Root 'V1-RELEASE-SHA256.txt')
+            $arguments += '--notes-file'
+            $arguments += 'docs/release/v1.0.0.md'
+          } else {
+            $arguments += '--generate-notes'
+          }
           switch ($env:RELEASE_TYPE_INPUT) {
             'draft' { $arguments += '--draft' }
             'prerelease' { $arguments += '--prerelease'; $arguments += '--latest=false' }

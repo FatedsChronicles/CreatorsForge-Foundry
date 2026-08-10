@@ -12,9 +12,8 @@ Desktop package SHA-256:              Update manifest SHA-256:
       UTC publication time.
 - [ ] The product version is `1.0.0` in the executable, archive, update manifest,
       diagnostic bundle, and About/version surfaces.
-- [ ] The product licence has been selected, reviewed, and added to the product
-      and release package. This is a mandatory gate; this repository does not
-      assume or invent a licence.
+- [ ] The approved proprietary product EULA in root `LICENSE.md` is present in
+      the installer and release package.
 - [ ] `THIRD-PARTY-NOTICES.md` and the generated dependency inventory were
       reviewed against the actual shipped files.
 - [ ] Privacy/offline behaviour and release notes were reviewed.
@@ -30,9 +29,10 @@ Desktop package SHA-256:              Update manifest SHA-256:
       warnings or errors.
 - [ ] Project schemas and machine-readable compatibility data parsed successfully.
 - [ ] Streamer.bot mock-runtime tests passed for `1.0.4-stable`,
-      `1.0.5-alpha.34`, and `1.0.5-beta.1`.
+      `1.0.5-alpha.34`, `1.0.5-beta.1`, `1.0.5-beta.6`, and `1.0.7-stable`.
 - [ ] OBS ABI inspection and crash-isolated source create/destroy lifecycle tests
-      passed against the pinned 32.1.2 SDK/runtime.
+      passed for the pinned 32.1.2 SDK output against exact 32.1.2 and 32.2.1
+      runtimes.
 - [ ] Streamer.bot and OBS golden-package regressions passed.
 - [ ] Fixed-time repeated package/release builds were byte-identical.
 - [ ] Self-contained desktop packaging, packaged-app smoke, and disposable
@@ -122,6 +122,8 @@ releases.
 - [ ] Known non-blocking limitations are recorded in the release notes.
 - [ ] The final distribution archive was installed once from the exact bytes to
       be distributed, then uninstalled without damaging user-owned files.
+- [ ] GitHub tag `v1.0.0` and the stable Release point to the accepted release
+      commit and contain all verified assets.
 
 Result: **passed / passed with issues / blocked**
 

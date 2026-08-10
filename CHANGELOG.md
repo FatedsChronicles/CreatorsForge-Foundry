@@ -2,10 +2,25 @@
 
 All notable changes to Creators Forge Foundry are documented in this file.
 
-## [Unreleased] - v0.1.0-beta.1
+## [Unreleased]
+
+No changes yet. The next development sessions will begin after the stable
+1.0.0 release baseline is tagged and published.
+
+## [1.0.0] - 2026-08-10
+
+Foundry 1.0.0 is the first stable release. It consolidates the accepted
+release-candidate, private-alpha, compatibility, desktop-product, preview,
+terminal, and stable-readiness increments described below.
 
 ### Added
 
+- Phase 24B stable 1.0.0 release notes, approved product-EULA packaging,
+  updated dependency notices, final acceptance guidance, and GitHub publication
+  of independently verifiable v1 evidence.
+- A dedicated stable release bundle containing the setup and updater
+  executables, portable archive, update manifest, product licence, notices,
+  compatibility evidence, samples, source inventory, and manifest hash.
 - Phase 24A exact Streamer.bot 1.0.7 stable compatibility profile, generated
   CPH catalogue fingerprint, five-profile mock matrix, schema support, host
   discovery normalization, and disposable-host verification tooling.
@@ -95,6 +110,13 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Changed
 
+- Stable packaging now requires a clean tracked worktree and uses the approved
+  root `LICENSE.md`; the v1 verifier checks the update manifest against the
+  actual updater executable and confirms setup/updater payload identity.
+- The GitHub stable-release workflow now records one publication timestamp,
+  runs the deterministic v1 packager and verifier, uses curated 1.0.0 release
+  notes, and requires an explicit release-owner decision before an unsigned
+  stable build can proceed.
 - **Ctrl+T** now opens Integrated Terminal. Test Explorer moves to
   **Ctrl+Shift+T** so both tools retain a direct keyboard command.
 - Terminal commands are Base64-transported into the persistent PowerShell
@@ -290,12 +312,12 @@ All notable changes to Creators Forge Foundry are documented in this file.
 - Release automation regression tests enforce manual dispatch, least-privilege
   release permissions, duplicate tag/release rejection, and exact asset upload.
 
-## [Unreleased] — changes since 0.1.0-rc.1
+### Compatibility stabilization since 0.1.0-rc.1
 
-No later release-candidate number has been assigned yet. This section describes
-the current development build relative to the packaged `0.1.0-rc.1` baseline.
+The following host-compatibility work was completed after the packaged
+`0.1.0-rc.1` baseline and is included in stable 1.0.0.
 
-### Added
+#### Added
 
 - Exact Streamer.bot `1.0.5-beta.6` project, schema, editor catalogue, snippet,
   test-matrix, build, package, and deployment support.
@@ -311,7 +333,7 @@ the current development build relative to the packaged `0.1.0-rc.1` baseline.
   runtime adds `obs_source_get_dark_icon` and `obs_source_get_light_icon` and
   removes no exported `obs.dll` symbols.
 
-### Changed
+#### Changed
 
 - Streamer.bot installation discovery now reads and matches the executable's
   exact product version, including prerelease suffixes, instead of relying on a
@@ -323,7 +345,7 @@ the current development build relative to the packaged `0.1.0-rc.1` baseline.
 - Final-acceptance and compatibility documentation now distinguish the pinned
   OBS build SDK from the exact runtime versions verified by Foundry.
 
-### Fixed
+#### Fixed
 
 - The completed PreviewHost can now be explicitly stopped while preserving its
   last frame, and deployment installation selectors show concise version/path
@@ -350,7 +372,7 @@ the current development build relative to the packaged `0.1.0-rc.1` baseline.
 - Receipt-backed uninstall continues to protect modified files while reliably
   removing Foundry-owned DLLs and receipts after a reviewed retry or repair.
 
-### Compatibility verified
+#### Compatibility verified
 
 - Streamer.bot `1.0.5-beta.6`: deterministic bridge build, exact CPH catalogue,
   stable-v23 package, four-cell mock matrix, DLL install, import, compiler
@@ -365,7 +387,7 @@ the current development build relative to the packaged `0.1.0-rc.1` baseline.
 - Retained Streamer.bot `1.0.4`, `1.0.5-alpha.34`, `1.0.5-beta.1`, and OBS
   Studio `32.1.2` regression gates continue to pass.
 
-### Validation
+#### Validation
 
 - The complete automated solution regression suite passes: 213 tests.
 - Streamer.bot beta.6 and OBS 32.2.1 were tested in separate disposable host
@@ -416,5 +438,6 @@ RC1 established the Phase 16 regression baseline. Stable `0.1.0` remains
 unreleased until the remaining stabilization increments and release gates are
 completed.
 
-[Unreleased]: docs/roadmap.md#phase-17--v1-stabilization-increments
+[Unreleased]: https://github.com/FatedsChronicles/CreatorsForge-Foundry/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/FatedsChronicles/CreatorsForge-Foundry/releases/tag/v1.0.0
 [0.1.0-rc.1]: docs/release/v0.1.0-release.md
