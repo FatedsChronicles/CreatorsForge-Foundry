@@ -496,19 +496,6 @@ public static class FoundryProjectValidator
                 $"Use {string.Join(", ", Compatibility.FoundryStreamerBotProfiles.Ordered)}. The writer emits the cross-compatible stable-v23 package.");
         }
 
-        if (manifest.Outputs?.Contains(
-                FoundryOutputKinds.CphInlineBridge,
-                StringComparer.Ordinal) != true)
-        {
-            Add(
-                diagnostics,
-                "CFP0026",
-                "The streamerBotPackage output requires cphInlineBridge.",
-                projectPath,
-                "$.outputs",
-                "Add managedLibrary and cphInlineBridge to outputs.");
-        }
-
         if (!IsSafeRelativeDefinitionPath(manifest.TargetDefinition))
         {
             Add(

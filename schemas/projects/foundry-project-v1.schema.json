@@ -368,14 +368,8 @@
         "required": ["outputs"]
       },
       "then": {
-        "required": ["targetDefinition", "cphInlineBridge"],
+        "required": ["targetDefinition"],
         "properties": {
-          "outputs": {
-            "allOf": [
-              { "contains": { "const": "managedLibrary" } },
-              { "contains": { "const": "cphInlineBridge" } }
-            ]
-          },
           "target": {
             "properties": {
               "provider": { "const": "streamerbot" },

@@ -87,18 +87,24 @@ public sealed class FoundryBuildOrchestrator
             return new(null, null, null, diagnostics);
         }
 
-        var build = manifest.ManagedBuild!;
+        var requestsManagedLibrary = manifest.Outputs.Contains(
+            FoundryOutputKinds.ManagedLibrary,
+            StringComparer.Ordinal);
+        var build = manifest.ManagedBuild;
         var requestsBridge = manifest.Outputs.Contains(
             FoundryOutputKinds.CphInlineBridge,
             StringComparer.Ordinal);
         var requestsStreamerBotPackage = manifest.Outputs.Contains(
             FoundryOutputKinds.StreamerBotPackage,
             StringComparer.Ordinal);
-        ResolveSources(
-            build,
-            projectRoot,
-            fullProjectPath,
-            diagnostics);
+        if (requestsManagedLibrary)
+        {
+            ResolveSources(
+                build!,
+                projectRoot,
+                fullProjectPath,
+                diagnostics);
+        }
         if (diagnostics.Any(diagnostic => diagnostic.IsError))
         {
             return new(null, null, null, diagnostics);
@@ -187,17 +193,20 @@ public sealed class FoundryBuildOrchestrator
                 return new(outputRoot, null, null, diagnostics);
             }
 
-            ResetDirectory(managedOutput);
-            ResetDirectory(intermediateOutput);
+            ResetDirectory(managedOutput, requestsManagedLibrary);
+            ResetDirectory(intermediateOutput, requestsManagedLibrary);
             ResetDirectory(bridgeOutput, requestsBridge);
             ResetDirectory(bridgeIntermediate, requestsBridge);
             ResetDirectory(streamerBotOutput, requestsStreamerBotPackage);
             Directory.CreateDirectory(outputRoot);
-            await FoundryManagedProjectWriter.WriteAsync(
-                manifest,
-                projectRoot,
-                generatedProjectPath,
-                cancellationToken).ConfigureAwait(false);
+            if (requestsManagedLibrary)
+            {
+                await FoundryManagedProjectWriter.WriteAsync(
+                    manifest,
+                    projectRoot,
+                    generatedProjectPath,
+                    cancellationToken).ConfigureAwait(false);
+            }
         }
         catch (OperationCanceledException)
         {
@@ -215,53 +224,57 @@ public sealed class FoundryBuildOrchestrator
             return new(outputRoot, null, null, diagnostics);
         }
 
-        BuildProcessResult processResult;
-        try
+        string? assemblyPath = null;
+        if (requestsManagedLibrary)
         {
-            processResult = await processRunner.RunAsync(
-                CreateBuildRequest(projectRoot, generatedProjectPath, managedOutput),
-                cancellationToken).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception exception) when (
-            exception is InvalidOperationException or IOException or
-            UnauthorizedAccessException or System.ComponentModel.Win32Exception)
-        {
-            diagnostics.Add(Error(
-                "CFB0004",
-                $"The managed build process could not start: {exception.Message}",
-                fullProjectPath,
-                "$.managedBuild",
-                "Verify that the pinned .NET SDK is installed and available."));
-            return new(outputRoot, null, null, diagnostics);
-        }
+            BuildProcessResult processResult;
+            try
+            {
+                processResult = await processRunner.RunAsync(
+                    CreateBuildRequest(projectRoot, generatedProjectPath, managedOutput),
+                    cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception exception) when (
+                exception is InvalidOperationException or IOException or
+                UnauthorizedAccessException or System.ComponentModel.Win32Exception)
+            {
+                diagnostics.Add(Error(
+                    "CFB0004",
+                    $"The managed build process could not start: {exception.Message}",
+                    fullProjectPath,
+                    "$.managedBuild",
+                    "Verify that the pinned .NET SDK is installed and available."));
+                return new(outputRoot, null, null, diagnostics);
+            }
 
-        diagnostics.AddRange(ParseCompilerDiagnostics(processResult));
-        if (processResult.ExitCode != 0)
-        {
-            diagnostics.Add(new(
-                "CFB0005",
-                FoundryDiagnosticSeverity.Error,
-                $"Managed compilation failed with exit code {processResult.ExitCode}.",
-                new FoundryDiagnosticLocation(fullProjectPath, "$.managedBuild"),
-                "Correct the reported build diagnostics and try again.",
-                CreateBuildDetails(processResult)));
-            return new(outputRoot, null, null, diagnostics);
-        }
+            diagnostics.AddRange(ParseCompilerDiagnostics(processResult));
+            if (processResult.ExitCode != 0)
+            {
+                diagnostics.Add(new(
+                    "CFB0005",
+                    FoundryDiagnosticSeverity.Error,
+                    $"Managed compilation failed with exit code {processResult.ExitCode}.",
+                    new FoundryDiagnosticLocation(fullProjectPath, "$.managedBuild"),
+                    "Correct the reported build diagnostics and try again.",
+                    CreateBuildDetails(processResult)));
+                return new(outputRoot, null, null, diagnostics);
+            }
 
-        var assemblyPath = Path.Combine(managedOutput, $"{build.AssemblyName}.dll");
-        if (!File.Exists(assemblyPath))
-        {
-            diagnostics.Add(Error(
-                "CFB0006",
-                $"Managed compilation did not produce the expected assembly '{build.AssemblyName}.dll'.",
-                fullProjectPath,
-                "$.managedBuild.assemblyName",
-                "Review the build output and assemblyName setting."));
-            return new(outputRoot, null, null, diagnostics);
+            assemblyPath = Path.Combine(managedOutput, $"{build!.AssemblyName}.dll");
+            if (!File.Exists(assemblyPath))
+            {
+                diagnostics.Add(Error(
+                    "CFB0006",
+                    $"Managed compilation did not produce the expected assembly '{build.AssemblyName}.dll'.",
+                    fullProjectPath,
+                    "$.managedBuild.assemblyName",
+                    "Review the build output and assemblyName setting."));
+                return new(outputRoot, null, null, diagnostics);
+            }
         }
 
         string? bridgePath = null;
@@ -276,7 +289,7 @@ public sealed class FoundryBuildOrchestrator
                     bridgePath,
                     cancellationToken).ConfigureAwait(false);
                 await CphInlineBridgeVerificationWriter.WriteAsync(
-                    build,
+                    build!,
                     bridgeIntermediate,
                     cancellationToken).ConfigureAwait(false);
             }
@@ -336,6 +349,7 @@ public sealed class FoundryBuildOrchestrator
 
         string? streamerBotPackagePath = null;
         string? streamerBotReportPath = null;
+        string? streamerBotImportReportPath = null;
         if (requestsStreamerBotPackage)
         {
             streamerBotPackagePath = Path.Combine(
@@ -347,15 +361,34 @@ public sealed class FoundryBuildOrchestrator
 
             try
             {
-                var bridgeSource = await File.ReadAllTextAsync(
-                    bridgePath!,
-                    cancellationToken).ConfigureAwait(false);
-                var export = StreamerBotStableV23Adapter.Encode(
-                    streamerBotDefinition!,
-                    manifest.Id,
-                    manifest.Name,
-                    manifest.Version,
-                    bridgeSource);
+                StreamerBotExportArtifact export;
+                if (streamerBotDefinition!.Import is not null)
+                {
+                    export = await StreamerBotPreservedPayloadAdapter.EncodeAsync(
+                        streamerBotDefinition,
+                        projectRoot,
+                        manifest.Id,
+                        manifest.Name,
+                        manifest.Version,
+                        cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    if (bridgePath is null)
+                    {
+                        throw new InvalidOperationException(
+                            "A source-authored Streamer.bot package requires a CPHInline bridge; package-only builds are supported for imported preserved payloads.");
+                    }
+                    var bridgeSource = await File.ReadAllTextAsync(
+                        bridgePath,
+                        cancellationToken).ConfigureAwait(false);
+                    export = StreamerBotStableV23Adapter.Encode(
+                        streamerBotDefinition,
+                        manifest.Id,
+                        manifest.Name,
+                        manifest.Version,
+                        bridgeSource);
+                }
                 await File.WriteAllTextAsync(
                     streamerBotPackagePath,
                     export.ImportCode + "\n",
@@ -366,6 +399,12 @@ public sealed class FoundryBuildOrchestrator
                     StreamerBotStableV23Adapter.SerializeReport(export.Report),
                     new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
                     cancellationToken).ConfigureAwait(false);
+                var sourceImportReport = Path.Combine(projectRoot, "streamerbot", "import-report.json");
+                if (streamerBotDefinition.Import is not null && File.Exists(sourceImportReport))
+                {
+                    streamerBotImportReportPath = Path.Combine(streamerBotOutput, "import-report.json");
+                    File.Copy(sourceImportReport, streamerBotImportReportPath, overwrite: true);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -393,6 +432,7 @@ public sealed class FoundryBuildOrchestrator
                 bridgePath,
                 streamerBotPackagePath,
                 streamerBotReportPath,
+                streamerBotImportReportPath,
                 cancellationToken).ConfigureAwait(false);
             var packageIntermediatePath = Path.Combine(outputRoot, "package-ir.json");
             await WritePackageIntermediateAsync(
@@ -562,20 +602,22 @@ public sealed class FoundryBuildOrchestrator
 
     private static async Task<FoundryPackageIntermediate> CreatePackageIntermediateAsync(
         FoundryProjectManifest manifest,
-        string assemblyPath,
+        string? assemblyPath,
         string? bridgePath,
         string? streamerBotPackagePath,
         string? streamerBotReportPath,
+        string? streamerBotImportReportPath,
         CancellationToken cancellationToken)
     {
-        var artifacts = new List<FoundryPackageArtifact>
+        var artifacts = new List<FoundryPackageArtifact>();
+        if (assemblyPath is not null)
         {
-            await CreateArtifactAsync(
+            artifacts.Add(await CreateArtifactAsync(
                 FoundryPackageArtifactKinds.ManagedAssembly,
                 $"managed/{Path.GetFileName(assemblyPath)}",
                 assemblyPath,
-                cancellationToken).ConfigureAwait(false),
-        };
+                cancellationToken).ConfigureAwait(false));
+        }
 
         if (bridgePath is not null)
         {
@@ -604,13 +646,22 @@ public sealed class FoundryBuildOrchestrator
                 cancellationToken).ConfigureAwait(false));
         }
 
+        if (streamerBotImportReportPath is not null)
+        {
+            artifacts.Add(await CreateArtifactAsync(
+                FoundryPackageArtifactKinds.StreamerBotImportReport,
+                "streamerbot/import-report.json",
+                streamerBotImportReportPath,
+                cancellationToken).ConfigureAwait(false));
+        }
+
         return new()
         {
             Project = new(manifest.Id, manifest.Name, manifest.Version),
             Target = new(
                 manifest.Target!.Provider,
                 manifest.Target.Profile,
-                manifest.ManagedBuild!.TargetFramework,
+                manifest.ManagedBuild?.TargetFramework ?? "streamerbot-package",
                 CphCatalogueMetadata.Revision),
             Artifacts = artifacts,
         };

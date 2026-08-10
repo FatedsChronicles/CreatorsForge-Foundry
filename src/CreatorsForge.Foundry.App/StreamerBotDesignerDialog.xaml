@@ -47,6 +47,7 @@
               x:Name="ActionsGrid"
               AutoGenerateColumns="False"
               CanUserAddRows="False"
+              BeginningEdit="Grid_BeginningEdit"
               SelectionChanged="ActionsGrid_SelectionChanged">
             <DataGrid.Columns>
               <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
@@ -55,6 +56,7 @@
               <DataGridTextColumn Width="*" Header="Queue ID" Binding="{Binding QueueId}" />
               <DataGridCheckBoxColumn Header="Concurrent" Binding="{Binding Concurrent}" />
               <DataGridCheckBoxColumn Header="Always run" Binding="{Binding AlwaysRun}" />
+              <DataGridTextColumn Header="Mode" IsReadOnly="True" Binding="{Binding Mode}" />
             </DataGrid.Columns>
           </DataGrid>
           <StackPanel Grid.Row="1" Margin="0,6" Orientation="Horizontal">
@@ -76,6 +78,7 @@
                 <DataGrid
                     x:Name="TriggersGrid"
                     AutoGenerateColumns="False"
+                    BeginningEdit="Grid_BeginningEdit"
                     CanUserAddRows="False">
                   <DataGrid.Columns>
                     <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
@@ -86,6 +89,8 @@
                         ItemsSource="{x:Static local:StreamerBotDesignerDialog.TriggerKinds}" />
                     <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" />
                     <DataGridTextColumn Width="*" Header="Command ID" Binding="{Binding CommandId}" />
+                    <DataGridTextColumn Header="Source type" IsReadOnly="True" Binding="{Binding SourceType}" />
+                    <DataGridTextColumn Header="Mode" IsReadOnly="True" Binding="{Binding Mode}" />
                   </DataGrid.Columns>
                 </DataGrid>
               </DockPanel>
@@ -95,10 +100,12 @@
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
                   <Button Content="Add" Click="AddSubAction_Click" />
                   <Button Content="Remove" Click="RemoveSubAction_Click" />
+                  <Button Content="Open C# source" Click="OpenCSharpSource_Click" />
                 </StackPanel>
                 <DataGrid
                     x:Name="SubActionsGrid"
                     AutoGenerateColumns="False"
+                    BeginningEdit="Grid_BeginningEdit"
                     CanUserAddRows="False">
                   <DataGrid.Columns>
                     <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
@@ -111,6 +118,9 @@
                     <DataGridTextColumn Width="*" Header="Variable" Binding="{Binding VariableName}" />
                     <DataGridTextColumn Width="*" Header="Value" Binding="{Binding Value}" />
                     <DataGridCheckBoxColumn Header="Auto type" Binding="{Binding AutoType}" />
+                    <DataGridTextColumn Width="2*" Header="C# source" IsReadOnly="True" Binding="{Binding SourcePath}" />
+                    <DataGridTextColumn Header="Source type" IsReadOnly="True" Binding="{Binding SourceType}" />
+                    <DataGridTextColumn Header="Mode" IsReadOnly="True" Binding="{Binding Mode}" />
                   </DataGrid.Columns>
                 </DataGrid>
               </DockPanel>
@@ -128,6 +138,7 @@
           <DataGrid
               x:Name="CommandsGrid"
               AutoGenerateColumns="False"
+              BeginningEdit="Grid_BeginningEdit"
               CanUserAddRows="False">
             <DataGrid.Columns>
               <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
@@ -137,6 +148,7 @@
               <DataGridCheckBoxColumn Header="Case sensitive" Binding="{Binding CaseSensitive}" />
               <DataGridTextColumn Header="Global cooldown" Binding="{Binding GlobalCooldown}" />
               <DataGridTextColumn Header="User cooldown" Binding="{Binding UserCooldown}" />
+              <DataGridTextColumn Header="Mode" IsReadOnly="True" Binding="{Binding Mode}" />
             </DataGrid.Columns>
           </DataGrid>
         </DockPanel>
@@ -151,11 +163,13 @@
           <DataGrid
               x:Name="QueuesGrid"
               AutoGenerateColumns="False"
+              BeginningEdit="Grid_BeginningEdit"
               CanUserAddRows="False">
             <DataGrid.Columns>
               <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
               <DataGridTextColumn Width="2*" Header="Name" Binding="{Binding Name}" />
               <DataGridCheckBoxColumn Header="Blocking" Binding="{Binding Blocking}" />
+              <DataGridTextColumn Header="Mode" IsReadOnly="True" Binding="{Binding Mode}" />
             </DataGrid.Columns>
           </DataGrid>
         </DockPanel>

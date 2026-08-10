@@ -11,7 +11,7 @@
   },
   "roundTripVerified": true,
   "definition": {
-    "schemaVersion": 1,
+    "schemaVersion": 2,
     "metadata": {
       "author": "Creators Forge",
       "description": "Round-trip fixture"

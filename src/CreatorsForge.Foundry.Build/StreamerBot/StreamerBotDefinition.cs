@@ -1,11 +1,15 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace CreatorsForge.Foundry.Build.StreamerBot;
 
 public sealed record StreamerBotDefinition
 {
-    public int SchemaVersion { get; init; } = 1;
+    public const int CurrentSchemaVersion = 2;
+
+    public int SchemaVersion { get; init; } = CurrentSchemaVersion;
     public StreamerBotMetadata Metadata { get; init; } = new();
+    public StreamerBotImportProvenance? Import { get; init; }
     public IReadOnlyList<StreamerBotQueueDefinition> Queues { get; init; } = [];
     public IReadOnlyList<StreamerBotCommand> Commands { get; init; } = [];
     public IReadOnlyList<StreamerBotAction> Actions { get; init; } = [];
@@ -17,7 +21,23 @@ public sealed record StreamerBotMetadata
     public string Description { get; init; } = string.Empty;
 }
 
-public sealed record StreamerBotQueueDefinition(string Id, string Name, bool Blocking);
+public sealed record StreamerBotImportProvenance(
+    string Adapter,
+    int PayloadVersion,
+    string ExportedFrom,
+    string? MinimumVersion,
+    string SourceSha256,
+    string PreservationFile,
+    bool HasOpaqueContent,
+    string? SourceAttribution);
+
+public sealed record StreamerBotQueueDefinition(
+    string Id,
+    string Name,
+    bool Blocking,
+    string? SourceId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool ReadOnly = false,
+    string? PreservationKey = null);
 
 public sealed record StreamerBotCommand(
     string Id,
@@ -26,31 +46,47 @@ public sealed record StreamerBotCommand(
     bool Enabled,
     bool CaseSensitive,
     int GlobalCooldown,
-    int UserCooldown);
+    int UserCooldown,
+    string? SourceId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool ReadOnly = false,
+    string? PreservationKey = null);
 
 public sealed record StreamerBotAction(
     string Id,
     string Name,
     bool Enabled,
-    string? QueueId,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? QueueId,
     bool Concurrent,
     bool AlwaysRun,
     IReadOnlyList<StreamerBotTrigger> Triggers,
-    IReadOnlyList<StreamerBotSubAction> SubActions);
+    IReadOnlyList<StreamerBotSubAction> SubActions,
+    string? SourceId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool ReadOnly = false,
+    string? PreservationKey = null);
 
 public sealed record StreamerBotTrigger(
     string Id,
     string Kind,
     bool Enabled,
-    string? CommandId);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? CommandId,
+    int? SourceType = null,
+    string? SourceId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool ReadOnly = false,
+    string? PreservationKey = null);
 
 public sealed record StreamerBotSubAction(
     string Id,
     string Kind,
     bool Enabled,
-    string? VariableName,
-    string? Value,
-    bool AutoType);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? VariableName,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? Value,
+    bool AutoType,
+    string? SourcePath = null,
+    int? SourceType = null,
+    string? SourceId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool ReadOnly = false,
+    string? PreservationKey = null,
+    IReadOnlyList<string>? References = null);
 
 public sealed record StreamerBotDefinitionLoadResult(
     StreamerBotDefinition? Definition,
@@ -71,6 +107,7 @@ public static class StreamerBotDefinitionLoader
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
     public static StreamerBotDefinitionLoadResult Load(string json)
@@ -90,6 +127,11 @@ public static class StreamerBotDefinitionLoader
             return new(null, ["Definition JSON is empty."]);
         }
 
+        if (value.SchemaVersion == 1)
+        {
+            value = value with { SchemaVersion = StreamerBotDefinition.CurrentSchemaVersion };
+        }
+
         var errors = Validate(value);
         return new(value, errors);
     }
@@ -100,7 +142,7 @@ public static class StreamerBotDefinitionLoader
     public static string[] Validate(StreamerBotDefinition value)
     {
         var errors = new List<string>();
-        if (value.SchemaVersion != 1)
+        if (value.SchemaVersion is not (1 or StreamerBotDefinition.CurrentSchemaVersion))
         {
             errors.Add($"Schema {value.SchemaVersion} is unsupported.");
         }
@@ -167,7 +209,7 @@ public static class StreamerBotDefinitionLoader
                 errors);
             foreach (var trigger in action.Triggers)
             {
-                if (trigger.Kind is not ("command" or "test"))
+                if (trigger.Kind is not ("command" or "test" or "opaque"))
                 {
                     errors.Add($"Trigger '{trigger.Id}' has unsupported kind '{trigger.Kind}'.");
                 }
@@ -176,11 +218,17 @@ public static class StreamerBotDefinitionLoader
                 {
                     errors.Add($"Trigger '{trigger.Id}' references a missing command.");
                 }
+                else if (trigger.Kind == "opaque" &&
+                         (!trigger.ReadOnly || string.IsNullOrWhiteSpace(trigger.PreservationKey)))
+                {
+                    errors.Add($"Opaque trigger '{trigger.Id}' must be read-only and reference preserved source data.");
+                }
             }
 
             foreach (var subAction in action.SubActions)
             {
-                if (subAction.Kind is not ("setArgument" or "executeBridge"))
+                if (subAction.Kind is not ("setArgument" or "executeBridge" or
+                        "executeCSharp" or "opaque"))
                 {
                     errors.Add($"Sub-action '{subAction.Id}' has unsupported kind '{subAction.Kind}'.");
                 }
@@ -188,6 +236,16 @@ public static class StreamerBotDefinitionLoader
                          string.IsNullOrWhiteSpace(subAction.VariableName))
                 {
                     errors.Add($"Set Argument '{subAction.Id}' requires variableName.");
+                }
+                else if (subAction.Kind == "executeCSharp" &&
+                         !IsSafeCSharpPath(subAction.SourcePath))
+                {
+                    errors.Add($"Execute C# '{subAction.Id}' requires a safe project-relative .cs sourcePath.");
+                }
+                else if (subAction.Kind == "opaque" &&
+                         (!subAction.ReadOnly || string.IsNullOrWhiteSpace(subAction.PreservationKey)))
+                {
+                    errors.Add($"Opaque sub-action '{subAction.Id}' must be read-only and reference preserved source data.");
                 }
             }
         }
@@ -209,4 +267,10 @@ public static class StreamerBotDefinitionLoader
             }
         }
     }
+
+    private static bool IsSafeCSharpPath(string? path) =>
+        !string.IsNullOrWhiteSpace(path) &&
+        !Path.IsPathRooted(path) &&
+        string.Equals(Path.GetExtension(path), ".cs", StringComparison.OrdinalIgnoreCase) &&
+        !path.Replace('\\', '/').Split('/').Contains("..", StringComparer.Ordinal);
 }
