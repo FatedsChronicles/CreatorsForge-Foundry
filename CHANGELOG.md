@@ -6,6 +6,16 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 25C schema-driven Streamer.bot operation-catalogue foundation with a
+  searchable, categorized, profile-filtered Designer palette and reusable
+  typed parameter forms.
+- Reviewed catalogue entries for the verified Command trigger (type 401), Test
+  trigger (type 702), and Set Argument sub-action (type 123), including known
+  runtime arguments, native output capability, and compatibility metadata.
+- Shared catalogue-to-definition diagnostics that block missing, incompatible,
+  or tampered native mappings before export.
+- Friendly command names in schema-generated command-reference selectors,
+  including the selected-value display in dark and light themes.
 - Phase 25B expanded Streamer.bot action model: action groups and execution
   toggles, weighted ordered sub-actions, richer command/source options, queue
   descriptions, and deterministic definition schema v3 migration.
@@ -43,6 +53,9 @@ identity.
 
 ### Acceptance
 
+- Phase 25B product-owner acceptance passed on 2026-08-11. Action toggles,
+  weighted ordering, richer command and queue metadata, designer operations,
+  validation, deterministic export, and retained v23/v24 behavior all passed.
 - Phase 25A product-owner acceptance passed on 2026-08-10 across disposable
   Streamer.bot 1.0.4, 1.0.5-alpha.34, 1.0.5-beta.1, 1.0.5-beta.6, and 1.0.7
   hosts. Required v23/v24 multi-action import, editable-field and C# changes,

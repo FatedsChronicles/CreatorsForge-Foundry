@@ -679,3 +679,58 @@ invent native sub-action type numbers: wider native action/trigger catalogues,
 resource binding, and native-to-C# conversions remain later Phase 25 work.
 Automated adapter, migration, diagnostic, ordering, golden-package, desktop,
 and complete regression coverage form the Phase 25B implementation gate.
+
+Product-owner manual acceptance passed on 2026-08-11. The expanded action
+toggles, weighted ordering, command and queue settings, duplication and move
+operations, shared validation, deterministic output, and retained v23/v24
+round trips behaved as expected. PR #21 merged the accepted implementation as
+commit `39bf48b`. **Phase 25B is complete.**
+
+### Phase 25C - Schema-driven operation catalogues and palette
+
+Phase 25C establishes the extensible catalogue boundary for Streamer.bot
+triggers and native sub-actions. A versioned JSON catalogue describes stable
+Foundry operation IDs, category and display metadata, verified Streamer.bot
+native type mappings, supported profiles, output capabilities, reusable typed
+fields, arguments consumed and produced, and documentation provenance.
+
+The first reviewed catalogue is intentionally small: Command trigger type 401,
+Test trigger type 702, and Set Argument sub-action type 123. These are the only
+general-purpose mappings currently proven by retained payload-v23 and
+payload-v24 captures. Foundry must preserve other imported types read-only and
+must not expose guessed native mappings.
+
+The Streamer.bot Designer adds a searchable, categorized, profile-filtered
+palette. Selecting an operation generates its parameter form from catalogue
+field definitions and shows native output mode, compatibility, and known
+runtime arguments. The central validation pipeline checks catalogue identity,
+profile availability, and native type integrity before export. Additional
+catalogue entries can be added later only with representative capture evidence,
+adapter fixtures, and exact-host acceptance.
+
+### Phase 25D - Importer experience and friendly source navigation (planned)
+
+Phase 25D will refine the import-to-project workflow without changing the safe
+SBAE decoding boundary:
+
+- **Extension-agnostic file input:** the file picker will explicitly list
+  `.txt`, `.sb`, `.streamerbot`, and arbitrary developer-defined extensions.
+  File contents, not the filename suffix, remain the security and format
+  authority, so users will not need to rename an export to `.txt`.
+- **Drag and drop:** the import-code area will accept one local file, visibly
+  indicate the drop target, read it with the same bounded text path as **Load
+  from file**, and retain paste support. Multiple files, folders, shortcuts,
+  remote URLs, and oversized content will be rejected clearly.
+- **Synchronized creation defaults:** changing Project Name will update the
+  suggested package ID slug and destination folder name until the user manually
+  edits either derived value. Manual package/folder choices will never be
+  overwritten silently, and a reset-to-suggestion action will be available.
+- **Friendly imported-code labels:** Solution Explorer will display the action
+  name and, where the catalogue can identify it, the sub-action name for
+  extracted Execute C# sources. Stable confined ID-based paths will remain on
+  disk so renames cannot break relationships, preservation mappings, or
+  deterministic re-export.
+
+This increment will include arbitrary-extension, drag/drop safety, naming
+dirty-state, collision, rename, save/reopen, stable-path, and accessibility
+tests before it changes the accepted Phase 25A import workflow.

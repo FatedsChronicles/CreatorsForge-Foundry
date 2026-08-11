@@ -1,0 +1,56 @@
+<Window Style="{StaticResource FoundryWindowStyle}"
+    x:Class="CreatorsForge.Foundry.App.StreamerBotOperationPaletteDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Add Streamer.bot operation"
+    Width="820"
+    Height="600"
+    MinWidth="680"
+    MinHeight="480"
+    WindowStartupLocation="CenterOwner">
+  <Grid Margin="14">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <TextBox x:Name="SearchTextBox" Margin="0,0,0,10" TextChanged="SearchTextBox_TextChanged"
+             ToolTip="Search by operation name, category, or capability" />
+    <Grid Grid.Row="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="2*" />
+        <ColumnDefinition Width="12" />
+        <ColumnDefinition Width="3*" />
+      </Grid.ColumnDefinitions>
+      <ListBox x:Name="OperationsList" SelectionChanged="OperationsList_SelectionChanged">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Margin="4">
+              <TextBlock FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}" Text="{Binding Name}" />
+              <TextBlock Foreground="{DynamicResource MutedTextBrush}" Text="{Binding Category}" />
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <Border Grid.Column="2" Padding="12" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <TextBlock x:Name="OperationNameText" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <TextBlock x:Name="DescriptionText" Margin="0,6,0,4" TextWrapping="Wrap" />
+            <TextBlock x:Name="CompatibilityText" Margin="0,0,0,14" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap" />
+            <TextBlock x:Name="ArgumentsText" Margin="0,0,0,8" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap" />
+            <StackPanel x:Name="FieldsPanel" />
+            <TextBlock x:Name="ValidationText" Margin="0,10,0,0" Foreground="{DynamicResource ErrorTextBrush}" TextWrapping="Wrap" />
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+    </Grid>
+    <DockPanel Grid.Row="2" Margin="0,12,0,0">
+      <TextBlock x:Name="StatusText" VerticalAlignment="Center" Foreground="{DynamicResource MutedTextBrush}" />
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+        <Button MinWidth="90" Content="Cancel" IsCancel="True" />
+        <Button x:Name="AddButton" MinWidth="90" Content="Add" IsDefault="True" IsEnabled="False" Click="AddButton_Click" />
+      </StackPanel>
+    </DockPanel>
+  </Grid>
+</Window>

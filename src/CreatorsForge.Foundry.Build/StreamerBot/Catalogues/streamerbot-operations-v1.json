@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "revision": "streamerbot-operations-verified-v1",
+  "operations": [
+    {
+      "id": "streamerbot.trigger.command",
+      "entityKind": "trigger",
+      "modelKind": "command",
+      "category": "Commands",
+      "name": "Command",
+      "description": "Runs the action when a project command is received.",
+      "nativeType": 401,
+      "outputMode": "native",
+      "profiles": ["1.0.7-stable", "1.0.5-beta.6", "1.0.5-beta.1", "1.0.5-alpha.34", "1.0.4-stable"],
+      "fields": [
+        { "id": "commandId", "label": "Command", "type": "commandReference", "required": true, "help": "Select a command defined in this project." }
+      ],
+      "argumentsConsumed": [],
+      "argumentsProduced": ["command", "rawInput", "user", "userId"],
+      "documentation": "Verified from retained payload-v23 and payload-v24 exports."
+    },
+    {
+      "id": "streamerbot.trigger.test",
+      "entityKind": "trigger",
+      "modelKind": "test",
+      "category": "Core",
+      "name": "Test",
+      "description": "Adds Streamer.bot's built-in manual test trigger.",
+      "nativeType": 702,
+      "outputMode": "native",
+      "profiles": ["1.0.7-stable", "1.0.5-beta.6", "1.0.5-beta.1", "1.0.5-alpha.34", "1.0.4-stable"],
+      "fields": [],
+      "argumentsConsumed": [],
+      "argumentsProduced": [],
+      "documentation": "Verified from retained payload-v23 and payload-v24 exports."
+    },
+    {
+      "id": "streamerbot.subaction.set-argument",
+      "entityKind": "subAction",
+      "modelKind": "setArgument",
+      "category": "Arguments",
+      "name": "Set Argument",
+      "description": "Creates or replaces an argument for later sub-actions.",
+      "nativeType": 123,
+      "outputMode": "native",
+      "profiles": ["1.0.7-stable", "1.0.5-beta.6", "1.0.5-beta.1", "1.0.5-alpha.34", "1.0.4-stable"],
+      "fields": [
+        { "id": "variableName", "label": "Argument name", "type": "text", "required": true, "help": "Name without percent signs." },
+        { "id": "value", "label": "Value", "type": "variableExpression", "required": false, "defaultValue": "", "help": "Literal text or a Streamer.bot %argument% expression." },
+        { "id": "autoType", "label": "Automatically infer type", "type": "boolean", "required": false, "defaultValue": "true" }
+      ],
+      "argumentsConsumed": [],
+      "argumentsProduced": ["{variableName}"],
+      "documentation": "Verified from retained payload-v23 and payload-v24 exports."
+    }
+  ]
+}

@@ -123,7 +123,13 @@ public partial class MainWindow : Window
                     viewModel.Workspace.ProjectRoot,
                     definition.Replace('/', Path.DirectorySeparatorChar)),
                 viewModel.Workspace.Manifest.Target?.Profile);
-            designerReady = designer.Content is not null;
+            var palette = new StreamerBotOperationPaletteDialog(
+                "subAction",
+                viewModel.Workspace.Manifest.Target?.Profile);
+            designerReady = designer.Content is not null &&
+                palette.Content is not null &&
+                new OperationReferenceChoice("command-id", "Friendly command").ToString() == "Friendly command";
+            palette.Close();
             designer.Close();
         }
 
