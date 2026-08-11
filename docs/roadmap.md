@@ -707,3 +707,30 @@ runtime arguments. The central validation pipeline checks catalogue identity,
 profile availability, and native type integrity before export. Additional
 catalogue entries can be added later only with representative capture evidence,
 adapter fixtures, and exact-host acceptance.
+
+### Phase 25D - Importer experience and friendly source navigation (planned)
+
+Phase 25D will refine the import-to-project workflow without changing the safe
+SBAE decoding boundary:
+
+- **Extension-agnostic file input:** the file picker will explicitly list
+  `.txt`, `.sb`, `.streamerbot`, and arbitrary developer-defined extensions.
+  File contents, not the filename suffix, remain the security and format
+  authority, so users will not need to rename an export to `.txt`.
+- **Drag and drop:** the import-code area will accept one local file, visibly
+  indicate the drop target, read it with the same bounded text path as **Load
+  from file**, and retain paste support. Multiple files, folders, shortcuts,
+  remote URLs, and oversized content will be rejected clearly.
+- **Synchronized creation defaults:** changing Project Name will update the
+  suggested package ID slug and destination folder name until the user manually
+  edits either derived value. Manual package/folder choices will never be
+  overwritten silently, and a reset-to-suggestion action will be available.
+- **Friendly imported-code labels:** Solution Explorer will display the action
+  name and, where the catalogue can identify it, the sub-action name for
+  extracted Execute C# sources. Stable confined ID-based paths will remain on
+  disk so renames cannot break relationships, preservation mappings, or
+  deterministic re-export.
+
+This increment will include arbitrary-extension, drag/drop safety, naming
+dirty-state, collision, rename, save/reopen, stable-path, and accessibility
+tests before it changes the accepted Phase 25A import workflow.

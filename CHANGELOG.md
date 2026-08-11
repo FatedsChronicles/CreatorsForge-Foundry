@@ -14,6 +14,8 @@ All notable changes to Creators Forge Foundry are documented in this file.
   runtime arguments, native output capability, and compatibility metadata.
 - Shared catalogue-to-definition diagnostics that block missing, incompatible,
   or tampered native mappings before export.
+- Friendly command names in schema-generated command-reference selectors,
+  including the selected-value display in dark and light themes.
 - Phase 25B expanded Streamer.bot action model: action groups and execution
   toggles, weighted ordered sub-actions, richer command/source options, queue
   descriptions, and deterministic definition schema v3 migration.

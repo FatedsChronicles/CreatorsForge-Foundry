@@ -123,7 +123,10 @@ public partial class StreamerBotOperationPaletteDialog : Window
     };
 }
 
-public sealed record OperationReferenceChoice(string Id, string Name);
+public sealed record OperationReferenceChoice(string Id, string Name)
+{
+    public override string ToString() => Name;
+}
 
 public sealed record StreamerBotOperationSelection(
     StreamerBotOperationDefinition Operation,
