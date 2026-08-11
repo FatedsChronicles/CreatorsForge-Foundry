@@ -708,29 +708,39 @@ profile availability, and native type integrity before export. Additional
 catalogue entries can be added later only with representative capture evidence,
 adapter fixtures, and exact-host acceptance.
 
-### Phase 25D - Importer experience and friendly source navigation (planned)
+Product-owner manual acceptance passed on 2026-08-11, including the focused
+friendly Command selector correction. PR #22 merged the accepted catalogue,
+palette, compatibility validation, runtime-argument display, and documentation
+as commit `09c0773`. **Phase 25C is complete.**
 
-Phase 25D will refine the import-to-project workflow without changing the safe
+### Phase 25D - Importer experience and friendly source navigation
+
+Phase 25D refines the import-to-project workflow without changing the safe
 SBAE decoding boundary:
 
-- **Extension-agnostic file input:** the file picker will explicitly list
+- **Extension-agnostic file input:** the file picker explicitly lists
   `.txt`, `.sb`, `.streamerbot`, and arbitrary developer-defined extensions.
   File contents, not the filename suffix, remain the security and format
-  authority, so users will not need to rename an export to `.txt`.
-- **Drag and drop:** the import-code area will accept one local file, visibly
-  indicate the drop target, read it with the same bounded text path as **Load
-  from file**, and retain paste support. Multiple files, folders, shortcuts,
-  remote URLs, and oversized content will be rejected clearly.
-- **Synchronized creation defaults:** changing Project Name will update the
+  authority, so users do not need to rename an export to `.txt`.
+- **Drag and drop:** the import-code area accepts one local file, visibly
+  indicates the drop target, reads it with the same bounded text path as **Load
+  from file**, and retains paste support. Multiple files, folders, shortcuts,
+  remote URLs, and oversized content are rejected clearly.
+- **Synchronized creation defaults:** changing Project Name updates the
   suggested package ID slug and destination folder name until the user manually
   edits either derived value. Manual package/folder choices will never be
-  overwritten silently, and a reset-to-suggestion action will be available.
-- **Friendly imported-code labels:** Solution Explorer will display the action
-  name and, where the catalogue can identify it, the sub-action name for
-  extracted Execute C# sources. Stable confined ID-based paths will remain on
+  overwritten silently, and reset-to-suggestion actions are available.
+- **Friendly imported-code labels:** Solution Explorer displays the action
+  name and an ordered operation label for extracted Execute C# sources. Stable
+  confined ID-based paths remain on
   disk so renames cannot break relationships, preservation mappings, or
   deterministic re-export.
 
-This increment will include arbitrary-extension, drag/drop safety, naming
-dirty-state, collision, rename, save/reopen, stable-path, and accessibility
-tests before it changes the accepted Phase 25A import workflow.
+The implementation uses one strict-UTF-8, size-limited, local-file reader for
+picker and drop operations. It rejects folders, shortcuts, multiple drops,
+invalid text, and oversized files before analysis. Friendly tree names are
+display-only aliases with real relative paths available as tooltips and path
+commands; definition-owned C# paths and containing folders are protected from
+rename, move, and deletion. Automated arbitrary-extension, invalid-input,
+naming, stable-label, full-regression, and desktop smoke coverage form the
+implementation gate.

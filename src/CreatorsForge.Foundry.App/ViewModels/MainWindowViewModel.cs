@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CreatorsForge.Foundry.Build;
 using CreatorsForge.Foundry.Build.ObsStudio;
+using CreatorsForge.Foundry.Build.StreamerBot;
 using CreatorsForge.Foundry.Core.Diagnostics;
 using CreatorsForge.Foundry.Core.Projects;
 using CreatorsForge.Foundry.Editor;
@@ -416,6 +417,10 @@ public sealed class MainWindowViewModel : ObservableObject
 
         var relativePath = Path.GetRelativePath(Workspace.ProjectRoot, itemPath).Replace('\\', '/');
         var reference = EnumerateManifestReferences(Workspace.Manifest)
+            .FirstOrDefault(candidate =>
+                string.Equals(candidate, relativePath, StringComparison.OrdinalIgnoreCase) ||
+                (isDirectory && candidate.StartsWith($"{relativePath}/", StringComparison.OrdinalIgnoreCase)));
+        reference ??= EnumerateStreamerBotSourceReferences(Workspace)
             .FirstOrDefault(candidate =>
                 string.Equals(candidate, relativePath, StringComparison.OrdinalIgnoreCase) ||
                 (isDirectory && candidate.StartsWith($"{relativePath}/", StringComparison.OrdinalIgnoreCase)));
@@ -1076,9 +1081,10 @@ public sealed class MainWindowViewModel : ObservableObject
     {
         Workspace = value;
         ProjectItems.Clear();
+        var displayLabels = CreateProjectTreeDisplayLabels(value);
         foreach (var item in value.ProjectTree)
         {
-            ProjectItems.Add(new(item));
+            ProjectItems.Add(new(item, value.ProjectPath, displayLabels));
         }
 
         if (clearDocuments)
@@ -1087,6 +1093,50 @@ public sealed class MainWindowViewModel : ObservableObject
             Documents.Clear();
             SelectedDocument = null;
         }
+    }
+
+    private static IReadOnlyDictionary<string, string> CreateProjectTreeDisplayLabels(FoundryWorkspace workspace)
+    {
+        if (!string.Equals(workspace.Manifest.Target?.Provider, "streamerbot", StringComparison.OrdinalIgnoreCase) ||
+            string.IsNullOrWhiteSpace(workspace.Manifest.TargetDefinition))
+            return new Dictionary<string, string>();
+        try
+        {
+            var definitionPath = Path.Combine(workspace.ProjectRoot,
+                workspace.Manifest.TargetDefinition.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(definitionPath)) return new Dictionary<string, string>();
+            var result = StreamerBotDefinitionLoader.Load(File.ReadAllText(definitionPath));
+            return result.IsSuccess
+                ? StreamerBotProjectTreeLabelService.Create(result.Definition!)
+                : new Dictionary<string, string>();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return new Dictionary<string, string>();
+        }
+    }
+
+    private static string[] EnumerateStreamerBotSourceReferences(FoundryWorkspace workspace)
+    {
+        if (!string.Equals(workspace.Manifest.Target?.Provider, "streamerbot", StringComparison.OrdinalIgnoreCase) ||
+            string.IsNullOrWhiteSpace(workspace.Manifest.TargetDefinition)) return [];
+        StreamerBotDefinitionLoadResult result;
+        try
+        {
+            var definitionPath = Path.Combine(workspace.ProjectRoot,
+                workspace.Manifest.TargetDefinition.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(definitionPath)) return [];
+            result = StreamerBotDefinitionLoader.Load(File.ReadAllText(definitionPath));
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return [];
+        }
+        return !result.IsSuccess
+            ? []
+            : result.Definition!.Actions.SelectMany(action => action.SubActions)
+                .Select(item => item.SourcePath).Where(path => !string.IsNullOrWhiteSpace(path))
+                .Select(path => NormalizeReference(path!)).ToArray();
     }
 
     private void SynchronizeWorkspaceSet(FoundryWorkspace updatedProject)
@@ -1153,7 +1203,8 @@ public sealed class MainWindowViewModel : ObservableObject
                 string.Equals(
                     project.ProjectPath,
                     Workspace!.ProjectPath,
-                    StringComparison.OrdinalIgnoreCase)));
+                    StringComparison.OrdinalIgnoreCase),
+                CreateProjectTreeDisplayLabels(project)));
         }
     }
 

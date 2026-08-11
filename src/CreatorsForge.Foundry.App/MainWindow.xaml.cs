@@ -210,7 +210,8 @@ public partial class MainWindow : Window
             },
             "com.creatorsforge.smoke.import", "Import Smoke", "1.0.0", string.Empty);
         var streamerBotImportReady = importDialog.Content is not null &&
-            importDialog.AnalyzeForSmokeTest(importFixture.ImportCode);
+            importDialog.AnalyzeForSmokeTest(importFixture.ImportCode) &&
+            importDialog.VerifyCreationSuggestionsForSmokeTest();
         importDialog.Close();
 
         var previewDesignerReady = true;
@@ -1320,7 +1321,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var dialog = new RenameProjectItemDialog(item.Name) { Owner = this };
+        var dialog = new RenameProjectItemDialog(item.PhysicalName) { Owner = this };
         if (dialog.ShowDialog() == true)
         {
             await RunBusyAsync(() => viewModel.RenameProjectItemAsync(
