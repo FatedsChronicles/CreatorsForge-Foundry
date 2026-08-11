@@ -6,6 +6,16 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 25E Streamer.bot definition schema v4 resource requirements for OBS
+  items, accounts, local paths, URLs, integrations, and custom values, with
+  deterministic migration from schemas v1-v3.
+- A Streamer.bot Designer Resources workspace with required state, portability
+  classification, suggested values, validation patterns, and stable entity
+  bindings.
+- Central resource diagnostics and a deterministic package-IR portability
+  report that omits suggested values and never prints detected credentials.
+- Automatic local-file resource requirements for imported absolute Execute C#
+  compiler references while retaining the existing safe export gate.
 - Phase 25D importer experience: explicit `.sb` and arbitrary-extension file
   loading, safe single-file drag and drop, and one shared bounded strict-UTF-8
   reader for both entry points.
@@ -60,6 +70,9 @@ identity.
 
 ### Acceptance
 
+- Phase 25D product-owner acceptance passed on 2026-08-11. Arbitrary-extension
+  loading, drag and drop, synchronized naming suggestions, friendly imported
+  source labels, save/reopen, and regression checks passed.
 - Phase 25C product-owner acceptance passed on 2026-08-11. Catalogue search,
   typed parameter forms, profile filtering, friendly command selection,
   runtime-argument display, validation, save/reopen, and package output passed.

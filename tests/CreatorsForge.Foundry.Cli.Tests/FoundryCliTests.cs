@@ -212,6 +212,8 @@ public sealed class FoundryCliTests
             Environment.NewLine +
             "Streamer.bot package report: build/streamerbot/package-report.json" +
             Environment.NewLine +
+            "Streamer.bot portability report: build/streamerbot/portability-report.json" +
+            Environment.NewLine +
             $"Package IR: build/package-ir.json{Environment.NewLine}",
             output.ToString());
         Assert.Empty(error.ToString());

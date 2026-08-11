@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/streamerbot/definition/v4",
+  "title": "Creators Forge Foundry Streamer.bot definition v4",
+  "type": "object",
+  "required": ["schemaVersion", "metadata", "queues", "commands", "actions", "resources"],
+  "properties": {
+    "schemaVersion": { "const": 4 },
+    "metadata": { "$ref": "streamerbot-definition-v3.schema.json#/properties/metadata" },
+    "import": { "$ref": "streamerbot-definition-v3.schema.json#/properties/import" },
+    "queues": { "type": "array", "items": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/queue" } },
+    "commands": { "type": "array", "items": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/command" } },
+    "actions": { "type": "array", "items": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/action" } },
+    "resources": { "type": "array", "items": { "$ref": "#/$defs/resource" } }
+  },
+  "$defs": {
+    "binding": {
+      "type": "object",
+      "required": ["entityType", "entityId", "property"],
+      "properties": {
+        "entityType": { "enum": ["action", "command", "queue", "trigger", "subAction"] },
+        "entityId": { "type": "string", "minLength": 1 },
+        "property": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "resource": {
+      "type": "object",
+      "required": ["id", "name", "type", "required", "portability"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["obsScene", "obsSource", "obsFilter", "obsInput", "obsTransition", "twitchReward", "platformAccount", "localFile", "localFolder", "executable", "url", "integrationConnection", "custom"] },
+        "required": { "type": "boolean" },
+        "portability": { "enum": ["portable", "reconnectByName", "confirmAfterImport", "manualConfiguration"] },
+        "description": { "type": ["string", "null"] },
+        "suggestedValue": { "type": ["string", "null"] },
+        "validationPattern": { "type": ["string", "null"] },
+        "bindings": { "type": ["array", "null"], "items": { "$ref": "#/$defs/binding" } }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

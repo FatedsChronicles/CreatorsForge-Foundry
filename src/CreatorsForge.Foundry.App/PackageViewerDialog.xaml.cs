@@ -68,6 +68,8 @@ public partial class PackageViewerDialog : Window
                     StreamerBotStableV23Adapter.Decode(
                         File.ReadAllText(fullPath)).ToJsonString(DisplayOptions),
                 FoundryPackageArtifactKinds.StreamerBotPackageReport or
+                    FoundryPackageArtifactKinds.StreamerBotPortabilityReport or
+                    FoundryPackageArtifactKinds.StreamerBotImportReport or
                     FoundryPackageArtifactKinds.CphInlineBridge =>
                     File.ReadAllText(fullPath),
                 _ => $"{artifact.Kind}\n{artifact.Size:N0} bytes\nSHA-256: {artifact.Sha256}",

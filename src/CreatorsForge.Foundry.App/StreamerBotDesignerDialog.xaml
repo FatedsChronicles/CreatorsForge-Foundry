@@ -222,6 +222,46 @@
         </DockPanel>
       </TabItem>
 
+      <TabItem Header="Resources">
+        <DockPanel Margin="8">
+          <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <TextBlock FontWeight="SemiBold" Text="Resource requirements and portability" />
+            <TextBlock
+                Margin="0,3,0,0"
+                Foreground="{DynamicResource MutedTextBrush}"
+                TextWrapping="Wrap"
+                Text="Describe installation-specific values without storing passwords, tokens, API keys, or other credentials. Bindings use entity-type:entity-id:property and multiple bindings are separated with semicolons." />
+          </StackPanel>
+          <StackPanel DockPanel.Dock="Bottom" Margin="0,6,0,0" Orientation="Horizontal">
+            <Button Content="Add resource" Click="AddResource_Click" />
+            <Button Content="Remove resource" Click="RemoveResource_Click" />
+          </StackPanel>
+          <DataGrid
+              x:Name="ResourcesGrid"
+              AutoGenerateColumns="False"
+              BeginningEdit="Grid_BeginningEdit"
+              CurrentCellChanged="Grid_CurrentCellChanged"
+              CanUserAddRows="False">
+            <DataGrid.Columns>
+              <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
+              <DataGridTextColumn Width="2*" Header="Name" Binding="{Binding Name}" />
+              <DataGridComboBoxColumn Width="*" Header="Type"
+                  ItemsSource="{x:Static local:StreamerBotDesignerDialog.ResourceTypes}"
+                  SelectedItemBinding="{Binding Type, Mode=TwoWay}" />
+              <DataGridCheckBoxColumn Header="Required" Binding="{Binding Required}" />
+              <DataGridComboBoxColumn Width="2*" Header="Portability"
+                  ItemsSource="{x:Static local:StreamerBotDesignerDialog.PortabilityOptions}"
+                  SelectedItemBinding="{Binding Portability, Mode=TwoWay}" />
+              <DataGridTextColumn Width="2*" Header="Suggested/default value" Binding="{Binding SuggestedValue}" />
+              <DataGridTextColumn Width="2*" Header="Validation pattern" Binding="{Binding ValidationPattern}" />
+              <DataGridTextColumn Width="3*" Header="Bindings" Binding="{Binding Bindings}" />
+              <DataGridTextColumn Width="2*" Header="Description" Binding="{Binding Description}" />
+              <DataGridTextColumn Header="Usage" IsReadOnly="True" Binding="{Binding Usage}" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </DockPanel>
+      </TabItem>
+
       <TabItem Header="Validation">
         <Grid Margin="8">
           <Grid.RowDefinitions>

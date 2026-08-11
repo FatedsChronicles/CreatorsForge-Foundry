@@ -5,7 +5,7 @@ namespace CreatorsForge.Foundry.Build.StreamerBot;
 
 public sealed record StreamerBotDefinition
 {
-    public const int CurrentSchemaVersion = 3;
+    public const int CurrentSchemaVersion = 4;
 
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
     public StreamerBotMetadata Metadata { get; init; } = new();
@@ -13,6 +13,7 @@ public sealed record StreamerBotDefinition
     public IReadOnlyList<StreamerBotQueueDefinition> Queues { get; init; } = [];
     public IReadOnlyList<StreamerBotCommand> Commands { get; init; } = [];
     public IReadOnlyList<StreamerBotAction> Actions { get; init; } = [];
+    public IReadOnlyList<StreamerBotResourceDefinition> Resources { get; init; } = [];
 }
 
 public sealed record StreamerBotMetadata
@@ -102,6 +103,43 @@ public sealed record StreamerBotSubAction(
     IReadOnlyList<string>? References = null,
     double Weight = 0);
 
+public sealed record StreamerBotResourceDefinition(
+    string Id,
+    string Name,
+    string Type,
+    bool Required,
+    string Portability,
+    string? Description = null,
+    string? SuggestedValue = null,
+    string? ValidationPattern = null,
+    IReadOnlyList<StreamerBotResourceBinding>? Bindings = null);
+
+public sealed record StreamerBotResourceBinding(
+    string EntityType,
+    string EntityId,
+    string Property);
+
+public static class StreamerBotResourceTypes
+{
+    public static IReadOnlyList<string> All { get; } =
+    [
+        "obsScene", "obsSource", "obsFilter", "obsInput", "obsTransition",
+        "twitchReward", "platformAccount", "localFile", "localFolder",
+        "executable", "url", "integrationConnection", "custom",
+    ];
+}
+
+public static class StreamerBotResourcePortability
+{
+    public const string Portable = "portable";
+    public const string ReconnectByName = "reconnectByName";
+    public const string ConfirmAfterImport = "confirmAfterImport";
+    public const string ManualConfiguration = "manualConfiguration";
+
+    public static IReadOnlyList<string> All { get; } =
+        [Portable, ReconnectByName, ConfirmAfterImport, ManualConfiguration];
+}
+
 public sealed record StreamerBotDefinitionLoadResult(
     StreamerBotDefinition? Definition,
     IReadOnlyList<string> Errors)
@@ -141,7 +179,7 @@ public static class StreamerBotDefinitionLoader
             return new(null, ["Definition JSON is empty."]);
         }
 
-        if (value.SchemaVersion is 1 or 2)
+        if (value.SchemaVersion is 1 or 2 or 3)
         {
             value = value with { SchemaVersion = StreamerBotDefinition.CurrentSchemaVersion };
         }
@@ -156,19 +194,20 @@ public static class StreamerBotDefinitionLoader
     public static string[] Validate(StreamerBotDefinition value)
     {
         var errors = new List<string>();
-        if (value.SchemaVersion is not (1 or 2 or StreamerBotDefinition.CurrentSchemaVersion))
+        if (value.SchemaVersion is not (1 or 2 or 3 or StreamerBotDefinition.CurrentSchemaVersion))
         {
             errors.Add($"Schema {value.SchemaVersion} is unsupported.");
         }
 
-        if (value.Queues is null || value.Commands is null || value.Actions is null)
+        if (value.Queues is null || value.Commands is null || value.Actions is null || value.Resources is null)
         {
-            return ["queues, commands, and actions must be JSON arrays."];
+            return ["queues, commands, actions, and resources must be JSON arrays."];
         }
 
         ValidateUnique(value.Queues.Select(item => item.Id), "queue", errors);
         ValidateUnique(value.Commands.Select(item => item.Id), "command", errors);
         ValidateUnique(value.Actions.Select(item => item.Id), "action", errors);
+        ValidateUnique(value.Resources.Select(item => item.Id), "resource", errors);
         var queues = value.Queues.Select(item => item.Id).ToHashSet(StringComparer.Ordinal);
         var commands = value.Commands.Select(item => item.Id).ToHashSet(StringComparer.Ordinal);
         foreach (var queue in value.Queues)
