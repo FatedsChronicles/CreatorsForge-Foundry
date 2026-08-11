@@ -286,6 +286,9 @@ public static partial class StreamerBotImportService
     private static int? ReadInteger(JsonObject? value, string property) =>
         value?[property] is JsonValue scalar && scalar.TryGetValue<int>(out var number) ? number : null;
 
+    private static double ReadDouble(JsonObject? value, string property) =>
+        value?[property] is JsonValue scalar && scalar.TryGetValue<double>(out var number) ? number : 0;
+
     private sealed class ImportMapping(int payloadVersion, string exportedFrom, string sourceHash, List<StreamerBotImportFinding> findings)
     {
         public Dictionary<string, string> CSharpSources { get; } = new(StringComparer.Ordinal);
@@ -304,7 +307,8 @@ public static partial class StreamerBotImportService
                 queueIds[sourceId] = id;
                 EditableCount++;
                 return new StreamerBotQueueDefinition(id, ReadString(wire, "name") ?? $"Queue {index + 1}",
-                    wire["blocking"]?.GetValue<bool>() ?? false, sourceId);
+                    wire["blocking"]?.GetValue<bool>() ?? false, sourceId,
+                    Description: ReadString(wire, "description"));
             }).ToArray();
 
             var commandIds = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -322,7 +326,11 @@ public static partial class StreamerBotImportService
                     (ReadString(wire, "command") ?? "<preserved>").Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries),
                     wire["enabled"]?.GetValue<bool>() ?? true, wire["caseSensitive"]?.GetValue<bool>() ?? false,
                     ReadInteger(wire, "globalCooldown") ?? 0, ReadInteger(wire, "userCooldown") ?? 0,
-                    sourceId, !isEditable, isEditable ? null : $"commands/{index}" );
+                    sourceId, !isEditable, isEditable ? null : $"commands/{index}",
+                    wire["ignoreBotAccount"]?.GetValue<bool>() ?? true,
+                    wire["ignoreInternal"]?.GetValue<bool>() ?? true,
+                    ReadInteger(wire, "sources") ?? 1,
+                    ReadString(wire, "description"));
             }).ToArray();
 
             var actions = data["actions"]!.AsArray().Select((node, actionIndex) =>
@@ -336,6 +344,7 @@ public static partial class StreamerBotImportService
                 {
                     Author = ReadString(meta, "author") ?? string.Empty,
                     Description = ReadString(meta, "description") ?? string.Empty,
+                    MinimumVersion = ReadString(payload, "minimumVersion") ?? "1.0.0-alpha.1",
                 },
                 Import = new("streamerbot-preserved-v1", payloadVersion, exportedFrom,
                     ReadString(payload, "minimumVersion"), sourceHash,
@@ -375,7 +384,12 @@ public static partial class StreamerBotImportService
                 queueSource is not null && queueIds.TryGetValue(queueSource, out var queueId) ? queueId : null,
                 wire["concurrent"]?.GetValue<bool>() ?? false,
                 wire["alwaysRun"]?.GetValue<bool>() ?? false,
-                triggers, subActions, sourceId);
+                triggers, subActions, sourceId,
+                Group: ReadString(wire, "group"),
+                Description: ReadString(wire, "description"),
+                RandomAction: wire["randomAction"]?.GetValue<bool>() ?? false,
+                ExcludeFromPending: wire["excludeFromPending"]?.GetValue<bool>() ?? false,
+                ExcludeFromHistory: wire["excludeFromHistory"]?.GetValue<bool>() ?? false);
         }
 
         private StreamerBotSubAction MapSubAction(JsonObject item, int actionIndex, string actionId, int index)
@@ -388,7 +402,8 @@ public static partial class StreamerBotImportService
                 EditableCount++;
                 return new(id, "setArgument", item["enabled"]?.GetValue<bool>() ?? true,
                     ReadString(item, "variableName"), ReadString(item, "value") ?? item["value"]?.ToString(),
-                    item["autoType"]?.GetValue<bool>() ?? false, SourceType: type, SourceId: sourceId);
+                    item["autoType"]?.GetValue<bool>() ?? false, SourceType: type, SourceId: sourceId,
+                    Weight: ReadDouble(item, "weight"));
             }
             if (type == 99999 && ReadString(item, "byteCode") is { } encoded)
             {
@@ -402,7 +417,8 @@ public static partial class StreamerBotImportService
                     EditableCount++;
                     var references = (item["references"] as JsonArray ?? []).Select(value => value?.ToString() ?? string.Empty).Where(value => value.Length > 0).ToArray();
                     return new(id, "executeCSharp", item["enabled"]?.GetValue<bool>() ?? true,
-                        null, null, false, path, type, sourceId, false, null, references);
+                        null, null, false, path, type, sourceId, false, null, references,
+                        ReadDouble(item, "weight"));
                 }
                 catch (Exception exception) when (exception is FormatException or DecoderFallbackException or InvalidDataException)
                 {
@@ -418,7 +434,7 @@ public static partial class StreamerBotImportService
                 $"$.data.actions[{actionIndex}].subActions[{index}]"));
             return new(id, "opaque", item["enabled"]?.GetValue<bool>() ?? true,
                 null, null, false, null, type, sourceId, true,
-                $"actions/{actionIndex}/subActions/{index}");
+                $"actions/{actionIndex}/subActions/{index}", Weight: ReadDouble(item, "weight"));
         }
 
         private static string LogicalId(string kind, string sourceId, int index)

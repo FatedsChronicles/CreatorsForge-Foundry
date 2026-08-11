@@ -11,10 +11,11 @@
   },
   "roundTripVerified": true,
   "definition": {
-    "schemaVersion": 2,
+    "schemaVersion": 3,
     "metadata": {
       "author": "Creators Forge",
-      "description": "Round-trip fixture"
+      "description": "Round-trip fixture",
+      "minimumVersion": "1.0.0-alpha.1"
     },
     "queues": [
       {
@@ -34,7 +35,10 @@
         "enabled": true,
         "caseSensitive": false,
         "globalCooldown": 5,
-        "userCooldown": 10
+        "userCooldown": 10,
+        "ignoreBotAccount": true,
+        "ignoreInternalMessages": true,
+        "sources": 1
       }
     ],
     "actions": [
@@ -66,7 +70,8 @@
             "enabled": true,
             "variableName": "message",
             "value": "hello",
-            "autoType": true
+            "autoType": true,
+            "weight": 0
           },
           {
             "id": "89f63d94-6ae2-5042-a539-bd010f391067",
@@ -74,9 +79,11 @@
             "enabled": true,
             "variableName": null,
             "value": null,
-            "autoType": false
+            "autoType": false,
+            "weight": 0
           }
-        ]
+        ],
+        "group": ""
       }
     ]
   },

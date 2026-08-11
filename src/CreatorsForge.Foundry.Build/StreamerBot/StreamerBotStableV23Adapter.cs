@@ -218,7 +218,10 @@ public static class StreamerBotStableV23Adapter
                     RequiredBoolean(value, "enabled"),
                     RequiredBoolean(value, "caseSensitive"),
                     RequiredInteger(value, "globalCooldown"),
-                    RequiredInteger(value, "userCooldown"));
+                    RequiredInteger(value, "userCooldown"),
+                    IgnoreBotAccount: RequiredBoolean(value, "ignoreBotAccount"),
+                    IgnoreInternalMessages: RequiredBoolean(value, "ignoreInternal"),
+                    Sources: RequiredInteger(value, "sources"));
             })
             .ToArray();
         var actions = data["actions"]!.AsArray()
@@ -233,6 +236,8 @@ public static class StreamerBotStableV23Adapter
                 Author = metadata?["author"]?.GetValue<string>() ?? string.Empty,
                 Description =
                     metadata?["description"]?.GetValue<string>() ?? string.Empty,
+                MinimumVersion = payload["minimumVersion"]?.GetValue<string>() ??
+                    "1.0.0-alpha.1",
             },
             Queues = queues,
             Commands = commands,
@@ -318,7 +323,7 @@ public static class StreamerBotStableV23Adapter
                         ["value"] = subAction.Value ?? string.Empty,
                         ["autoType"] = subAction.AutoType,
                         ["id"] = id,
-                        ["weight"] = 0.0,
+                        ["weight"] = subAction.Weight,
                         ["type"] = 123,
                         ["parentId"] = null,
                         ["enabled"] = subAction.Enabled,
@@ -336,7 +341,7 @@ public static class StreamerBotStableV23Adapter
                         ["saveResultToVariable"] = false,
                         ["saveToVariable"] = null,
                         ["id"] = id,
-                        ["weight"] = 0.0,
+                        ["weight"] = subAction.Weight,
                         ["type"] = 99999,
                         ["parentId"] = null,
                         ["enabled"] = subAction.Enabled,
@@ -355,12 +360,12 @@ public static class StreamerBotStableV23Adapter
                     action.Id),
                 ["queue"] = action.QueueId is null ? null : queueIds[action.QueueId],
                 ["enabled"] = action.Enabled,
-                ["excludeFromHistory"] = false,
-                ["excludeFromPending"] = false,
+                ["excludeFromHistory"] = action.ExcludeFromHistory,
+                ["excludeFromPending"] = action.ExcludeFromPending,
                 ["name"] = action.Name,
-                ["group"] = string.Empty,
+                ["group"] = action.Group ?? string.Empty,
                 ["alwaysRun"] = action.AlwaysRun,
-                ["randomAction"] = false,
+                ["randomAction"] = action.RandomAction,
                 ["concurrent"] = action.Concurrent,
                 ["triggers"] = triggers,
                 ["subActions"] = subActions,
@@ -394,9 +399,9 @@ public static class StreamerBotStableV23Adapter
                 ["command"] = string.Join("\r\n", command.Commands),
                 ["regexExplicitCapture"] = false,
                 ["location"] = 0,
-                ["ignoreBotAccount"] = true,
-                ["ignoreInternal"] = true,
-                ["sources"] = 1,
+                ["ignoreBotAccount"] = command.IgnoreBotAccount,
+                ["ignoreInternal"] = command.IgnoreInternalMessages,
+                ["sources"] = command.Sources,
                 ["persistCounter"] = false,
                 ["persistUserCounter"] = false,
                 ["caseSensitive"] = command.CaseSensitive,
@@ -429,7 +434,7 @@ public static class StreamerBotStableV23Adapter
             },
             ["version"] = PayloadVersion,
             ["exportedFrom"] = ExportedFrom,
-            ["minimumVersion"] = "1.0.0-alpha.1",
+            ["minimumVersion"] = definition.Metadata.MinimumVersion,
         };
     }
 
@@ -474,14 +479,16 @@ public static class StreamerBotStableV23Adapter
                         RequiredBoolean(subAction, "enabled"),
                         RequiredString(subAction, "variableName"),
                         subAction["value"]?.GetValue<string>(),
-                        RequiredBoolean(subAction, "autoType")),
+                        RequiredBoolean(subAction, "autoType"),
+                        Weight: RequiredDouble(subAction, "weight")),
                     99999 => new StreamerBotSubAction(
                         RequiredString(subAction, "id"),
                         "executeBridge",
                         RequiredBoolean(subAction, "enabled"),
                         null,
                         null,
-                        false),
+                        false,
+                        Weight: RequiredDouble(subAction, "weight")),
                     _ => throw new InvalidDataException(
                         $"Sub-action type {type} is unsupported by stable-v23."),
                 };
@@ -496,7 +503,11 @@ public static class StreamerBotStableV23Adapter
             RequiredBoolean(value, "concurrent"),
             RequiredBoolean(value, "alwaysRun"),
             triggers,
-            subActions);
+            subActions,
+            Group: value["group"]?.GetValue<string>(),
+            RandomAction: RequiredBoolean(value, "randomAction"),
+            ExcludeFromPending: RequiredBoolean(value, "excludeFromPending"),
+            ExcludeFromHistory: RequiredBoolean(value, "excludeFromHistory"));
     }
 
     private static string RequiredString(JsonObject value, string property) =>
@@ -510,6 +521,10 @@ public static class StreamerBotStableV23Adapter
     private static int RequiredInteger(JsonObject value, string property) =>
         value[property]?.GetValue<int>() ??
         throw new InvalidDataException($"Property '{property}' must be an integer.");
+
+    private static double RequiredDouble(JsonObject value, string property) =>
+        value[property]?.GetValue<double>() ??
+        throw new InvalidDataException($"Property '{property}' must be a number.");
 
     private static string EncodeEnvelope(string payloadJson)
     {

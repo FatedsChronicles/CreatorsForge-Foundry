@@ -148,6 +148,22 @@ public sealed class FoundryBuildOrchestrator
                 }
 
                 streamerBotDefinition = definitionResult.Definition;
+                foreach (var item in StreamerBotDefinitionDiagnostics.Analyze(
+                             streamerBotDefinition!, manifest.Target?.Profile))
+                {
+                    diagnostics.Add(new(
+                        item.Code,
+                        item.Severity == StreamerBotDefinitionDiagnosticSeverity.Error
+                            ? FoundryDiagnosticSeverity.Error
+                            : FoundryDiagnosticSeverity.Warning,
+                        item.Message,
+                        new FoundryDiagnosticLocation(definitionPath, item.Path),
+                        item.Severity == StreamerBotDefinitionDiagnosticSeverity.Error
+                            ? "Correct the highlighted Streamer.bot definition item and build again."
+                            : "Review the highlighted workflow before publishing."));
+                }
+                if (diagnostics.Any(diagnostic => diagnostic.IsError))
+                    return new(null, null, null, diagnostics);
             }
             catch (OperationCanceledException)
             {

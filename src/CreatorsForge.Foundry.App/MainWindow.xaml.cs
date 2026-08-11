@@ -121,7 +121,8 @@ public partial class MainWindow : Window
             var designer = new StreamerBotDesignerDialog(
                 Path.Combine(
                     viewModel.Workspace.ProjectRoot,
-                    definition.Replace('/', Path.DirectorySeparatorChar)));
+                    definition.Replace('/', Path.DirectorySeparatorChar)),
+                viewModel.Workspace.Manifest.Target?.Profile);
             designerReady = designer.Content is not null;
             designer.Close();
         }
@@ -748,7 +749,9 @@ public partial class MainWindow : Window
 
         try
         {
-            var dialog = new StreamerBotDesignerDialog(definitionPath)
+            var dialog = new StreamerBotDesignerDialog(
+                definitionPath,
+                workspace.Manifest.Target?.Profile)
             {
                 Owner = this,
             };

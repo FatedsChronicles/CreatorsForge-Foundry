@@ -139,14 +139,97 @@ public sealed class StreamerBotImportServiceTests
     }
 
     [Fact]
-    public void DefinitionV1MigratesDeterministicallyToV2()
+    public void DefinitionV1MigratesDeterministicallyToV3()
     {
         const string json = """{"schemaVersion":1,"metadata":{"author":"A","description":"B"},"queues":[],"commands":[],"actions":[]}""";
         var first = StreamerBotDefinitionLoader.Load(json);
         var second = StreamerBotDefinitionLoader.Load(json);
         Assert.True(first.IsSuccess);
-        Assert.Equal(2, first.Definition!.SchemaVersion);
+        Assert.Equal(3, first.Definition!.SchemaVersion);
         Assert.Equal(StreamerBotDefinitionLoader.Serialize(first.Definition), StreamerBotDefinitionLoader.Serialize(second.Definition!));
+    }
+
+    [Fact]
+    public async Task PreservedRoundTripRetainsTogglesWeightsAndEditedOrder()
+    {
+        var payload = CreatePayload();
+        var analysis = StreamerBotImportService.Analyze(StreamerBotEnvelopeCodec.Encode(payload));
+        var definition = analysis.Definition!;
+        var action = definition.Actions[0];
+        definition = definition with
+        {
+            Actions =
+            [
+                action with
+                {
+                    Group = "Imported group",
+                    RandomAction = true,
+                    ExcludeFromPending = true,
+                    ExcludeFromHistory = true,
+                    SubActions = action.SubActions.Reverse().Select((item, index) =>
+                        item with { Weight = index + 1 }).ToArray(),
+                },
+            ],
+        };
+        var root = Path.Combine(Path.GetTempPath(), "CreatorsForge.ImportTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(root, "streamerbot"));
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(root, "streamerbot", "import-preservation.json"),
+                new JsonObject { ["payload"] = payload.DeepClone() }.ToJsonString());
+            foreach (var source in analysis.CSharpSources)
+            {
+                var path = Path.Combine(root, source.Key.Replace('/', Path.DirectorySeparatorChar));
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                await File.WriteAllTextAsync(path, source.Value);
+            }
+            var artifact = await StreamerBotPreservedPayloadAdapter.EncodeAsync(
+                definition, root, "com.creatorsforge.fixture", "Imported Fixture", "1.1.0-beta.1");
+            var wire = StreamerBotEnvelopeCodec.Decode(artifact.ImportCode)["data"]!["actions"]![0]!.AsObject();
+            Assert.True(wire["randomAction"]!.GetValue<bool>());
+            Assert.True(wire["excludeFromPending"]!.GetValue<bool>());
+            Assert.True(wire["excludeFromHistory"]!.GetValue<bool>());
+            Assert.Equal("Imported group", wire["group"]!.GetValue<string>());
+            Assert.Equal([1d, 2d], wire["subActions"]!.AsArray().Select(item => item!["weight"]!.GetValue<double>()));
+            Assert.Equal(definition.Actions[0].SubActions.Select(item => item.SourceId),
+                wire["subActions"]!.AsArray().Select(item => item!["id"]!.GetValue<string>()));
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void CentralDiagnosticsReportUnsafeAndAmbiguousWorkflows()
+    {
+        var definition = StreamerBotStableV23AdapterTests.CreateDefinition();
+        var command = definition.Commands[0];
+        var action = definition.Actions[0];
+        definition = definition with
+        {
+            Commands = [command, command with { Id = "other", Name = "Other" }],
+            Actions =
+            [
+                action with
+                {
+                    Concurrent = true,
+                    RandomAction = true,
+                    SubActions =
+                    [
+                        action.SubActions[0] with { Weight = 0 },
+                        action.SubActions[0] with { Id = "consumer", Value = "%message%", Weight = 1 },
+                    ],
+                },
+            ],
+        };
+
+        var diagnostics = StreamerBotDefinitionDiagnostics.Analyze(definition, "1.0.7-stable");
+
+        Assert.Contains(diagnostics, item => item.Code == "SBD1003");
+        Assert.Contains(diagnostics, item => item.Code == "SBD1007");
+        Assert.Contains(diagnostics, item => item.Code == "SBD2003");
+        Assert.Contains(diagnostics, item => item.Code == "SBD2004");
     }
 
     private static JsonObject CreatePayload()
