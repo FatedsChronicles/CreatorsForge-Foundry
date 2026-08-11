@@ -46,7 +46,8 @@ copied into this report.
    `reconnectByName`, enter `Starting Soon`, and bind it to
    `action:default:sceneName`.
 4. Add a local-file resource with an absolute disposable path and choose
-   `confirmAfterImport`. Confirm validation reports portability warnings.
+   `confirmAfterImport`. Confirm validation reports advisory `SBD2007` and
+   `SBD2008` warnings. These warnings do not block saving or building.
 5. Change that path resource to `portable`. Confirm `SBD1016` blocks saving;
    restore `confirmAfterImport`.
 6. Add an integration resource named `API token` with a disposable secret-like
@@ -65,4 +66,3 @@ copied into this report.
     retains the established absolute-reference export protection.
 12. Resolve the compiler reference, build and re-import the resulting package
     into every Streamer.bot host claimed by the retained v23/v24 adapter.
-

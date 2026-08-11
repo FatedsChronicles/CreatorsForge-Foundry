@@ -109,6 +109,29 @@ public sealed class StreamerBotPortabilityServiceTests
         Assert.Contains(diagnostics, item => item.Code == "SBD1016");
     }
 
+    [Fact]
+    public void PortabilityWarningsDoNotBlockValidationOrExport()
+    {
+        var definition = DefinitionWithResources(
+            new StreamerBotResourceDefinition("file", "Machine file", "localFile", true,
+                StreamerBotResourcePortability.ConfirmAfterImport,
+                SuggestedValue: @"D:\Disposable\file.txt",
+                Bindings: [new("action", "hello", "path")]));
+
+        var diagnostics = StreamerBotDefinitionDiagnostics.Analyze(definition);
+
+        Assert.Contains(diagnostics, item => item.Code == "SBD2007" &&
+                                             item.Severity == StreamerBotDefinitionDiagnosticSeverity.Warning);
+        Assert.Contains(diagnostics, item => item.Code == "SBD2008" &&
+                                             item.Severity == StreamerBotDefinitionDiagnosticSeverity.Warning);
+        Assert.DoesNotContain(diagnostics,
+            item => item.Severity == StreamerBotDefinitionDiagnosticSeverity.Error);
+        Assert.Empty(StreamerBotDefinitionLoader.Validate(definition));
+        Assert.NotEmpty(StreamerBotStableV23Adapter.Encode(definition,
+            "com.creatorsforge.warning-test", "Warning test", "1.1.0-beta.1",
+            "public class CPHInline { public bool Execute() => true; }\n").ImportCode);
+    }
+
     private static StreamerBotDefinition DefinitionWithResources(
         params StreamerBotResourceDefinition[] resources)
     {

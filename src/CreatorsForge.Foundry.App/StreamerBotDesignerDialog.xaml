@@ -245,13 +245,39 @@
             <DataGrid.Columns>
               <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
               <DataGridTextColumn Width="2*" Header="Name" Binding="{Binding Name}" />
-              <DataGridComboBoxColumn Width="*" Header="Type"
-                  ItemsSource="{x:Static local:StreamerBotDesignerDialog.ResourceTypes}"
-                  SelectedItemBinding="{Binding Type, Mode=TwoWay}" />
+              <DataGridTemplateColumn Width="*" Header="Type">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock Foreground="{DynamicResource TextBrush}" Text="{Binding Type}" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+                <DataGridTemplateColumn.CellEditingTemplate>
+                  <DataTemplate>
+                    <ComboBox
+                        Background="{DynamicResource EditorBackgroundBrush}"
+                        Foreground="{DynamicResource TextBrush}"
+                        ItemsSource="{x:Static local:StreamerBotDesignerDialog.ResourceTypes}"
+                        SelectedItem="{Binding Type, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellEditingTemplate>
+              </DataGridTemplateColumn>
               <DataGridCheckBoxColumn Header="Required" Binding="{Binding Required}" />
-              <DataGridComboBoxColumn Width="2*" Header="Portability"
-                  ItemsSource="{x:Static local:StreamerBotDesignerDialog.PortabilityOptions}"
-                  SelectedItemBinding="{Binding Portability, Mode=TwoWay}" />
+              <DataGridTemplateColumn Width="2*" Header="Portability">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock Foreground="{DynamicResource TextBrush}" Text="{Binding Portability}" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+                <DataGridTemplateColumn.CellEditingTemplate>
+                  <DataTemplate>
+                    <ComboBox
+                        Background="{DynamicResource EditorBackgroundBrush}"
+                        Foreground="{DynamicResource TextBrush}"
+                        ItemsSource="{x:Static local:StreamerBotDesignerDialog.PortabilityOptions}"
+                        SelectedItem="{Binding Portability, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellEditingTemplate>
+              </DataGridTemplateColumn>
               <DataGridTextColumn Width="2*" Header="Suggested/default value" Binding="{Binding SuggestedValue}" />
               <DataGridTextColumn Width="2*" Header="Validation pattern" Binding="{Binding ValidationPattern}" />
               <DataGridTextColumn Width="3*" Header="Bindings" Binding="{Binding Bindings}" />
@@ -268,7 +294,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
           </Grid.RowDefinitions>
-          <TextBlock Margin="0,0,0,8" Text="Errors block saving. Warnings identify ambiguous or potentially order-dependent workflows." />
+          <TextBlock Margin="0,0,0,8" Text="Errors block saving and building. Warnings are advisory and do not block either operation." />
           <DataGrid x:Name="ValidationGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
             <DataGrid.Columns>
               <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" />

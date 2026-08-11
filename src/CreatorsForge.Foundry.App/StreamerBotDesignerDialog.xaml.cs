@@ -371,7 +371,15 @@ public partial class StreamerBotDesignerDialog : Window
     private void RefreshValidation(StreamerBotDefinition? definition = null)
     {
         definition ??= CreateDefinition();
-        ValidationGrid.ItemsSource = StreamerBotDefinitionDiagnostics.Analyze(definition, profile);
+        var diagnostics = StreamerBotDefinitionDiagnostics.Analyze(definition, profile);
+        ValidationGrid.ItemsSource = diagnostics;
+        var errors = diagnostics.Count(item => item.Severity == StreamerBotDefinitionDiagnosticSeverity.Error);
+        var warnings = diagnostics.Count - errors;
+        StatusText.Text = errors > 0
+            ? $"{errors} error(s) and {warnings} warning(s). Errors block saving and building."
+            : warnings > 0
+                ? $"{warnings} warning(s). Warnings do not block saving or building."
+                : "Definition is valid with no warnings.";
     }
 
     private void CommitGridEdits()

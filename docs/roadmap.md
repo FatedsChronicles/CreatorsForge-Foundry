@@ -769,5 +769,5 @@ that contains classifications, counts, and bindings but deliberately omits
 suggested values. Phase 25E does not invent resource fields in the Streamer.bot
 wire format or alter preserved opaque content. Manual acceptance is defined in
 [streamerbot-resources-portability.md](streamerbot-resources-portability.md).
-The implementation gate passes a zero-warning Release build, all 322 automated
+The implementation gate passes a zero-warning Release build, all 323 automated
 tests, and all ten representative desktop smoke projects.

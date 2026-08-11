@@ -54,6 +54,13 @@ All notable changes to Creators Forge Foundry are documented in this file.
   payloads, re-embeds edited C# deterministically, retains unknown fields and
   source relationships, and includes provenance in the package IR.
 
+### Fixed
+
+- Phase 25E acceptance follow-up: Resources grid type and portability editors
+  now retain dark-theme colours while open, text-edit context menus use the
+  Foundry theme, and validation explicitly states that `SBD2007`/`SBD2008`
+  portability warnings do not block saving or building.
+
 ### Security
 
 - Import limits and validation for Base64, SBAE identity, GZip, strict UTF-8,
