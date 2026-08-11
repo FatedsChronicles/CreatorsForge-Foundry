@@ -89,7 +89,7 @@
         <Separator />
         <MenuItem Header="Streamer.bot _Designer..." Click="StreamerBotDesigner_Click" />
         <MenuItem Header="OBS Plugin D_esigner..." Click="ObsPluginDesigner_Click" />
-        <MenuItem Header="_Package Viewer..." Click="PackageViewer_Click" />
+        <MenuItem Header="_View Package..." Click="PackageViewer_Click" />
         <Separator />
         <MenuItem Header="_Deploy / Manage Installation..." Click="Deployment_Click" />
       </MenuItem>

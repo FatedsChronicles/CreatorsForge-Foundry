@@ -59,7 +59,8 @@ All notable changes to Creators Forge Foundry are documented in this file.
 - Phase 25E acceptance follow-up: Resources grid type and portability editors
   now retain dark-theme colours while open, text-edit context menus use the
   Foundry theme, and validation explicitly states that `SBD2007`/`SBD2008`
-  portability warnings do not block saving or building.
+  portability warnings do not block saving or building. The package viewer is
+  now labelled **Build > View Package...** to match the acceptance workflow.
 
 ### Security
 

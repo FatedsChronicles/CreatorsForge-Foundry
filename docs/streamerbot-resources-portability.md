@@ -58,7 +58,7 @@ copied into this report.
 8. Save, close and reopen the Designer. Confirm all resource fields and
    bindings persist.
 9. Build twice and confirm both builds succeed with identical package output.
-10. Open **Build > View Package** and inspect the portability-report artifact.
+10. Open **Build > View Package...** and inspect the portability-report artifact.
     Confirm classifications, counts and bindings are present and suggested
     values are absent.
 11. Import a representative payload containing an absolute Execute C# compiler

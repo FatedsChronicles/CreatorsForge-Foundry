@@ -242,9 +242,40 @@
               BeginningEdit="Grid_BeginningEdit"
               CurrentCellChanged="Grid_CurrentCellChanged"
               CanUserAddRows="False">
+            <DataGrid.Resources>
+              <ContextMenu
+                  x:Key="ResourceEditContextMenu"
+                  Background="{DynamicResource PanelBackgroundBrush}"
+                  Foreground="{DynamicResource TextBrush}"
+                  BorderBrush="{DynamicResource PanelBorderBrush}">
+                <MenuItem
+                    Header="Cut"
+                    Background="{DynamicResource PanelBackgroundBrush}"
+                    Foreground="{DynamicResource TextBrush}"
+                    Command="ApplicationCommands.Cut" />
+                <MenuItem
+                    Header="Copy"
+                    Background="{DynamicResource PanelBackgroundBrush}"
+                    Foreground="{DynamicResource TextBrush}"
+                    Command="ApplicationCommands.Copy" />
+                <MenuItem
+                    Header="Paste"
+                    Background="{DynamicResource PanelBackgroundBrush}"
+                    Foreground="{DynamicResource TextBrush}"
+                    Command="ApplicationCommands.Paste" />
+              </ContextMenu>
+              <Style
+                  x:Key="ResourceTextEditorStyle"
+                  TargetType="TextBox"
+                  BasedOn="{StaticResource {x:Type TextBox}}">
+                <Setter Property="ContextMenu" Value="{StaticResource ResourceEditContextMenu}" />
+              </Style>
+            </DataGrid.Resources>
             <DataGrid.Columns>
-              <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
-              <DataGridTextColumn Width="2*" Header="Name" Binding="{Binding Name}" />
+              <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}"
+                  EditingElementStyle="{StaticResource ResourceTextEditorStyle}" />
+              <DataGridTextColumn Width="2*" Header="Name" Binding="{Binding Name}"
+                  EditingElementStyle="{StaticResource ResourceTextEditorStyle}" />
               <DataGridTemplateColumn Width="*" Header="Type">
                 <DataGridTemplateColumn.CellTemplate>
                   <DataTemplate>
@@ -278,10 +309,14 @@
                   </DataTemplate>
                 </DataGridTemplateColumn.CellEditingTemplate>
               </DataGridTemplateColumn>
-              <DataGridTextColumn Width="2*" Header="Suggested/default value" Binding="{Binding SuggestedValue}" />
-              <DataGridTextColumn Width="2*" Header="Validation pattern" Binding="{Binding ValidationPattern}" />
-              <DataGridTextColumn Width="3*" Header="Bindings" Binding="{Binding Bindings}" />
-              <DataGridTextColumn Width="2*" Header="Description" Binding="{Binding Description}" />
+              <DataGridTextColumn Width="2*" Header="Suggested/default value" Binding="{Binding SuggestedValue}"
+                  EditingElementStyle="{StaticResource ResourceTextEditorStyle}" />
+              <DataGridTextColumn Width="2*" Header="Validation pattern" Binding="{Binding ValidationPattern}"
+                  EditingElementStyle="{StaticResource ResourceTextEditorStyle}" />
+              <DataGridTextColumn Width="3*" Header="Bindings" Binding="{Binding Bindings}"
+                  EditingElementStyle="{StaticResource ResourceTextEditorStyle}" />
+              <DataGridTextColumn Width="2*" Header="Description" Binding="{Binding Description}"
+                  EditingElementStyle="{StaticResource ResourceTextEditorStyle}" />
               <DataGridTextColumn Header="Usage" IsReadOnly="True" Binding="{Binding Usage}" />
             </DataGrid.Columns>
           </DataGrid>
