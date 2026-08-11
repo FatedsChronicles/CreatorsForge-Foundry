@@ -31,7 +31,7 @@
               Foreground="{DynamicResource AccentBrush}"
               Text="{Binding IconLabel}" />
         </Border>
-        <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
+        <TextBlock VerticalAlignment="Center" Text="{Binding Name}" ToolTip="{Binding RelativePath}" />
       </StackPanel>
     </HierarchicalDataTemplate>
   </Window.Resources>

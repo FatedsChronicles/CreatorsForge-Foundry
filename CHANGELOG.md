@@ -6,6 +6,13 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 25D importer experience: explicit `.sb` and arbitrary-extension file
+  loading, safe single-file drag and drop, and one shared bounded strict-UTF-8
+  reader for both entry points.
+- Live project-name suggestions for package ID and destination folder with
+  independent manual-edit protection and explicit restore buttons.
+- Friendly action and Execute C# labels in Solution Explorer while stable
+  ID-based paths, source relationships, and mutation protection remain intact.
 - Phase 25C schema-driven Streamer.bot operation-catalogue foundation with a
   searchable, categorized, profile-filtered Designer palette and reusable
   typed parameter forms.
@@ -53,6 +60,9 @@ identity.
 
 ### Acceptance
 
+- Phase 25C product-owner acceptance passed on 2026-08-11. Catalogue search,
+  typed parameter forms, profile filtering, friendly command selection,
+  runtime-argument display, validation, save/reopen, and package output passed.
 - Phase 25B product-owner acceptance passed on 2026-08-11. Action toggles,
   weighted ordering, richer command and queue metadata, designer operations,
   validation, deterministic export, and retained v23/v24 behavior all passed.

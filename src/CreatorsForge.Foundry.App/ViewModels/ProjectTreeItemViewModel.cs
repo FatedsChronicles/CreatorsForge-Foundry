@@ -14,19 +14,27 @@ public sealed class ProjectTreeItemViewModel
             ],
             StringComparer.OrdinalIgnoreCase);
 
-    public ProjectTreeItemViewModel(ProjectTreeNode node, string? projectPath = null)
+    public ProjectTreeItemViewModel(
+        ProjectTreeNode node,
+        string? projectPath = null,
+        IReadOnlyDictionary<string, string>? displayLabels = null)
     {
-        Name = node.Name;
+        Name = displayLabels is not null && displayLabels.TryGetValue(node.RelativePath, out var displayName)
+            ? displayName
+            : node.Name;
         FullPath = node.FullPath;
         RelativePath = node.RelativePath;
         IsDirectory = node.IsDirectory;
         ProjectPath = projectPath;
         Children = node.Children
-            .Select(child => new ProjectTreeItemViewModel(child, projectPath))
+            .Select(child => new ProjectTreeItemViewModel(child, projectPath, displayLabels))
             .ToArray();
     }
 
-    public ProjectTreeItemViewModel(FoundryWorkspace workspace, bool isActive)
+    public ProjectTreeItemViewModel(
+        FoundryWorkspace workspace,
+        bool isActive,
+        IReadOnlyDictionary<string, string>? displayLabels = null)
     {
         Name = isActive ? $"● {workspace.Manifest.Name}" : workspace.Manifest.Name;
         FullPath = workspace.ProjectRoot;
@@ -35,11 +43,13 @@ public sealed class ProjectTreeItemViewModel
         IsProjectRoot = true;
         ProjectPath = workspace.ProjectPath;
         Children = workspace.ProjectTree
-            .Select(node => new ProjectTreeItemViewModel(node, workspace.ProjectPath))
+            .Select(node => new ProjectTreeItemViewModel(node, workspace.ProjectPath, displayLabels))
             .ToArray();
     }
 
     public string Name { get; }
+
+    public string PhysicalName => Path.GetFileName(FullPath);
 
     public string FullPath { get; }
 

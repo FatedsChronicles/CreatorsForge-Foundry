@@ -18,9 +18,19 @@
       </StackPanel>
       <Button DockPanel.Dock="Right" MinWidth="120" Content="Load from file..." Click="LoadFile_Click"/>
     </DockPanel>
-    <TextBox x:Name="ImportCodeText" Grid.Row="1" AcceptsReturn="True" TextWrapping="NoWrap"
-        VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
-        FontFamily="Consolas" AutomationProperties.Name="Streamer.bot import code"/>
+    <Border x:Name="ImportDropTarget" Grid.Row="1" Padding="6"
+        BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="2" CornerRadius="4"
+        AllowDrop="True" DragEnter="ImportDropTarget_DragEnter" DragLeave="ImportDropTarget_DragLeave"
+        DragOver="ImportDropTarget_DragOver" Drop="ImportDropTarget_Drop">
+      <Grid>
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+        <TextBlock Margin="2,0,2,6" Foreground="{DynamicResource MutedTextBrush}"
+            Text="Paste Streamer.bot import code, or drop one local export file here (.txt, .sb, .streamerbot, or another extension)." TextWrapping="Wrap"/>
+        <TextBox x:Name="ImportCodeText" Grid.Row="1" AcceptsReturn="True" TextWrapping="NoWrap"
+            VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+            FontFamily="Consolas" AutomationProperties.Name="Streamer.bot import code or file drop target"/>
+      </Grid>
+    </Border>
     <StackPanel Grid.Row="2" Margin="0,8" Orientation="Horizontal">
       <Button MinWidth="110" Content="Analyze safely" Click="Analyze_Click"/>
       <TextBlock x:Name="AnalysisStatusText" Margin="12,7,0,0" Text="Paste code or load an export file."/>
@@ -30,10 +40,14 @@
     <Grid Grid.Row="4" Margin="0,12,0,0">
       <Grid.ColumnDefinitions><ColumnDefinition Width="115"/><ColumnDefinition Width="*"/><ColumnDefinition Width="115"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
       <Grid.RowDefinitions><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
-      <TextBlock VerticalAlignment="Center" Text="Project name"/><TextBox x:Name="NameText" Grid.Column="1" Margin="5"/>
-      <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="Package ID"/><TextBox x:Name="IdText" Grid.Column="3" Grid.ColumnSpan="2" Margin="5"/>
-      <TextBlock Grid.Row="1" VerticalAlignment="Center" Text="New folder"/><TextBox x:Name="DestinationText" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="5"/>
-      <Button Grid.Row="1" Grid.Column="4" Content="Browse..." Click="BrowseDestination_Click"/>
+      <TextBlock VerticalAlignment="Center" Text="Project name"/><TextBox x:Name="NameText" Grid.Column="1" Margin="5" TextChanged="NameText_Changed"/>
+      <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="Package ID"/><TextBox x:Name="IdText" Grid.Column="3" Margin="5" TextChanged="IdText_Changed"/>
+      <Button Grid.Column="4" Margin="2" Content="Suggest" ToolTip="Restore the package ID suggested from Project name" Click="ResetId_Click"/>
+      <TextBlock Grid.Row="1" VerticalAlignment="Center" Text="New folder"/><TextBox x:Name="DestinationText" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="5" TextChanged="DestinationText_Changed"/>
+      <StackPanel Grid.Row="1" Grid.Column="4" Orientation="Horizontal">
+        <Button Margin="2" Content="Browse..." Click="BrowseDestination_Click"/>
+        <Button Margin="2" Content="Suggest" ToolTip="Restore the folder suggested from Project name" Click="ResetDestination_Click"/>
+      </StackPanel>
       <TextBlock Grid.Row="2" VerticalAlignment="Center" Text="Version"/><TextBox x:Name="VersionText" Grid.Row="2" Grid.Column="1" Margin="5" Text="1.1.0-beta.1"/>
       <TextBlock Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Text="Author"/><TextBox x:Name="AuthorText" Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="2" Margin="5"/>
       <TextBlock Grid.Row="3" VerticalAlignment="Center" Text="Profile"/><ComboBox x:Name="ProfileCombo" Grid.Row="3" Grid.Column="1" Margin="5"/>

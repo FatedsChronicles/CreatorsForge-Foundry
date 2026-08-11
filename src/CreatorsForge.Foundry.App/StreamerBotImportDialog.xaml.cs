@@ -1,5 +1,7 @@
 using System.Text;
 using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media;
 using CreatorsForge.Foundry.Build.StreamerBot;
 using CreatorsForge.Foundry.Core.Compatibility;
 using CreatorsForge.Foundry.Workspaces;
@@ -10,11 +12,19 @@ namespace CreatorsForge.Foundry.App;
 public partial class StreamerBotImportDialog : Window
 {
     private StreamerBotImportAnalysis? analysis;
+    private readonly string defaultProjectDirectory;
+    private string destinationParent;
+    private bool updatingSuggestions;
+    private bool idManuallyEdited;
+    private bool destinationManuallyEdited;
+    private bool analysisDefaultsApplied;
 
     public StreamerBotImportDialog(FoundryUserSettings settings)
     {
         InitializeComponent();
-        DestinationText.Text = Path.Combine(settings.DefaultProjectDirectory, "ImportedExtension");
+        defaultProjectDirectory = settings.DefaultProjectDirectory;
+        destinationParent = defaultProjectDirectory;
+        ApplySuggestedValues("Imported Extension", resetManualState: true);
         ProfileCombo.ItemsSource = FoundryStreamerBotProfiles.Ordered;
         ProfileCombo.SelectedItem = FoundryStreamerBotProfiles.Stable107;
     }
@@ -29,18 +39,89 @@ public partial class StreamerBotImportDialog : Window
             AnalysisText.Text.Contains("payload v23", StringComparison.Ordinal);
     }
 
-    private void LoadFile_Click(object sender, RoutedEventArgs e)
+    internal bool VerifyCreationSuggestionsForSmokeTest()
     {
-        var dialog = new OpenFileDialog { CheckFileExists = true, Filter = "Streamer.bot exports (*.txt;*.streamerbot)|*.txt;*.streamerbot|All files (*.*)|*.*" };
-        if (dialog.ShowDialog(this) != true) return;
-        var info = new FileInfo(dialog.FileName);
-        if (info.Length > StreamerBotEnvelopeCodec.MaximumImportCodeCharacters)
+        ApplySuggestedValues("My Export", resetManualState: true);
+        NameText.Text = "Bot Eliminator";
+        var derived = IdText.Text == "com.example.bot-eliminator" &&
+            DestinationText.Text == Path.Combine(defaultProjectDirectory, "BotEliminator");
+        IdText.Text = "org.example.manual";
+        NameText.Text = "Renamed Project";
+        var idProtected = IdText.Text == "org.example.manual" &&
+            DestinationText.Text == Path.Combine(defaultProjectDirectory, "RenamedProject");
+        var manualDestination = Path.Combine(defaultProjectDirectory, "ChosenManually");
+        DestinationText.Text = manualDestination;
+        NameText.Text = "Final Project";
+        return derived && idProtected && DestinationText.Text == manualDestination;
+    }
+
+    private async void LoadFile_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog
         {
-            MessageBox.Show(this, "That file exceeds the 16 MiB import-code limit.", "Import Streamer.bot code", MessageBoxButton.OK, MessageBoxImage.Warning);
+            CheckFileExists = true,
+            Filter = "Streamer.bot exports (*.txt;*.sb;*.streamerbot)|*.txt;*.sb;*.streamerbot|Developer exports (any extension)|*.*",
+        };
+        if (dialog.ShowDialog(this) != true) return;
+        await LoadImportFileAsync(dialog.FileName);
+    }
+
+    private async Task LoadImportFileAsync(string path)
+    {
+        try
+        {
+            var fullPath = Path.GetFullPath(path);
+            var info = new FileInfo(fullPath);
+            var text = await StreamerBotImportFileReader.ReadAsync(fullPath);
+            ImportCodeText.Text = text;
+            AnalysisStatusText.Text = $"Loaded {info.Name}; analyzing safely...";
+            Analyze();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException or DecoderFallbackException)
+        {
+            MessageBox.Show(this, exception.Message, "Import Streamer.bot code", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void ImportDropTarget_DragEnter(object sender, DragEventArgs e)
+    {
+        UpdateDropEffect(e);
+        if (e.Effects == DragDropEffects.Copy) ImportDropTarget.BorderBrush = (Brush)FindResource("AccentBrush");
+    }
+
+    private void ImportDropTarget_DragLeave(object sender, DragEventArgs e) =>
+        RestoreDropTargetBorder();
+
+    private void ImportDropTarget_DragOver(object sender, DragEventArgs e) => UpdateDropEffect(e);
+
+    private async void ImportDropTarget_Drop(object sender, DragEventArgs e)
+    {
+        RestoreDropTargetBorder();
+        if (!TryGetSingleDroppedFile(e.Data, out var path))
+        {
+            MessageBox.Show(this, "Drop exactly one local export file. Folders, shortcuts, URLs, and multiple files are not accepted.",
+                "Import Streamer.bot code", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
-        ImportCodeText.Text = File.ReadAllText(dialog.FileName, Encoding.UTF8);
-        Analyze();
+        await LoadImportFileAsync(path);
+    }
+
+    private void RestoreDropTargetBorder() =>
+        ImportDropTarget.SetResourceReference(System.Windows.Controls.Border.BorderBrushProperty, "PanelBorderBrush");
+
+    private static void UpdateDropEffect(DragEventArgs e)
+    {
+        e.Effects = TryGetSingleDroppedFile(e.Data, out _) ? DragDropEffects.Copy : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private static bool TryGetSingleDroppedFile(IDataObject data, out string path)
+    {
+        path = string.Empty;
+        if (!data.GetDataPresent(DataFormats.FileDrop) || data.GetData(DataFormats.FileDrop) is not string[] { Length: 1 } files)
+            return false;
+        path = files[0];
+        return File.Exists(path) && !string.Equals(Path.GetExtension(path), ".lnk", StringComparison.OrdinalIgnoreCase);
     }
 
     private void Analyze_Click(object sender, RoutedEventArgs e) => Analyze();
@@ -57,12 +138,13 @@ public partial class StreamerBotImportDialog : Window
             lines.Add($"Editable: {summary.EditableCount}; preserved read-only: {summary.OpaqueCount}; Execute C#: {summary.CSharpCount}");
             lines.Add($"External references: {summary.ExternalReferenceCount}; absolute paths: {summary.AbsolutePathCount}");
             lines.Add(string.Empty);
-            NameText.Text = summary.Name;
-            AuthorText.Text = summary.Author;
-            IdText.Text = SuggestId(summary.Name);
+            if (!analysisDefaultsApplied)
+            {
+                ApplySuggestedValues(summary.Name, resetManualState: true);
+                AuthorText.Text = summary.Author;
+                analysisDefaultsApplied = true;
+            }
             ProfileCombo.SelectedItem = FoundryStreamerBotProfiles.Supported.Contains(summary.SuggestedProfile) ? summary.SuggestedProfile : FoundryStreamerBotProfiles.Stable107;
-            var parent = Path.GetDirectoryName(DestinationText.Text);
-            if (!string.IsNullOrWhiteSpace(parent)) DestinationText.Text = Path.Combine(parent, SafeFolder(summary.Name));
         }
         lines.AddRange(analysis.Findings.Select(item => $"{item.Severity.ToString().ToUpperInvariant()} {item.Code} {item.Path}: {item.Message}"));
         AnalysisText.Text = string.Join(Environment.NewLine, lines);
@@ -73,7 +155,72 @@ public partial class StreamerBotImportDialog : Window
     private void BrowseDestination_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFolderDialog { Multiselect = false, Title = "Choose the parent folder for the imported project" };
-        if (dialog.ShowDialog(this) == true) DestinationText.Text = Path.Combine(dialog.FolderName, SafeFolder(NameText.Text));
+        if (dialog.ShowDialog(this) == true)
+        {
+            destinationParent = dialog.FolderName;
+            updatingSuggestions = true;
+            DestinationText.Text = StreamerBotImportNamingService.Suggest(NameText.Text, destinationParent).DestinationFolder;
+            updatingSuggestions = false;
+            destinationManuallyEdited = false;
+        }
+    }
+
+    private void NameText_Changed(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        if (updatingSuggestions) return;
+        UpdateDerivedSuggestions();
+    }
+
+    private void IdText_Changed(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        if (!updatingSuggestions) idManuallyEdited = true;
+    }
+
+    private void DestinationText_Changed(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        if (!updatingSuggestions)
+        {
+            destinationManuallyEdited = true;
+            if (Path.GetDirectoryName(DestinationText.Text) is { Length: > 0 } parent) destinationParent = parent;
+        }
+    }
+
+    private void ResetId_Click(object sender, RoutedEventArgs e)
+    {
+        idManuallyEdited = false;
+        UpdateDerivedSuggestions();
+    }
+
+    private void ResetDestination_Click(object sender, RoutedEventArgs e)
+    {
+        destinationManuallyEdited = false;
+        updatingSuggestions = true;
+        DestinationText.Text = StreamerBotImportNamingService.Suggest(NameText.Text, destinationParent).DestinationFolder;
+        updatingSuggestions = false;
+    }
+
+    private void ApplySuggestedValues(string name, bool resetManualState)
+    {
+        if (resetManualState)
+        {
+            idManuallyEdited = false;
+            destinationManuallyEdited = false;
+        }
+        updatingSuggestions = true;
+        NameText.Text = name;
+        var suggestion = StreamerBotImportNamingService.Suggest(name, destinationParent);
+        if (!idManuallyEdited) IdText.Text = suggestion.PackageId;
+        if (!destinationManuallyEdited) DestinationText.Text = suggestion.DestinationFolder;
+        updatingSuggestions = false;
+    }
+
+    private void UpdateDerivedSuggestions()
+    {
+        updatingSuggestions = true;
+        var suggestion = StreamerBotImportNamingService.Suggest(NameText.Text, destinationParent);
+        if (!idManuallyEdited) IdText.Text = suggestion.PackageId;
+        if (!destinationManuallyEdited) DestinationText.Text = suggestion.DestinationFolder;
+        updatingSuggestions = false;
     }
 
     private async void Create_Click(object sender, RoutedEventArgs e)
@@ -95,16 +242,4 @@ public partial class StreamerBotImportDialog : Window
         DialogResult = true;
     }
 
-    private static string SafeFolder(string value)
-    {
-        var result = string.Concat(value.Where(char.IsLetterOrDigit));
-        return result.Length == 0 ? "ImportedExtension" : result;
-    }
-
-    private static string SuggestId(string value)
-    {
-        var slug = string.Join('-', value.ToLowerInvariant().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
-            .Select(word => new string(word.Where(char.IsLetterOrDigit).ToArray())).Where(word => word.Length > 0));
-        return $"com.example.{(slug.Length == 0 ? "imported-extension" : slug)}";
-    }
 }

@@ -10,6 +10,82 @@ namespace CreatorsForge.Foundry.Build.Tests;
 public sealed class StreamerBotImportServiceTests
 {
     [Theory]
+    [InlineData("export.sb")]
+    [InlineData("export.fc")]
+    [InlineData("export.txt")]
+    public async Task ImportFileReaderAcceptsAnyExtensionByContent(string fileName)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "CreatorsForge.ImportFileTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var path = Path.Combine(root, fileName);
+            var expected = StreamerBotEnvelopeCodec.Encode(CreatePayload());
+            await File.WriteAllTextAsync(path, expected, new UTF8Encoding(false));
+
+            Assert.Equal(expected, await StreamerBotImportFileReader.ReadAsync(path));
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task ImportFileReaderRejectsShortcutsAndInvalidUtf8()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "CreatorsForge.ImportFileTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var shortcut = Path.Combine(root, "export.lnk");
+            var invalid = Path.Combine(root, "export.sb");
+            await File.WriteAllTextAsync(shortcut, "not-a-shortcut-but-still-rejected");
+            await File.WriteAllBytesAsync(invalid, [0xff, 0xfe, 0xfd]);
+
+            await Assert.ThrowsAsync<InvalidDataException>(() => StreamerBotImportFileReader.ReadAsync(shortcut));
+            await Assert.ThrowsAsync<DecoderFallbackException>(() => StreamerBotImportFileReader.ReadAsync(invalid));
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void NamingSuggestionsTrackProjectName()
+    {
+        var suggestion = StreamerBotImportNamingService.Suggest("Bot Eliminator", @"D:\Documents\Creators Forge Foundry");
+
+        Assert.Equal("com.example.bot-eliminator", suggestion.PackageId);
+        Assert.Equal(@"D:\Documents\Creators Forge Foundry\BotEliminator", suggestion.DestinationFolder);
+    }
+
+    [Fact]
+    public void ImportedCSharpPathsReceiveFriendlyDisplayOnlyLabels()
+    {
+        var definition = StreamerBotStableV23AdapterTests.CreateDefinition();
+        definition = definition with
+        {
+            Actions = [definition.Actions[0] with
+            {
+                Name = "Welcome viewers",
+                SubActions =
+                [
+                    definition.Actions[0].SubActions[0],
+                    new("code-a", "executeCSharp", true, null, null, false,
+                        "streamerbot/code/action-wire-id/sub-wire-id.cs"),
+                ],
+            }],
+        };
+
+        var labels = StreamerBotProjectTreeLabelService.Create(definition);
+
+        Assert.Equal("Welcome viewers", labels["streamerbot/code/action-wire-id"]);
+        Assert.Equal("02 - Execute C# Code.cs", labels["streamerbot/code/action-wire-id/sub-wire-id.cs"]);
+    }
+
+    [Theory]
     [InlineData(23)]
     [InlineData(24)]
     public async Task VerifiedPayloadCreatesPackageOnlyProjectAndReexportsWithoutExecutingCode(int version)
