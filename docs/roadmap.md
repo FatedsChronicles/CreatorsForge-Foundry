@@ -679,3 +679,31 @@ invent native sub-action type numbers: wider native action/trigger catalogues,
 resource binding, and native-to-C# conversions remain later Phase 25 work.
 Automated adapter, migration, diagnostic, ordering, golden-package, desktop,
 and complete regression coverage form the Phase 25B implementation gate.
+
+Product-owner manual acceptance passed on 2026-08-11. The expanded action
+toggles, weighted ordering, command and queue settings, duplication and move
+operations, shared validation, deterministic output, and retained v23/v24
+round trips behaved as expected. PR #21 merged the accepted implementation as
+commit `39bf48b`. **Phase 25B is complete.**
+
+### Phase 25C - Schema-driven operation catalogues and palette
+
+Phase 25C establishes the extensible catalogue boundary for Streamer.bot
+triggers and native sub-actions. A versioned JSON catalogue describes stable
+Foundry operation IDs, category and display metadata, verified Streamer.bot
+native type mappings, supported profiles, output capabilities, reusable typed
+fields, arguments consumed and produced, and documentation provenance.
+
+The first reviewed catalogue is intentionally small: Command trigger type 401,
+Test trigger type 702, and Set Argument sub-action type 123. These are the only
+general-purpose mappings currently proven by retained payload-v23 and
+payload-v24 captures. Foundry must preserve other imported types read-only and
+must not expose guessed native mappings.
+
+The Streamer.bot Designer adds a searchable, categorized, profile-filtered
+palette. Selecting an operation generates its parameter form from catalogue
+field definitions and shows native output mode, compatibility, and known
+runtime arguments. The central validation pipeline checks catalogue identity,
+profile availability, and native type integrity before export. Additional
+catalogue entries can be added later only with representative capture evidence,
+adapter fixtures, and exact-host acceptance.

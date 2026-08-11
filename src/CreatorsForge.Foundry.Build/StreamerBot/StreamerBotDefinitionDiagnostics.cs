@@ -51,6 +51,8 @@ public static class StreamerBotFeatureCompatibilityRegistry
 public static class StreamerBotDefinitionDiagnostics
 {
     private const double MaximumWeight = 1_000_000;
+    private static readonly StreamerBotOperationCatalogueService OperationCatalogue =
+        StreamerBotOperationCatalogueService.LoadEmbedded();
 
     public static IReadOnlyList<StreamerBotDefinitionDiagnostic> Analyze(
         StreamerBotDefinition definition,
@@ -60,9 +62,59 @@ public static class StreamerBotDefinitionDiagnostics
         var diagnostics = new List<StreamerBotDefinitionDiagnostic>();
         var compatibility = StreamerBotFeatureCompatibilityRegistry.Resolve(profile);
         AnalyzeActions(definition, compatibility, diagnostics);
+        AnalyzeCatalogueMappings(definition, profile, diagnostics);
         AnalyzeCommands(definition, diagnostics);
         AnalyzeQueues(definition, diagnostics);
         return diagnostics;
+    }
+
+    private static void AnalyzeCatalogueMappings(
+        StreamerBotDefinition definition,
+        string? profile,
+        List<StreamerBotDefinitionDiagnostic> diagnostics)
+    {
+        for (var actionIndex = 0; actionIndex < definition.Actions.Count; actionIndex++)
+        {
+            var action = definition.Actions[actionIndex];
+            for (var index = 0; index < action.Triggers.Count; index++)
+                AnalyzeOperation("trigger", action.Triggers[index].Kind, action.Triggers[index].SourceType,
+                    action.Triggers[index].ReadOnly, profile, $"$.actions[{actionIndex}].triggers[{index}]",
+                    action.Triggers[index].Id, diagnostics);
+            for (var index = 0; index < action.SubActions.Count; index++)
+            {
+                var item = action.SubActions[index];
+                if (item.Kind is "executeBridge" or "executeCSharp") continue;
+                AnalyzeOperation("subAction", item.Kind, item.SourceType, item.ReadOnly, profile,
+                    $"$.actions[{actionIndex}].subActions[{index}]", item.Id, diagnostics);
+            }
+        }
+    }
+
+    private static void AnalyzeOperation(
+        string entityKind,
+        string modelKind,
+        int? sourceType,
+        bool readOnly,
+        string? profile,
+        string path,
+        string entityId,
+        List<StreamerBotDefinitionDiagnostic> diagnostics)
+    {
+        if (readOnly) return;
+        var operation = OperationCatalogue.Find(entityKind, modelKind);
+        if (operation is null)
+        {
+            diagnostics.Add(new("SBD1010", StreamerBotDefinitionDiagnosticSeverity.Error,
+                $"Editable {entityKind} kind '{modelKind}' has no verified operation-catalogue mapping.", path, entityId));
+            return;
+        }
+        if (profile is not null && !operation.Profiles.Contains(profile, StringComparer.Ordinal))
+            diagnostics.Add(new("SBD1010", StreamerBotDefinitionDiagnosticSeverity.Error,
+                $"'{operation.Name}' is not verified for profile '{profile}'.", path, entityId));
+        if (sourceType is not null && sourceType != operation.NativeType)
+            diagnostics.Add(new("SBD1011", StreamerBotDefinitionDiagnosticSeverity.Error,
+                $"'{operation.Name}' declares native type {sourceType}, but catalogue {OperationCatalogue.Catalogue.Revision} requires {operation.NativeType}.",
+                path, entityId));
     }
 
     private static void AnalyzeActions(

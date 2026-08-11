@@ -81,7 +81,7 @@
             <GroupBox Header="Triggers">
               <DockPanel>
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
-                  <Button Content="Add" Click="AddTrigger_Click" />
+                  <Button Content="Add from catalogue..." Click="AddTrigger_Click" />
                   <Button Content="Remove" Click="RemoveTrigger_Click" />
                 </StackPanel>
                 <DataGrid
@@ -111,6 +111,7 @@
                     <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" />
                     <DataGridTextColumn Width="*" Header="Command ID" Binding="{Binding CommandId}" />
                     <DataGridTextColumn Header="Source type" IsReadOnly="True" Binding="{Binding SourceType}" />
+                    <DataGridTextColumn Width="2*" Header="Runtime arguments" IsReadOnly="True" Binding="{Binding RuntimeArguments}" />
                     <DataGridTextColumn Header="Mode" IsReadOnly="True" Binding="{Binding Mode}" />
                   </DataGrid.Columns>
                 </DataGrid>
@@ -119,7 +120,7 @@
             <GroupBox Grid.Column="2" Header="Sub-actions">
               <DockPanel>
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
-                  <Button Content="Add" Click="AddSubAction_Click" />
+                  <Button Content="Add from catalogue..." Click="AddSubAction_Click" />
                   <Button Content="Remove" Click="RemoveSubAction_Click" />
                   <Button Content="Duplicate" Click="DuplicateSubAction_Click" />
                   <Button Content="Move up" Click="MoveSubActionUp_Click" />

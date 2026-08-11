@@ -7,6 +7,8 @@ namespace CreatorsForge.Foundry.App;
 
 public partial class StreamerBotDesignerDialog : Window
 {
+    private static readonly StreamerBotOperationCatalogueService OperationCatalogue =
+        StreamerBotOperationCatalogueService.LoadEmbedded();
     public static IReadOnlyList<string> TriggerKinds { get; } = ["command", "test", "opaque"];
     public static IReadOnlyList<string> SubActionKinds { get; } =
         ["setArgument", "executeBridge", "executeCSharp", "opaque"];
@@ -178,11 +180,22 @@ public partial class StreamerBotDesignerDialog : Window
             return;
         }
 
+        var palette = new StreamerBotOperationPaletteDialog(
+            "trigger",
+            profile,
+            commands.Select(item => new OperationReferenceChoice(item.Id, item.Name)).ToArray())
+        {
+            Owner = this,
+        };
+        if (palette.ShowDialog() != true || palette.Selection is not { } selection) return;
         var item = new TriggerRow
         {
             Id = UniqueId("trigger", action.Triggers.Select(value => value.Id)),
-            Kind = "test",
+            Kind = selection.Operation.ModelKind,
             Enabled = true,
+            CommandId = selection.Values.GetValueOrDefault("commandId"),
+            SourceType = selection.Operation.NativeType,
+            RuntimeArguments = string.Join(", ", selection.Operation.ArgumentsProduced),
         };
         action.Triggers.Add(item);
         TriggersGrid.SelectedItem = item;
@@ -203,13 +216,22 @@ public partial class StreamerBotDesignerDialog : Window
             return;
         }
 
+        var palette = new StreamerBotOperationPaletteDialog("subAction", profile)
+        {
+            Owner = this,
+        };
+        if (palette.ShowDialog() != true || palette.Selection is not { } selection) return;
         var item = new SubActionRow
         {
             Id = UniqueId(
                 "subAction",
                 action.SubActions.Select(value => value.Id)),
-            Kind = "executeBridge",
+            Kind = selection.Operation.ModelKind,
             Enabled = true,
+            VariableName = selection.Values.GetValueOrDefault("variableName"),
+            Value = selection.Values.GetValueOrDefault("value"),
+            AutoType = bool.TryParse(selection.Values.GetValueOrDefault("autoType"), out var autoType) && autoType,
+            SourceType = selection.Operation.NativeType,
         };
         action.SubActions.Add(item);
         SubActionsGrid.SelectedItem = item;
@@ -514,6 +536,7 @@ public partial class StreamerBotDesignerDialog : Window
                     Enabled = item.Enabled,
                     CommandId = item.CommandId,
                     SourceType = item.SourceType,
+                    RuntimeArguments = KnownArguments("trigger", item.Kind),
                     SourceId = item.SourceId,
                     ReadOnly = item.ReadOnly,
                     PreservationKey = item.PreservationKey,
@@ -626,6 +649,7 @@ public partial class StreamerBotDesignerDialog : Window
         public bool Enabled { get; set; }
         public string? CommandId { get; set; }
         public int? SourceType { get; set; }
+        public string RuntimeArguments { get; set; } = string.Empty;
         public string? SourceId { get; set; }
         public bool ReadOnly { get; set; }
         public string? PreservationKey { get; set; }
@@ -633,6 +657,7 @@ public partial class StreamerBotDesignerDialog : Window
         public TriggerRow Duplicate(string id) => new()
         {
             Id = id, Kind = Kind, Enabled = Enabled, CommandId = CommandId, SourceType = SourceType,
+            RuntimeArguments = RuntimeArguments,
         };
     }
 
@@ -664,4 +689,9 @@ public partial class StreamerBotDesignerDialog : Window
             References = References?.ToArray(), Weight = Weight,
         };
     }
+
+    private static string KnownArguments(string entityKind, string modelKind) =>
+        OperationCatalogue.Find(entityKind, modelKind) is { } operation
+            ? string.Join(", ", operation.ArgumentsProduced)
+            : string.Empty;
 }

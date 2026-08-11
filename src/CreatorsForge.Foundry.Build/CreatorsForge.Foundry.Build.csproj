@@ -12,6 +12,7 @@
     <EmbeddedResource
         Include="..\CreatorsForge.Foundry.Editor\Catalogs\streamerbot-cph-v1.json"
         Link="Catalogs\streamerbot-cph-v1.json" />
+    <EmbeddedResource Include="StreamerBot\Catalogues\streamerbot-operations-v1.json" />
   </ItemGroup>
 
 </Project>

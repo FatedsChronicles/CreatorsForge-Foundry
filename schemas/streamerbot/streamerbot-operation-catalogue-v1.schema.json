@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/streamerbot/operation-catalogue/v1",
+  "title": "Creators Forge Foundry Streamer.bot operation catalogue v1",
+  "type": "object",
+  "required": ["schemaVersion", "revision", "operations"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "revision": { "type": "string", "minLength": 1 },
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "entityKind", "modelKind", "category", "name", "description", "nativeType", "outputMode", "profiles", "fields", "argumentsConsumed", "argumentsProduced"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9.-]+$" },
+          "entityKind": { "enum": ["trigger", "subAction"] },
+          "modelKind": { "type": "string", "minLength": 1 },
+          "category": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "nativeType": { "type": "integer", "minimum": 1 },
+          "outputMode": { "enum": ["native", "csharp", "native-or-csharp"] },
+          "profiles": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+          "fields": { "type": "array", "items": { "$ref": "#/$defs/field" } },
+          "argumentsConsumed": { "type": "array", "items": { "type": "string" } },
+          "argumentsProduced": { "type": "array", "items": { "type": "string" } },
+          "documentation": { "type": ["string", "null"] }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "$defs": {
+    "field": {
+      "type": "object",
+      "required": ["id", "label", "type", "required"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9]*$" },
+        "label": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["text", "multiline", "boolean", "commandReference", "variableExpression"] },
+        "required": { "type": "boolean" },
+        "defaultValue": { "type": ["string", "null"] },
+        "help": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
