@@ -229,7 +229,7 @@ public sealed class StreamerBotImportServiceTests
         var first = StreamerBotDefinitionLoader.Load(json);
         var second = StreamerBotDefinitionLoader.Load(json);
         Assert.True(first.IsSuccess);
-        Assert.Equal(4, first.Definition!.SchemaVersion);
+        Assert.Equal(5, first.Definition!.SchemaVersion);
         Assert.Equal(StreamerBotDefinitionLoader.Serialize(first.Definition), StreamerBotDefinitionLoader.Serialize(second.Definition!));
     }
 
@@ -277,6 +277,53 @@ public sealed class StreamerBotImportServiceTests
             Assert.Equal([1d, 2d], wire["subActions"]!.AsArray().Select(item => item!["weight"]!.GetValue<double>()));
             Assert.Equal(definition.Actions[0].SubActions.Select(item => item.SourceId),
                 wire["subActions"]!.AsArray().Select(item => item!["id"]!.GetValue<string>()));
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task PreservedRoundTripConvertsVerifiedSetArgumentToEditableCSharp()
+    {
+        var payload = CreatePayload();
+        var analysis = StreamerBotImportService.Analyze(StreamerBotEnvelopeCodec.Encode(payload));
+        var definition = analysis.Definition!;
+        var action = definition.Actions[0];
+        var native = action.SubActions[0] with { AutoType = false, Value = "quote\" and slash\\" };
+        var preview = StreamerBotCSharpAuthoringService.PreviewSetArgumentConversion(native, action.Id);
+        definition = definition with
+        {
+            Actions = [action with
+            {
+                SubActions = [preview.ConvertedSubAction, .. action.SubActions.Skip(1)],
+            }],
+        };
+        var root = Path.Combine(Path.GetTempPath(), "CreatorsForge.ImportTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(root, "streamerbot"));
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(root, "streamerbot", "import-preservation.json"),
+                new JsonObject { ["payload"] = payload.DeepClone() }.ToJsonString());
+            foreach (var source in analysis.CSharpSources)
+            {
+                var path = Path.Combine(root, source.Key.Replace('/', Path.DirectorySeparatorChar));
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                await File.WriteAllTextAsync(path, source.Value);
+            }
+            StreamerBotCSharpAuthoringService.WriteNewSource(root, preview.RelativePath, preview.Source);
+
+            var artifact = await StreamerBotPreservedPayloadAdapter.EncodeAsync(
+                definition, root, "com.creatorsforge.fixture", "Imported Fixture", "1.1.0-beta.1");
+            var wire = StreamerBotEnvelopeCodec.Decode(artifact.ImportCode)
+                ["data"]!["actions"]![0]!["subActions"]![0]!.AsObject();
+
+            Assert.Equal(99999, wire["type"]!.GetValue<int>());
+            Assert.False(wire.ContainsKey("variableName"));
+            Assert.False(wire.ContainsKey("autoType"));
+            Assert.Equal(preview.Source, Encoding.UTF8.GetString(
+                Convert.FromBase64String(wire["byteCode"]!.GetValue<string>())));
         }
         finally
         {

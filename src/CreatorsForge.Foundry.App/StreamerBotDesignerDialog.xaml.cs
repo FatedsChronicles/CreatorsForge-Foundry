@@ -20,6 +20,7 @@ public partial class StreamerBotDesignerDialog : Window
     private readonly ObservableCollection<CommandRow> commands = [];
     private readonly ObservableCollection<QueueRow> queues = [];
     private readonly ObservableCollection<ResourceRow> resources = [];
+    private readonly HashSet<string> createdSourcePaths = new(StringComparer.OrdinalIgnoreCase);
     private readonly string? profile;
     private StreamerBotImportProvenance? import;
     private string minimumVersion = "1.0.0-alpha.1";
@@ -29,6 +30,8 @@ public partial class StreamerBotDesignerDialog : Window
     public string? RequestedSourcePath { get; private set; }
     internal bool ResourcesReadyForSmokeTest =>
         ResourcesGrid is not null && ResourceTypes.Count >= 13 && PortabilityOptions.Count == 4;
+    internal bool CSharpAuthoringReadyForSmokeTest =>
+        AddExecuteCSharpButton is not null && ConvertToCSharpButton is not null;
 
     public StreamerBotDesignerDialog(string definitionPath, string? profile = null)
     {
@@ -87,6 +90,7 @@ public partial class StreamerBotDesignerDialog : Window
         ActionsGrid.ItemsSource = actions;
         ResourcesGrid.ItemsSource = resources;
         ActionsGrid.SelectedIndex = actions.Count > 0 ? 0 : -1;
+        RefreshGeneratedSourceStates();
         StatusText.Text = Path.GetFileName(definitionPath);
         RefreshValidation();
     }
@@ -265,6 +269,68 @@ public partial class StreamerBotDesignerDialog : Window
         SubActionsGrid.SelectedItem = item;
     }
 
+    private void AddExecuteCSharp_Click(object sender, RoutedEventArgs e)
+    {
+        if (ActionsGrid.SelectedItem is not ActionRow action || action.ReadOnly) return;
+        var id = UniqueId("subAction", action.SubActions.Select(value => value.Id));
+        try
+        {
+            var created = StreamerBotCSharpAuthoringService.CreateManual(id, action.Id,
+                weight: action.RandomAction ? 1 : 0);
+            StreamerBotCSharpAuthoringService.WriteNewSource(
+                ProjectRoot, created.SubAction.SourcePath!, created.Source);
+            createdSourcePaths.Add(StreamerBotCSharpAuthoringService.ResolveConfinedSourcePath(
+                ProjectRoot, created.SubAction.SourcePath!));
+            var item = SubActionRow.FromDefinition(created.SubAction, "Manual");
+            action.SubActions.Add(item);
+            SubActionsGrid.SelectedItem = item;
+            StatusText.Text = $"Created editable Execute C# source at {item.SourcePath}.";
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            StatusText.Text = $"Execute C# source could not be created: {exception.Message}";
+        }
+    }
+
+    private void ConvertSubActionToCSharp_Click(object sender, RoutedEventArgs e)
+    {
+        CommitGridEdits();
+        if (ActionsGrid.SelectedItem is not ActionRow action ||
+            SubActionsGrid.SelectedItem is not SubActionRow selected)
+        {
+            StatusText.Text = "Select an editable Set Argument sub-action first.";
+            return;
+        }
+
+        try
+        {
+            var preview = StreamerBotCSharpAuthoringService.PreviewSetArgumentConversion(
+                selected.ToDefinition(), action.Id);
+            var dialog = new StreamerBotCSharpConversionDialog(preview.Summary, preview.Source)
+            {
+                Owner = this,
+            };
+            if (dialog.ShowDialog() != true) return;
+            StreamerBotCSharpAuthoringService.WriteNewSource(ProjectRoot, preview.RelativePath, preview.Source);
+            createdSourcePaths.Add(StreamerBotCSharpAuthoringService.ResolveConfinedSourcePath(
+                ProjectRoot, preview.RelativePath));
+            selected.Apply(preview.ConvertedSubAction, "Generated");
+            SubActionsGrid.Items.Refresh();
+            RefreshValidation();
+            StatusText.Text = $"Converted to editable Execute C# at {preview.RelativePath}.";
+        }
+        catch (InvalidOperationException exception)
+        {
+            MessageBox.Show(this, exception.Message, "Conversion unavailable",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            StatusText.Text = exception.Message;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            StatusText.Text = $"Conversion did not change the sub-action: {exception.Message}";
+        }
+    }
+
     private void RemoveSubAction_Click(object sender, RoutedEventArgs e)
     {
         if (ActionsGrid.SelectedItem is ActionRow action)
@@ -304,6 +370,7 @@ public partial class StreamerBotDesignerDialog : Window
     private void Save_Click(object sender, RoutedEventArgs e)
     {
         CommitGridEdits();
+        RefreshGeneratedSourceStates();
         var definition = CreateDefinition();
         var errors = StreamerBotDefinitionLoader.Validate(definition);
         RefreshValidation(definition);
@@ -455,7 +522,11 @@ public partial class StreamerBotDesignerDialog : Window
             throw new InvalidDataException("The Execute C# source path leaves the project.");
         Directory.CreateDirectory(Path.GetDirectoryName(copyPath)!);
         File.Copy(sourcePath, copyPath, overwrite: false);
+        createdSourcePaths.Add(copyPath);
         copy.SourcePath = relativeCopyPath;
+        copy.Generation = null;
+        copy.DetachedFromGenerator = false;
+        copy.CSharpState = "Manual";
     }
 
     private void OpenCSharpSource_Click(object sender, RoutedEventArgs e)
@@ -463,7 +534,8 @@ public partial class StreamerBotDesignerDialog : Window
         if (SubActionsGrid.SelectedItem is SubActionRow { Kind: "executeCSharp", SourcePath: { Length: > 0 } sourcePath })
         {
             RequestedSourcePath = sourcePath;
-            DialogResult = true;
+            Save_Click(sender, e);
+            if (DialogResult != true) RequestedSourcePath = null;
         }
     }
 
@@ -490,6 +562,48 @@ public partial class StreamerBotDesignerDialog : Window
     private void Grid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
     {
         if (e.Row.Item is IDesignerRow { ReadOnly: true }) e.Cancel = true;
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        if (DialogResult != true)
+        {
+            foreach (var path in createdSourcePaths)
+            {
+                try { if (File.Exists(path)) File.Delete(path); }
+                catch (IOException) { }
+                catch (UnauthorizedAccessException) { }
+            }
+        }
+        base.OnClosed(e);
+    }
+
+    private string ProjectRoot => Directory.GetParent(Path.GetDirectoryName(definitionPath)!)!.FullName;
+
+    private void RefreshGeneratedSourceStates()
+    {
+        foreach (var item in actions.SelectMany(action => action.SubActions)
+                     .Where(item => item.Kind == "executeCSharp"))
+        {
+            string? source = null;
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(item.SourcePath))
+                {
+                    var path = StreamerBotCSharpAuthoringService.ResolveConfinedSourcePath(ProjectRoot, item.SourcePath);
+                    if (File.Exists(path)) source = File.ReadAllText(path);
+                }
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
+            {
+                item.CSharpState = "Missing";
+                continue;
+            }
+            var state = StreamerBotCSharpAuthoringService.GetState(item.ToDefinition(), source);
+            item.DetachedFromGenerator = state == StreamerBotGeneratedSourceState.Detached;
+            item.CSharpState = state.ToString();
+        }
+        SubActionsGrid.Items.Refresh();
     }
 
     private interface IDesignerRow
@@ -629,22 +743,10 @@ public partial class StreamerBotDesignerDialog : Window
 
             foreach (var item in value.SubActions)
             {
-                SubActions.Add(new()
-                {
-                    Id = item.Id,
-                    Kind = item.Kind,
-                    Enabled = item.Enabled,
-                    VariableName = item.VariableName,
-                    Value = item.Value,
-                    AutoType = item.AutoType,
-                    SourcePath = item.SourcePath,
-                    SourceType = item.SourceType,
-                    SourceId = item.SourceId,
-                    ReadOnly = item.ReadOnly,
-                    PreservationKey = item.PreservationKey,
-                    References = item.References,
-                    Weight = item.Weight,
-                });
+                SubActions.Add(SubActionRow.FromDefinition(item,
+                    item.Kind == "executeCSharp"
+                        ? item.Generation is null ? "Manual/imported" : item.DetachedFromGenerator ? "Detached" : "Generated"
+                        : string.Empty));
             }
         }
 
@@ -700,22 +802,7 @@ public partial class StreamerBotDesignerDialog : Window
                 item.SourceId,
                 item.ReadOnly,
                 item.PreservationKey)).ToArray(),
-            SubActions.Select(item => new StreamerBotSubAction(
-                item.Id.Trim(),
-                item.Kind,
-                item.Enabled,
-                string.IsNullOrWhiteSpace(item.VariableName)
-                    ? null
-                    : item.VariableName.Trim(),
-                item.Value,
-                item.AutoType,
-                item.SourcePath,
-                item.SourceType,
-                item.SourceId,
-                item.ReadOnly,
-                item.PreservationKey,
-                item.References,
-                item.Weight)).ToArray(),
+            SubActions.Select(item => item.ToDefinition()).ToArray(),
             SourceId,
             ReadOnly,
             PreservationKey,
@@ -760,17 +847,47 @@ public partial class StreamerBotDesignerDialog : Window
         public string? PreservationKey { get; set; }
         public IReadOnlyList<string>? References { get; set; }
         public double Weight { get; set; }
+        public StreamerBotCSharpGeneration? Generation { get; set; }
+        public bool DetachedFromGenerator { get; set; }
+        public string CSharpState { get; set; } = string.Empty;
         public string ReferenceList
         {
             get => string.Join("; ", References ?? []);
             set => References = value.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         }
         public string Mode => ReadOnly ? "Read-only" : "Editable";
+        public StreamerBotSubAction ToDefinition() => new(
+            Id.Trim(), Kind, Enabled,
+            string.IsNullOrWhiteSpace(VariableName) ? null : VariableName.Trim(),
+            Value, AutoType, SourcePath, SourceType, SourceId, ReadOnly,
+            PreservationKey, References, Weight, Generation, DetachedFromGenerator);
+
+        public static SubActionRow FromDefinition(StreamerBotSubAction value, string cSharpState) => new()
+        {
+            Id = value.Id, Kind = value.Kind, Enabled = value.Enabled,
+            VariableName = value.VariableName, Value = value.Value, AutoType = value.AutoType,
+            SourcePath = value.SourcePath, SourceType = value.SourceType, SourceId = value.SourceId,
+            ReadOnly = value.ReadOnly, PreservationKey = value.PreservationKey,
+            References = value.References, Weight = value.Weight, Generation = value.Generation,
+            DetachedFromGenerator = value.DetachedFromGenerator, CSharpState = cSharpState,
+        };
+
+        public void Apply(StreamerBotSubAction value, string cSharpState)
+        {
+            Id = value.Id; Kind = value.Kind; Enabled = value.Enabled;
+            VariableName = value.VariableName; Value = value.Value; AutoType = value.AutoType;
+            SourcePath = value.SourcePath; SourceType = value.SourceType; SourceId = value.SourceId;
+            ReadOnly = value.ReadOnly; PreservationKey = value.PreservationKey;
+            References = value.References; Weight = value.Weight; Generation = value.Generation;
+            DetachedFromGenerator = value.DetachedFromGenerator; CSharpState = cSharpState;
+        }
+
         public SubActionRow Duplicate(string id) => new()
         {
             Id = id, Kind = Kind, Enabled = Enabled, VariableName = VariableName, Value = Value,
             AutoType = AutoType, SourcePath = SourcePath, SourceType = SourceType,
             References = References?.ToArray(), Weight = Weight,
+            CSharpState = Kind == "executeCSharp" ? "Manual" : string.Empty,
         };
     }
 

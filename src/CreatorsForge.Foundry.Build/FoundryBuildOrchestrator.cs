@@ -407,7 +407,8 @@ public sealed class FoundryBuildOrchestrator
                         manifest.Id,
                         manifest.Name,
                         manifest.Version,
-                        bridgeSource);
+                        bridgeSource,
+                        projectRoot);
                 }
                 await File.WriteAllTextAsync(
                     streamerBotPackagePath,

@@ -5,7 +5,7 @@ namespace CreatorsForge.Foundry.Build.StreamerBot;
 
 public sealed record StreamerBotDefinition
 {
-    public const int CurrentSchemaVersion = 4;
+    public const int CurrentSchemaVersion = 5;
 
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
     public StreamerBotMetadata Metadata { get; init; } = new();
@@ -101,7 +101,15 @@ public sealed record StreamerBotSubAction(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool ReadOnly = false,
     string? PreservationKey = null,
     IReadOnlyList<string>? References = null,
-    double Weight = 0);
+    double Weight = 0,
+    StreamerBotCSharpGeneration? Generation = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool DetachedFromGenerator = false);
+
+public sealed record StreamerBotCSharpGeneration(
+    string Revision,
+    string SourceKind,
+    string SourceEntityId,
+    string SourceSha256);
 
 public sealed record StreamerBotResourceDefinition(
     string Id,
@@ -179,7 +187,7 @@ public static class StreamerBotDefinitionLoader
             return new(null, ["Definition JSON is empty."]);
         }
 
-        if (value.SchemaVersion is 1 or 2 or 3)
+        if (value.SchemaVersion is 1 or 2 or 3 or 4)
         {
             value = value with { SchemaVersion = StreamerBotDefinition.CurrentSchemaVersion };
         }
@@ -194,7 +202,7 @@ public static class StreamerBotDefinitionLoader
     public static string[] Validate(StreamerBotDefinition value)
     {
         var errors = new List<string>();
-        if (value.SchemaVersion is not (1 or 2 or 3 or StreamerBotDefinition.CurrentSchemaVersion))
+        if (value.SchemaVersion is not (1 or 2 or 3 or 4 or StreamerBotDefinition.CurrentSchemaVersion))
         {
             errors.Add($"Schema {value.SchemaVersion} is unsupported.");
         }
@@ -294,6 +302,16 @@ public static class StreamerBotDefinitionLoader
                          !IsSafeCSharpPath(subAction.SourcePath))
                 {
                     errors.Add($"Execute C# '{subAction.Id}' requires a safe project-relative .cs sourcePath.");
+                }
+                else if (subAction.Generation is { } generation &&
+                         (subAction.Kind != "executeCSharp" ||
+                          generation.Revision != StreamerBotCSharpAuthoringService.SetArgumentRevision ||
+                          generation.SourceKind != "setArgument" ||
+                          string.IsNullOrWhiteSpace(generation.SourceEntityId) ||
+                          generation.SourceSha256.Length != 64 ||
+                          generation.SourceSha256.Any(character => !char.IsAsciiHexDigit(character))))
+                {
+                    errors.Add($"Execute C# generation provenance for '{subAction.Id}' is invalid.");
                 }
                 else if (subAction.Kind == "opaque" &&
                          (!subAction.ReadOnly || string.IsNullOrWhiteSpace(subAction.PreservationKey)))

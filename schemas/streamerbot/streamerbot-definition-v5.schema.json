@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/streamerbot/definition/v5",
+  "title": "Creators Forge Foundry Streamer.bot definition v5",
+  "type": "object",
+  "required": ["schemaVersion", "metadata", "queues", "commands", "actions", "resources"],
+  "properties": {
+    "schemaVersion": { "const": 5 },
+    "metadata": { "$ref": "streamerbot-definition-v3.schema.json#/properties/metadata" },
+    "import": { "$ref": "streamerbot-definition-v3.schema.json#/properties/import" },
+    "queues": { "type": "array", "items": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/queue" } },
+    "commands": { "type": "array", "items": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/command" } },
+    "actions": { "type": "array", "items": { "$ref": "#/$defs/action" } },
+    "resources": { "type": "array", "items": { "$ref": "streamerbot-definition-v4.schema.json#/$defs/resource" } }
+  },
+  "$defs": {
+    "generation": {
+      "type": "object",
+      "required": ["revision", "sourceKind", "sourceEntityId", "sourceSha256"],
+      "properties": {
+        "revision": { "const": "set-argument-csharp-v1" },
+        "sourceKind": { "const": "setArgument" },
+        "sourceEntityId": { "type": "string", "minLength": 1 },
+        "sourceSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "additionalProperties": false
+    },
+    "subAction": {
+      "type": "object",
+      "required": ["id", "kind", "enabled", "variableName", "value", "autoType", "weight"],
+      "properties": {
+        "id": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/logicalId" },
+        "kind": { "enum": ["setArgument", "executeBridge", "executeCSharp", "opaque"] },
+        "enabled": { "type": "boolean" },
+        "variableName": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/nullableString" },
+        "value": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/nullableString" },
+        "autoType": { "type": "boolean" },
+        "weight": { "type": "number", "minimum": 0, "maximum": 1000000 },
+        "sourcePath": { "type": ["string", "null"] },
+        "sourceType": { "type": ["integer", "null"] },
+        "sourceId": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/nullableString" },
+        "readOnly": { "type": "boolean" },
+        "preservationKey": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/nullableString" },
+        "references": { "type": ["array", "null"], "items": { "type": "string" } },
+        "generation": { "oneOf": [{ "$ref": "#/$defs/generation" }, { "type": "null" }] },
+        "detachedFromGenerator": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "action": {
+      "type": "object",
+      "required": ["id", "name", "enabled", "queueId", "concurrent", "alwaysRun", "triggers", "subActions"],
+      "properties": {
+        "id": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/logicalId" },
+        "name": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/name" },
+        "enabled": { "type": "boolean" },
+        "queueId": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/nullableString" },
+        "concurrent": { "type": "boolean" },
+        "alwaysRun": { "type": "boolean" },
+        "group": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/nullableString" },
+        "description": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/nullableString" },
+        "randomAction": { "type": "boolean" },
+        "excludeFromPending": { "type": "boolean" },
+        "excludeFromHistory": { "type": "boolean" },
+        "triggers": { "type": "array", "items": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/trigger" } },
+        "subActions": { "type": "array", "items": { "$ref": "#/$defs/subAction" } },
+        "sourceId": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/nullableString" },
+        "readOnly": { "type": "boolean" },
+        "preservationKey": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/nullableString" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

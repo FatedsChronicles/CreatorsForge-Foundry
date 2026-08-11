@@ -771,3 +771,32 @@ wire format or alter preserved opaque content. Manual acceptance is defined in
 [streamerbot-resources-portability.md](streamerbot-resources-portability.md).
 The implementation gate passes a zero-warning Release build, all 323 automated
 tests, and all ten representative desktop smoke projects.
+
+Product-owner manual acceptance passed on 2026-08-11. PR #24 merged the
+accepted resource workspace, portability diagnostics, package report, and
+dark-theme follow-up as commit `6ae8981`. **Phase 25E is complete.**
+
+### Phase 25F - Execute C# authoring and verified native conversion
+
+Phase 25F makes Execute C# a first-class, source-controlled Streamer.bot
+sub-action. The Designer can create a confined manual C# source beneath
+`streamerbot/code/<action-id>/<subaction-id>.cs`, save the definition, and
+navigate directly into the existing Roslyn editor. These files remain text;
+Foundry never executes imported or authored C# during design, validation, or
+packaging, and they are not added to managed DLL build inputs.
+
+The first native-to-C# conversion is deliberately limited to the retained,
+verified Set Argument type 123 mapping. Foundry shows the complete inert source
+before conversion, emits deterministic escaped `CPH.SetArgument(...)` code,
+and records generator revision, source entity, and source hash in definition
+schema v5. Auto Type conversions are blocked until native coercion semantics
+are proven equivalent. Generated files are written once and never silently
+regenerated; later edits are labelled Detached and preserved as authoritative
+manual source.
+
+Both source-authored stable-v23 packages and imported preserved v23/v24
+packages deterministically re-embed the confined source as Execute C# type
+99999 while retaining IDs, order, enabled state, weights, references, and
+same-format provenance. Broader conversions require representative capture
+evidence and exact-host verification. Manual acceptance is defined in
+[streamerbot-csharp-authoring.md](streamerbot-csharp-authoring.md).

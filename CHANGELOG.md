@@ -6,6 +6,15 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 25F Streamer.bot definition schema v5 with deterministic migration and
+  Execute C# generation provenance, source hashes, and detached-edit state.
+- Manual Execute C# creation in the Streamer.bot Designer, confined source
+  paths, save-before-editor navigation, and cancellation cleanup.
+- Preview-before-conversion for the verified Set Argument native operation,
+  with deterministic C# escaping and an explicit safety block for unverified
+  Auto Type coercion.
+- Deterministic Execute C# embedding for source-authored stable-v23 and
+  preserved v23/v24 packages without adding source files to managed DLL inputs.
 - Phase 25E Streamer.bot definition schema v4 resource requirements for OBS
   items, accounts, local paths, URLs, integrations, and custom values, with
   deterministic migration from schemas v1-v3.
@@ -64,6 +73,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Security
 
+- Execute C# authoring and conversion operate on inert text only, enforce
+  project-confined `.cs` paths and a 1 MiB source limit, use create-new writes,
+  and never compile or execute code during design or export.
 - Import limits and validation for Base64, SBAE identity, GZip, strict UTF-8,
   JSON depth, decoded size, and entity count; credential-like values block
   project creation without being printed, while absolute machine paths block

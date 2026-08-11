@@ -826,7 +826,7 @@ public static class FoundryWorkspaceService
             StringComparison.Ordinal);
         var definition = new
         {
-            schemaVersion = 4,
+            schemaVersion = 5,
             metadata = new
             {
                 author,

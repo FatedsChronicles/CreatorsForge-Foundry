@@ -121,6 +121,8 @@
               <DockPanel>
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
                   <Button Content="Add from catalogue..." Click="AddSubAction_Click" />
+                  <Button x:Name="AddExecuteCSharpButton" Content="Add Execute C#..." Click="AddExecuteCSharp_Click" />
+                  <Button x:Name="ConvertToCSharpButton" Content="Convert to C#..." Click="ConvertSubActionToCSharp_Click" />
                   <Button Content="Remove" Click="RemoveSubAction_Click" />
                   <Button Content="Duplicate" Click="DuplicateSubAction_Click" />
                   <Button Content="Move up" Click="MoveSubActionUp_Click" />
@@ -158,6 +160,7 @@
                     <DataGridCheckBoxColumn Header="Auto type" Binding="{Binding AutoType}" />
                     <DataGridTextColumn x:Name="WeightColumn" Header="Weight" Binding="{Binding Weight}" />
                     <DataGridTextColumn Width="2*" Header="C# source" IsReadOnly="True" Binding="{Binding SourcePath}" />
+                    <DataGridTextColumn Width="*" Header="C# state" IsReadOnly="True" Binding="{Binding CSharpState}" />
                     <DataGridTextColumn Width="2*" Header="References (; separated)" Binding="{Binding ReferenceList}" />
                     <DataGridTextColumn Header="Source type" IsReadOnly="True" Binding="{Binding SourceType}" />
                     <DataGridTextColumn Header="Mode" IsReadOnly="True" Binding="{Binding Mode}" />
