@@ -1,4 +1,5 @@
 using CreatorsForge.Foundry.Core.Compatibility;
+using System.Text.RegularExpressions;
 
 namespace CreatorsForge.Foundry.Build.StreamerBot;
 
@@ -65,6 +66,7 @@ public static class StreamerBotDefinitionDiagnostics
         AnalyzeCatalogueMappings(definition, profile, diagnostics);
         AnalyzeCommands(definition, diagnostics);
         AnalyzeQueues(definition, diagnostics);
+        AnalyzeResources(definition, diagnostics);
         return diagnostics;
     }
 
@@ -224,4 +226,93 @@ public static class StreamerBotDefinitionDiagnostics
                     $"Queue '{queue.Name}' is not assigned to an action.", $"$.queues[{index}]", queue.Id));
         }
     }
+
+    private static void AnalyzeResources(
+        StreamerBotDefinition definition,
+        List<StreamerBotDefinitionDiagnostic> diagnostics)
+    {
+        var entities = BuildEntityIndex(definition);
+        for (var index = 0; index < definition.Resources.Count; index++)
+        {
+            var resource = definition.Resources[index];
+            var path = $"$.resources[{index}]";
+            if (string.IsNullOrWhiteSpace(resource.Name) ||
+                !StreamerBotResourceTypes.All.Contains(resource.Type, StringComparer.Ordinal) ||
+                !StreamerBotResourcePortability.All.Contains(resource.Portability, StringComparer.Ordinal))
+                diagnostics.Add(new("SBD1012", StreamerBotDefinitionDiagnosticSeverity.Error,
+                    $"Resource '{resource.Id}' requires a name, supported type, and portability classification.",
+                    path, resource.Id));
+
+            if (!string.IsNullOrWhiteSpace(resource.ValidationPattern))
+            {
+                try { _ = new Regex(resource.ValidationPattern, RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1)); }
+                catch (ArgumentException)
+                {
+                    diagnostics.Add(new("SBD1014", StreamerBotDefinitionDiagnosticSeverity.Error,
+                        $"Resource '{resource.Name}' has an invalid validation pattern.", path, resource.Id));
+                }
+            }
+
+            if (resource.Type == "url" && resource.SuggestedValue is { Length: > 0 } url &&
+                (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https")))
+                diagnostics.Add(new("SBD1017", StreamerBotDefinitionDiagnosticSeverity.Error,
+                    $"URL resource '{resource.Name}' requires an absolute HTTP or HTTPS value.", path, resource.Id));
+
+            if (StreamerBotPortabilityService.IsCredentialLike(resource))
+                diagnostics.Add(new("SBD1015", StreamerBotDefinitionDiagnosticSeverity.Error,
+                    $"Resource '{resource.Name}' appears to contain a credential. Remove the value; secrets must never be stored in Foundry projects or exports.",
+                    path, resource.Id));
+
+            var absolutePath = StreamerBotPortabilityService.IsAbsoluteMachinePath(resource);
+            if (absolutePath && resource.Portability == StreamerBotResourcePortability.Portable)
+                diagnostics.Add(new("SBD1016", StreamerBotDefinitionDiagnosticSeverity.Error,
+                    $"Resource '{resource.Name}' uses an absolute machine path but is marked fully portable.", path, resource.Id));
+            else if (absolutePath)
+                diagnostics.Add(new("SBD2008", StreamerBotDefinitionDiagnosticSeverity.Warning,
+                    $"Resource '{resource.Name}' uses an absolute machine path and must be reviewed on the destination system.", path, resource.Id));
+
+            var bindings = resource.Bindings ?? [];
+            if (bindings.Count == 0)
+                diagnostics.Add(new("SBD2006", StreamerBotDefinitionDiagnosticSeverity.Warning,
+                    $"Resource '{resource.Name}' is not used by an entity.", path, resource.Id));
+            if (resource.Portability is StreamerBotResourcePortability.ReconnectByName or
+                StreamerBotResourcePortability.ConfirmAfterImport or
+                StreamerBotResourcePortability.ManualConfiguration)
+                diagnostics.Add(new("SBD2007", StreamerBotDefinitionDiagnosticSeverity.Warning,
+                    $"Resource '{resource.Name}' requires {DescribePortability(resource.Portability)}.", path, resource.Id));
+
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            for (var bindingIndex = 0; bindingIndex < bindings.Count; bindingIndex++)
+            {
+                var binding = bindings[bindingIndex];
+                var key = $"{binding.EntityType}\u001f{binding.EntityId}\u001f{binding.Property}";
+                if (!entities.Contains($"{binding.EntityType}\u001f{binding.EntityId}") ||
+                    string.IsNullOrWhiteSpace(binding.Property) || !seen.Add(key))
+                    diagnostics.Add(new("SBD1013", StreamerBotDefinitionDiagnosticSeverity.Error,
+                        $"Resource '{resource.Name}' has a missing, duplicated, or invalid entity binding.",
+                        $"{path}.bindings[{bindingIndex}]", resource.Id));
+            }
+        }
+    }
+
+    private static HashSet<string> BuildEntityIndex(StreamerBotDefinition definition)
+    {
+        var entities = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var queue in definition.Queues) entities.Add($"queue\u001f{queue.Id}");
+        foreach (var command in definition.Commands) entities.Add($"command\u001f{command.Id}");
+        foreach (var action in definition.Actions)
+        {
+            entities.Add($"action\u001f{action.Id}");
+            foreach (var trigger in action.Triggers) entities.Add($"trigger\u001f{trigger.Id}");
+            foreach (var subAction in action.SubActions) entities.Add($"subAction\u001f{subAction.Id}");
+        }
+        return entities;
+    }
+
+    private static string DescribePortability(string portability) => portability switch
+    {
+        StreamerBotResourcePortability.ReconnectByName => "reconnection by name after import",
+        StreamerBotResourcePortability.ConfirmAfterImport => "confirmation after import",
+        _ => "manual configuration after import",
+    };
 }

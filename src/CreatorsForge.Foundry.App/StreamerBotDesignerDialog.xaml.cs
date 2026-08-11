@@ -12,11 +12,14 @@ public partial class StreamerBotDesignerDialog : Window
     public static IReadOnlyList<string> TriggerKinds { get; } = ["command", "test", "opaque"];
     public static IReadOnlyList<string> SubActionKinds { get; } =
         ["setArgument", "executeBridge", "executeCSharp", "opaque"];
+    public static IReadOnlyList<string> ResourceTypes => StreamerBotResourceTypes.All;
+    public static IReadOnlyList<string> PortabilityOptions => StreamerBotResourcePortability.All;
 
     private readonly string definitionPath;
     private readonly ObservableCollection<ActionRow> actions = [];
     private readonly ObservableCollection<CommandRow> commands = [];
     private readonly ObservableCollection<QueueRow> queues = [];
+    private readonly ObservableCollection<ResourceRow> resources = [];
     private readonly string? profile;
     private StreamerBotImportProvenance? import;
     private string minimumVersion = "1.0.0-alpha.1";
@@ -24,6 +27,8 @@ public partial class StreamerBotDesignerDialog : Window
     private string? documentation;
 
     public string? RequestedSourcePath { get; private set; }
+    internal bool ResourcesReadyForSmokeTest =>
+        ResourcesGrid is not null && ResourceTypes.Count >= 13 && PortabilityOptions.Count == 4;
 
     public StreamerBotDesignerDialog(string definitionPath, string? profile = null)
     {
@@ -72,9 +77,15 @@ public partial class StreamerBotDesignerDialog : Window
             actions.Add(new(item));
         }
 
+        foreach (var item in definition.Resources)
+        {
+            resources.Add(new(item));
+        }
+
         QueuesGrid.ItemsSource = queues;
         CommandsGrid.ItemsSource = commands;
         ActionsGrid.ItemsSource = actions;
+        ResourcesGrid.ItemsSource = resources;
         ActionsGrid.SelectedIndex = actions.Count > 0 ? 0 : -1;
         StatusText.Text = Path.GetFileName(definitionPath);
         RefreshValidation();
@@ -172,6 +183,23 @@ public partial class StreamerBotDesignerDialog : Window
 
     private void RemoveQueue_Click(object sender, RoutedEventArgs e) =>
         RemoveSelected(queues, QueuesGrid);
+
+    private void AddResource_Click(object sender, RoutedEventArgs e)
+    {
+        var item = new ResourceRow
+        {
+            Id = UniqueId("resource", resources.Select(value => value.Id)),
+            Name = "New resource",
+            Type = "custom",
+            Required = true,
+            Portability = StreamerBotResourcePortability.ManualConfiguration,
+        };
+        resources.Add(item);
+        ResourcesGrid.SelectedItem = item;
+    }
+
+    private void RemoveResource_Click(object sender, RoutedEventArgs e) =>
+        RemoveSelected(resources, ResourcesGrid);
 
     private void AddTrigger_Click(object sender, RoutedEventArgs e)
     {
@@ -337,12 +365,21 @@ public partial class StreamerBotDesignerDialog : Window
                     item.Sources,
                     item.Description)).ToArray(),
             Actions = actions.Select(item => item.ToDefinition()).ToArray(),
+            Resources = resources.Select(item => item.ToDefinition()).ToArray(),
         };
 
     private void RefreshValidation(StreamerBotDefinition? definition = null)
     {
         definition ??= CreateDefinition();
-        ValidationGrid.ItemsSource = StreamerBotDefinitionDiagnostics.Analyze(definition, profile);
+        var diagnostics = StreamerBotDefinitionDiagnostics.Analyze(definition, profile);
+        ValidationGrid.ItemsSource = diagnostics;
+        var errors = diagnostics.Count(item => item.Severity == StreamerBotDefinitionDiagnosticSeverity.Error);
+        var warnings = diagnostics.Count - errors;
+        StatusText.Text = errors > 0
+            ? $"{errors} error(s) and {warnings} warning(s). Errors block saving and building."
+            : warnings > 0
+                ? $"{warnings} warning(s). Warnings do not block saving or building."
+                : "Definition is valid with no warnings.";
     }
 
     private void CommitGridEdits()
@@ -352,6 +389,7 @@ public partial class StreamerBotDesignerDialog : Window
                      ActionsGrid,
                      CommandsGrid,
                      QueuesGrid,
+                     ResourcesGrid,
                      TriggersGrid,
                      SubActionsGrid,
                  })
@@ -503,6 +541,52 @@ public partial class StreamerBotDesignerDialog : Window
         public bool ReadOnly { get; } = readOnly;
         public string? PreservationKey { get; } = preservationKey;
         public string Mode => ReadOnly ? "Read-only" : "Editable";
+    }
+
+    private sealed class ResourceRow : IDesignerRow
+    {
+        public ResourceRow() { }
+
+        public ResourceRow(StreamerBotResourceDefinition value)
+        {
+            Id = value.Id;
+            Name = value.Name;
+            Type = value.Type;
+            Required = value.Required;
+            Portability = value.Portability;
+            Description = value.Description;
+            SuggestedValue = value.SuggestedValue;
+            ValidationPattern = value.ValidationPattern;
+            Bindings = string.Join("; ", (value.Bindings ?? []).Select(binding =>
+                $"{binding.EntityType}:{binding.EntityId}:{binding.Property}"));
+        }
+
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Type { get; set; } = "custom";
+        public bool Required { get; set; }
+        public string Portability { get; set; } = StreamerBotResourcePortability.ManualConfiguration;
+        public string? Description { get; set; }
+        public string? SuggestedValue { get; set; }
+        public string? ValidationPattern { get; set; }
+        public string Bindings { get; set; } = string.Empty;
+        public bool ReadOnly => false;
+        public string Usage => ParseBindings().Length == 0 ? "Unused" : $"{ParseBindings().Length} binding(s)";
+
+        public StreamerBotResourceDefinition ToDefinition() => new(
+            Id.Trim(), Name.Trim(), Type, Required, Portability,
+            Description, SuggestedValue, ValidationPattern, ParseBindings());
+
+        private StreamerBotResourceBinding[] ParseBindings() => Bindings
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(value =>
+            {
+                var parts = value.Split(':', 3, StringSplitOptions.TrimEntries);
+                return parts.Length == 3
+                    ? new StreamerBotResourceBinding(parts[0], parts[1], parts[2])
+                    : new StreamerBotResourceBinding(string.Empty, value, string.Empty);
+            })
+            .ToArray();
     }
 
     private sealed class ActionRow : IDesignerRow

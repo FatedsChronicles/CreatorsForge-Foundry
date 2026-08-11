@@ -744,3 +744,30 @@ commands; definition-owned C# paths and containing folders are protected from
 rename, move, and deletion. Automated arbitrary-extension, invalid-input,
 naming, stable-label, full-regression, and desktop smoke coverage form the
 implementation gate.
+
+Product-owner manual acceptance passed on 2026-08-11. PR #23 merged the
+accepted importer experience as commit `ad858ba`. **Phase 25D is complete.**
+
+### Phase 25E - Resources and portability foundation
+
+Phase 25E introduces Streamer.bot definition schema v4 and deterministically
+migrates definitions from schemas v1-v3. Structured resource requirements use
+stable IDs, supported resource types, required/optional state, explicit
+portability classifications, validation rules, and stable bindings to actions,
+commands, queues, triggers, and sub-actions.
+
+The Streamer.bot Designer includes a Resources workspace. Central validation
+rejects missing relationships, invalid URLs and patterns, absolute machine
+paths incorrectly marked portable, and credential-like values without printing
+secret content. It warns about unused resources, absolute paths, and required
+destination configuration. Imported absolute Execute C# references become
+explicit local-file requirements while the established export safety gate is
+retained.
+
+Builds produce a deterministic `streamerBotPortabilityReport` package artifact
+that contains classifications, counts, and bindings but deliberately omits
+suggested values. Phase 25E does not invent resource fields in the Streamer.bot
+wire format or alter preserved opaque content. Manual acceptance is defined in
+[streamerbot-resources-portability.md](streamerbot-resources-portability.md).
+The implementation gate passes a zero-warning Release build, all 323 automated
+tests, and all ten representative desktop smoke projects.

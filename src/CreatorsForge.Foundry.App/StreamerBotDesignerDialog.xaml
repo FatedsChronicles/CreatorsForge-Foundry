@@ -222,13 +222,114 @@
         </DockPanel>
       </TabItem>
 
+      <TabItem Header="Resources">
+        <DockPanel Margin="8">
+          <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <TextBlock FontWeight="SemiBold" Text="Resource requirements and portability" />
+            <TextBlock
+                Margin="0,3,0,0"
+                Foreground="{DynamicResource MutedTextBrush}"
+                TextWrapping="Wrap"
+                Text="Describe installation-specific values without storing passwords, tokens, API keys, or other credentials. Bindings use entity-type:entity-id:property and multiple bindings are separated with semicolons." />
+          </StackPanel>
+          <StackPanel DockPanel.Dock="Bottom" Margin="0,6,0,0" Orientation="Horizontal">
+            <Button Content="Add resource" Click="AddResource_Click" />
+            <Button Content="Remove resource" Click="RemoveResource_Click" />
+          </StackPanel>
+          <DataGrid
+              x:Name="ResourcesGrid"
+              AutoGenerateColumns="False"
+              BeginningEdit="Grid_BeginningEdit"
+              CurrentCellChanged="Grid_CurrentCellChanged"
+              CanUserAddRows="False">
+            <DataGrid.Resources>
+              <ContextMenu
+                  x:Key="ResourceEditContextMenu"
+                  Background="{DynamicResource PanelBackgroundBrush}"
+                  Foreground="{DynamicResource TextBrush}"
+                  BorderBrush="{DynamicResource PanelBorderBrush}">
+                <MenuItem
+                    Header="Cut"
+                    Background="{DynamicResource PanelBackgroundBrush}"
+                    Foreground="{DynamicResource TextBrush}"
+                    Command="ApplicationCommands.Cut" />
+                <MenuItem
+                    Header="Copy"
+                    Background="{DynamicResource PanelBackgroundBrush}"
+                    Foreground="{DynamicResource TextBrush}"
+                    Command="ApplicationCommands.Copy" />
+                <MenuItem
+                    Header="Paste"
+                    Background="{DynamicResource PanelBackgroundBrush}"
+                    Foreground="{DynamicResource TextBrush}"
+                    Command="ApplicationCommands.Paste" />
+              </ContextMenu>
+              <Style
+                  x:Key="ResourceTextEditorStyle"
+                  TargetType="TextBox"
+                  BasedOn="{StaticResource {x:Type TextBox}}">
+                <Setter Property="ContextMenu" Value="{StaticResource ResourceEditContextMenu}" />
+              </Style>
+            </DataGrid.Resources>
+            <DataGrid.Columns>
+              <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}"
+                  EditingElementStyle="{StaticResource ResourceTextEditorStyle}" />
+              <DataGridTextColumn Width="2*" Header="Name" Binding="{Binding Name}"
+                  EditingElementStyle="{StaticResource ResourceTextEditorStyle}" />
+              <DataGridTemplateColumn Width="*" Header="Type">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock Foreground="{DynamicResource TextBrush}" Text="{Binding Type}" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+                <DataGridTemplateColumn.CellEditingTemplate>
+                  <DataTemplate>
+                    <ComboBox
+                        Background="{DynamicResource EditorBackgroundBrush}"
+                        Foreground="{DynamicResource TextBrush}"
+                        ItemsSource="{x:Static local:StreamerBotDesignerDialog.ResourceTypes}"
+                        SelectedItem="{Binding Type, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellEditingTemplate>
+              </DataGridTemplateColumn>
+              <DataGridCheckBoxColumn Header="Required" Binding="{Binding Required}" />
+              <DataGridTemplateColumn Width="2*" Header="Portability">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock Foreground="{DynamicResource TextBrush}" Text="{Binding Portability}" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+                <DataGridTemplateColumn.CellEditingTemplate>
+                  <DataTemplate>
+                    <ComboBox
+                        Background="{DynamicResource EditorBackgroundBrush}"
+                        Foreground="{DynamicResource TextBrush}"
+                        ItemsSource="{x:Static local:StreamerBotDesignerDialog.PortabilityOptions}"
+                        SelectedItem="{Binding Portability, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellEditingTemplate>
+              </DataGridTemplateColumn>
+              <DataGridTextColumn Width="2*" Header="Suggested/default value" Binding="{Binding SuggestedValue}"
+                  EditingElementStyle="{StaticResource ResourceTextEditorStyle}" />
+              <DataGridTextColumn Width="2*" Header="Validation pattern" Binding="{Binding ValidationPattern}"
+                  EditingElementStyle="{StaticResource ResourceTextEditorStyle}" />
+              <DataGridTextColumn Width="3*" Header="Bindings" Binding="{Binding Bindings}"
+                  EditingElementStyle="{StaticResource ResourceTextEditorStyle}" />
+              <DataGridTextColumn Width="2*" Header="Description" Binding="{Binding Description}"
+                  EditingElementStyle="{StaticResource ResourceTextEditorStyle}" />
+              <DataGridTextColumn Header="Usage" IsReadOnly="True" Binding="{Binding Usage}" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </DockPanel>
+      </TabItem>
+
       <TabItem Header="Validation">
         <Grid Margin="8">
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
           </Grid.RowDefinitions>
-          <TextBlock Margin="0,0,0,8" Text="Errors block saving. Warnings identify ambiguous or potentially order-dependent workflows." />
+          <TextBlock Margin="0,0,0,8" Text="Errors block saving and building. Warnings are advisory and do not block either operation." />
           <DataGrid x:Name="ValidationGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
             <DataGrid.Columns>
               <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" />

@@ -366,6 +366,7 @@ public sealed class FoundryBuildOrchestrator
         string? streamerBotPackagePath = null;
         string? streamerBotReportPath = null;
         string? streamerBotImportReportPath = null;
+        string? streamerBotPortabilityReportPath = null;
         if (requestsStreamerBotPackage)
         {
             streamerBotPackagePath = Path.Combine(
@@ -374,6 +375,9 @@ public sealed class FoundryBuildOrchestrator
             streamerBotReportPath = Path.Combine(
                 streamerBotOutput,
                 "package-report.json");
+            streamerBotPortabilityReportPath = Path.Combine(
+                streamerBotOutput,
+                "portability-report.json");
 
             try
             {
@@ -415,6 +419,12 @@ public sealed class FoundryBuildOrchestrator
                     StreamerBotStableV23Adapter.SerializeReport(export.Report),
                     new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
                     cancellationToken).ConfigureAwait(false);
+                await File.WriteAllTextAsync(
+                    streamerBotPortabilityReportPath,
+                    StreamerBotPortabilityService.Serialize(
+                        StreamerBotPortabilityService.CreateReport(streamerBotDefinition)),
+                    new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                    cancellationToken).ConfigureAwait(false);
                 var sourceImportReport = Path.Combine(projectRoot, "streamerbot", "import-report.json");
                 if (streamerBotDefinition.Import is not null && File.Exists(sourceImportReport))
                 {
@@ -451,6 +461,7 @@ public sealed class FoundryBuildOrchestrator
                 streamerBotPackagePath,
                 streamerBotReportPath,
                 streamerBotImportReportPath,
+                streamerBotPortabilityReportPath,
                 cancellationToken).ConfigureAwait(false);
             var packageIntermediatePath = Path.Combine(outputRoot, "package-ir.json");
             await WritePackageIntermediateAsync(
@@ -625,6 +636,7 @@ public sealed class FoundryBuildOrchestrator
         string? streamerBotPackagePath,
         string? streamerBotReportPath,
         string? streamerBotImportReportPath,
+        string? streamerBotPortabilityReportPath,
         CancellationToken cancellationToken)
     {
         var artifacts = new List<FoundryPackageArtifact>();
@@ -670,6 +682,15 @@ public sealed class FoundryBuildOrchestrator
                 FoundryPackageArtifactKinds.StreamerBotImportReport,
                 "streamerbot/import-report.json",
                 streamerBotImportReportPath,
+                cancellationToken).ConfigureAwait(false));
+        }
+
+        if (streamerBotPortabilityReportPath is not null)
+        {
+            artifacts.Add(await CreateArtifactAsync(
+                FoundryPackageArtifactKinds.StreamerBotPortabilityReport,
+                "streamerbot/portability-report.json",
+                streamerBotPortabilityReportPath,
                 cancellationToken).ConfigureAwait(false));
         }
 

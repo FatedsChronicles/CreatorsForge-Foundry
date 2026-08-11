@@ -335,6 +335,7 @@ public static partial class StreamerBotImportService
 
             var actions = data["actions"]!.AsArray().Select((node, actionIndex) =>
                 MapAction(node?.AsObject() ?? new JsonObject(), actionIndex, queueIds, commandIds)).ToArray();
+            var resources = CreateResources(actions);
             var meta = payload["meta"] as JsonObject;
             var hasOpaque = OpaqueCount > 0 ||
                 PreservedCollectionNames.Any(name => data[name] is JsonArray { Count: > 0 });
@@ -352,7 +353,32 @@ public static partial class StreamerBotImportService
                 Queues = queues,
                 Commands = commands,
                 Actions = actions,
+                Resources = resources,
             };
+        }
+
+        private static StreamerBotResourceDefinition[] CreateResources(
+            IReadOnlyList<StreamerBotAction> actions)
+        {
+            var resources = new List<StreamerBotResourceDefinition>();
+            foreach (var action in actions)
+            foreach (var subAction in action.SubActions)
+            foreach (var reference in subAction.References ?? [])
+            {
+                if (!Path.IsPathFullyQualified(reference) &&
+                    !reference.StartsWith("\\\\", StringComparison.Ordinal)) continue;
+                var id = LogicalId("resource", $"{subAction.Id}\n{reference}", resources.Count);
+                resources.Add(new(
+                    id,
+                    $"Compiler reference for {action.Name}",
+                    "localFile",
+                    true,
+                    StreamerBotResourcePortability.ManualConfiguration,
+                    "Imported absolute Execute C# compiler reference. Map or remove it before portable export.",
+                    reference,
+                    Bindings: [new("subAction", subAction.Id, "references")]));
+            }
+            return [.. resources];
         }
 
         private StreamerBotAction MapAction(JsonObject wire, int actionIndex,

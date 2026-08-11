@@ -332,6 +332,8 @@ public static class FoundryCli
                     "cphInlineBridge" => "CPHInline bridge",
                     "streamerBotPackage" => "Streamer.bot package",
                     "streamerBotPackageReport" => "Streamer.bot package report",
+                    "streamerBotImportReport" => "Streamer.bot import report",
+                    "streamerBotPortabilityReport" => "Streamer.bot portability report",
                     "nativeObsPlugin" => "Native OBS plugin",
                     "obsPluginPackage" => "OBS plugin package",
                     _ => "Artifact",

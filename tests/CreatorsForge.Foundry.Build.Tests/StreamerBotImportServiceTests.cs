@@ -105,6 +105,10 @@ public sealed class StreamerBotImportServiceTests
         Assert.True(analysis.CanCreateProject);
         Assert.Equal(version, analysis.Summary!.PayloadVersion);
         Assert.Single(analysis.CSharpSources);
+        var importedResource = Assert.Single(analysis.Definition!.Resources);
+        Assert.Equal("localFile", importedResource.Type);
+        Assert.Equal(StreamerBotResourcePortability.ManualConfiguration, importedResource.Portability);
+        Assert.Equal("subAction", Assert.Single(importedResource.Bindings!).EntityType);
         Assert.Contains(analysis.Definition!.Actions[0].SubActions, item => item.Kind == "opaque" && item.ReadOnly);
 
         var root = Path.Combine(Path.GetTempPath(), "CreatorsForge.ImportTests", Guid.NewGuid().ToString("N"));
@@ -141,6 +145,10 @@ public sealed class StreamerBotImportServiceTests
             Assert.Equal(0, runner.InvocationCount);
             Assert.DoesNotContain(build.PackageIntermediate!.Artifacts, item => item.Kind == FoundryPackageArtifactKinds.ManagedAssembly);
             Assert.Contains(build.PackageIntermediate.Artifacts, item => item.Kind == FoundryPackageArtifactKinds.StreamerBotImportReport);
+            var portability = build.PackageIntermediate.Artifacts.Single(item =>
+                item.Kind == FoundryPackageArtifactKinds.StreamerBotPortabilityReport);
+            Assert.Contains("\"total\": 1", await File.ReadAllTextAsync(
+                Path.Combine(root, "build", portability.Path)), StringComparison.Ordinal);
             var package = build.PackageIntermediate.Artifacts.Single(item => item.Kind == FoundryPackageArtifactKinds.StreamerBotPackage);
             var reexported = StreamerBotEnvelopeCodec.Decode(await File.ReadAllTextAsync(Path.Combine(root, "build", package.Path)));
             Assert.Equal("preserve-me", reexported["data"]!["actions"]![0]!["unknownActionField"]!.GetValue<string>());
@@ -215,13 +223,13 @@ public sealed class StreamerBotImportServiceTests
     }
 
     [Fact]
-    public void DefinitionV1MigratesDeterministicallyToV3()
+    public void DefinitionV1MigratesDeterministicallyToV4()
     {
         const string json = """{"schemaVersion":1,"metadata":{"author":"A","description":"B"},"queues":[],"commands":[],"actions":[]}""";
         var first = StreamerBotDefinitionLoader.Load(json);
         var second = StreamerBotDefinitionLoader.Load(json);
         Assert.True(first.IsSuccess);
-        Assert.Equal(3, first.Definition!.SchemaVersion);
+        Assert.Equal(4, first.Definition!.SchemaVersion);
         Assert.Equal(StreamerBotDefinitionLoader.Serialize(first.Definition), StreamerBotDefinitionLoader.Serialize(second.Definition!));
     }
 

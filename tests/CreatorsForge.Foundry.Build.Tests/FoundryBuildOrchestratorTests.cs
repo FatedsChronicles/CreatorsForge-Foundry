@@ -177,7 +177,7 @@ public sealed class FoundryBuildOrchestratorTests
             CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(4, result.PackageIntermediate!.Artifacts.Count);
+        Assert.Equal(5, result.PackageIntermediate!.Artifacts.Count);
         var package = result.PackageIntermediate.Artifacts.Single(
             item => item.Kind == "streamerBotPackage");
         var report = result.PackageIntermediate.Artifacts.Single(
@@ -186,6 +186,8 @@ public sealed class FoundryBuildOrchestratorTests
         var reportPath = Path.Combine(project.Root, "build", report.Path);
         Assert.True(File.Exists(packagePath));
         Assert.True(File.Exists(reportPath));
+        Assert.Contains(result.PackageIntermediate.Artifacts,
+            item => item.Kind == "streamerBotPortabilityReport");
         var decoded = StreamerBot.StreamerBotStableV23Adapter.Decode(
             await File.ReadAllTextAsync(packagePath));
         Assert.Equal(23, decoded["version"]!.GetValue<int>());
