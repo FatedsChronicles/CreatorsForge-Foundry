@@ -576,7 +576,7 @@ public partial class StreamerBotDesignerDialog : Window
         File.WriteAllText(temporaryPath, StreamerBotDefinitionLoader.Serialize(definition));
         File.Move(temporaryPath, definitionPath, overwrite: true);
         HasSavedChanges = true;
-        StatusText.Text = $"Saved {Path.GetFileName(definitionPath)}. The Designer remains open.";
+        StatusText.Text = $"Saved {Path.GetFileName(definitionPath)}.";
         return true;
     }
 
