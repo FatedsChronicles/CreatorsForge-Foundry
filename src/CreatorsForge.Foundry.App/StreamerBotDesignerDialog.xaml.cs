@@ -33,6 +33,31 @@ public partial class StreamerBotDesignerDialog : Window
     internal bool CSharpAuthoringReadyForSmokeTest =>
         AddExecuteCSharpButton is not null && ConvertToCSharpButton is not null;
 
+    internal bool VerifyCSharpConversionForSmokeTest()
+    {
+        if (actions.FirstOrDefault(item => !item.ReadOnly) is not { } action) return false;
+        var row = new SubActionRow
+        {
+            Id = UniqueId("smoke-convert", action.SubActions.Select(item => item.Id)),
+            Kind = "setArgument",
+            Enabled = true,
+            VariableName = "smokeValue",
+            Value = "quoted \"value\"",
+            AutoType = false,
+            SourceType = 123,
+            Weight = action.RandomAction ? 1 : 0,
+        };
+        action.SubActions.Add(row);
+        var index = action.SubActions.IndexOf(row);
+        var preview = StreamerBotCSharpAuthoringService.PreviewSetArgumentConversion(
+            row.ToDefinition(), action.Id);
+        var converted = ApplyCSharpConversion(action, row, preview);
+        return action.SubActions.IndexOf(converted) == index &&
+               converted.Id == row.Id && converted.Enabled == row.Enabled &&
+               converted.Weight == row.Weight && converted.Kind == "executeCSharp" &&
+               converted.CSharpState == "Generated";
+    }
+
     public StreamerBotDesignerDialog(string definitionPath, string? profile = null)
     {
         this.definitionPath = definitionPath;
@@ -311,11 +336,7 @@ public partial class StreamerBotDesignerDialog : Window
                 Owner = this,
             };
             if (dialog.ShowDialog() != true) return;
-            StreamerBotCSharpAuthoringService.WriteNewSource(ProjectRoot, preview.RelativePath, preview.Source);
-            createdSourcePaths.Add(StreamerBotCSharpAuthoringService.ResolveConfinedSourcePath(
-                ProjectRoot, preview.RelativePath));
-            selected.Apply(preview.ConvertedSubAction, "Generated");
-            SubActionsGrid.Items.Refresh();
+            ApplyCSharpConversion(action, selected, preview);
             RefreshValidation();
             StatusText.Text = $"Converted to editable Execute C# at {preview.RelativePath}.";
         }
@@ -329,6 +350,26 @@ public partial class StreamerBotDesignerDialog : Window
         {
             StatusText.Text = $"Conversion did not change the sub-action: {exception.Message}";
         }
+    }
+
+    private SubActionRow ApplyCSharpConversion(
+        ActionRow action,
+        SubActionRow selected,
+        StreamerBotCSharpConversionPreview preview)
+    {
+        var selectedIndex = action.SubActions.IndexOf(selected);
+        if (selectedIndex < 0)
+            throw new InvalidOperationException("The selected sub-action is no longer part of this action.");
+        var created = StreamerBotCSharpAuthoringService.WriteNewSourceOrVerify(
+            ProjectRoot, preview.RelativePath, preview.Source);
+        if (created)
+            createdSourcePaths.Add(StreamerBotCSharpAuthoringService.ResolveConfinedSourcePath(
+                ProjectRoot, preview.RelativePath));
+        var converted = SubActionRow.FromDefinition(preview.ConvertedSubAction, "Generated");
+        action.SubActions[selectedIndex] = converted;
+        SubActionsGrid.SelectedItem = converted;
+        SubActionsGrid.ScrollIntoView(converted);
+        return converted;
     }
 
     private void RemoveSubAction_Click(object sender, RoutedEventArgs e)

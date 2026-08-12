@@ -10,7 +10,8 @@ implementation never executes C# inside Foundry.
 3. Confirm the row reports `executeCSharp`, a confined
    `streamerbot/code/<action-id>/<subaction-id>.cs` path, and `Manual` state.
 4. Choose **Open C# source**. Confirm the definition is saved and the file
-   opens in the Roslyn editor with an editable `CPHInline.Execute()` scaffold.
+   opens in the Roslyn editor with `using System;`, an editable
+   `CPHInline.Execute()` scaffold, and the `// your main code goes here` marker.
 5. Edit and save the source. Reopen the Designer and confirm it remains manual.
 6. Confirm the `.cs` file is not listed as a managed DLL build input.
 
@@ -20,7 +21,7 @@ implementation never executes C# inside Foundry.
    backslashes, and a line break in its value.
 2. Select it and choose **Convert to C#...**.
 3. Review the complete source preview and confirm it contains an escaped
-   `CPH.SetArgument(...)` call. Cancel once and confirm no source file or model
+   `CPH.SetArgument(...)` call and `using System;`. Cancel once and confirm no source file or model
    change remains.
 4. Repeat and choose **Convert**. Confirm the same sub-action ID, position,
    enabled state, and weight are retained; its kind becomes `executeCSharp`

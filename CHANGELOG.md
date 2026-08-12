@@ -65,6 +65,16 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Fixed
 
+- Phase 25F acceptance follow-up: the general New Project dialog now derives
+  Package ID and the complete New folder from Project name while preserving
+  manual edits; new and converted Execute C# sources include `using System;`;
+  the manual scaffold includes an explicit main-code marker; the completion
+  list is wider; and the Streamer.bot Designer opens wide enough to retain its
+  sub-action toolbar on one row.
+- Set Argument conversion now atomically replaces the selected Designer row at
+  the same index and immediately reselects it, so kind and C# state visibly
+  become `executeCSharp` and `Generated`. An identical existing generated file
+  can be safely reused, while different source is never overwritten.
 - Phase 25E acceptance follow-up: Resources grid type and portability editors
   now retain dark-theme colours while open, text-edit context menus use the
   Foundry theme, and validation explicitly states that `SBD2007`/`SBD2008`

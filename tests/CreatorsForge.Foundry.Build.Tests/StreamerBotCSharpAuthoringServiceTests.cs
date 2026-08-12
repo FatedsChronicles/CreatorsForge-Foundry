@@ -18,6 +18,7 @@ public sealed class StreamerBotCSharpAuthoringServiceTests
         Assert.Equal(first, second);
         Assert.Equal("executeCSharp", first.ConvertedSubAction.Kind);
         Assert.Equal("streamerbot/code/hello/set-message.cs", first.RelativePath);
+        Assert.StartsWith("using System;\n\n", first.Source);
         Assert.Contains("CPH.SetArgument(\"quote\\\"name\", \"line1\\nC:\\\\temp\");", first.Source);
         Assert.Equal(StreamerBotCSharpAuthoringService.SetArgumentRevision,
             first.ConvertedSubAction.Generation!.Revision);
@@ -64,7 +65,13 @@ public sealed class StreamerBotCSharpAuthoringServiceTests
             StreamerBotCSharpAuthoringService.WriteNewSource(root, created.SubAction.SourcePath!, created.Source);
             var path = Path.Combine(root, "streamerbot", "code", "action", "code.cs");
             Assert.Equal(created.Source, File.ReadAllText(path));
+            Assert.StartsWith("using System;\n\npublic class CPHInline", created.Source);
+            Assert.Contains("\t\t// your main code goes here", created.Source);
+            Assert.False(StreamerBotCSharpAuthoringService.WriteNewSourceOrVerify(
+                root, created.SubAction.SourcePath!, created.Source));
             Assert.Throws<IOException>(() => StreamerBotCSharpAuthoringService.WriteNewSource(
+                root, created.SubAction.SourcePath!, "replacement"));
+            Assert.Throws<IOException>(() => StreamerBotCSharpAuthoringService.WriteNewSourceOrVerify(
                 root, created.SubAction.SourcePath!, "replacement"));
             Assert.Throws<InvalidDataException>(() =>
                 StreamerBotCSharpAuthoringService.ResolveConfinedSourcePath(root, "../outside.cs"));

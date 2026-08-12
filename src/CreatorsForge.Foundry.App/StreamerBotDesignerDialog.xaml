@@ -4,9 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:CreatorsForge.Foundry.App"
     Title="Streamer.bot Designer"
-    Width="1050"
+    Width="1400"
     Height="720"
-    MinWidth="850"
+    MinWidth="1200"
     MinHeight="560"
     WindowStartupLocation="CenterOwner">
   <Grid Margin="12">
@@ -74,9 +74,9 @@
           </StackPanel>
           <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="2*" />
               <ColumnDefinition Width="10" />
-              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="5*" />
             </Grid.ColumnDefinitions>
             <GroupBox Header="Triggers">
               <DockPanel>

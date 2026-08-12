@@ -12,6 +12,17 @@ public sealed class WorkspaceServicesTests
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
+    [Fact]
+    public void NewProjectNamingSuggestionsTrackProjectNameForEveryProvider()
+    {
+        var suggestion = FoundryProjectNamingService.Suggest(
+            "Bot Eliminator", @"D:\Documents\Creators Forge Foundry");
+
+        Assert.Equal("com.example.bot-eliminator", suggestion.PackageId);
+        Assert.Equal(@"D:\Documents\Creators Forge Foundry\BotEliminator",
+            suggestion.DestinationFolder);
+    }
+
     [Theory]
     [InlineData(WorkspaceProjectItemKind.CSharp, "Feature", "Feature.cs")]
     [InlineData(WorkspaceProjectItemKind.Cpp, "plugin", "plugin.cpp")]
