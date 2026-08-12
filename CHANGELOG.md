@@ -126,8 +126,8 @@ identity.
 
 - Phase 25G product-owner acceptance passed on 2026-08-12 for command group
   creation, suggestions, persistence, deterministic packaging, and supported
-  Streamer.bot host imports. Save-without-close and Ctrl+Shift+D are follow-up
-  workflow improvements awaiting confirmation.
+  Streamer.bot host imports. Save-without-close, Ctrl+S, Ctrl+Shift+D, and the
+  simplified save confirmation also passed final workflow acceptance.
 - Phase 25F product-owner acceptance passed on 2026-08-12. Execute C# authoring,
   native Set Argument conversion, source-only and managed package behavior,
   Designer suggestions and theme fixes, deterministic builds, and Streamer.bot

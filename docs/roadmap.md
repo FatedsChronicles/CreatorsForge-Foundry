@@ -857,5 +857,6 @@ or opaque nodes. Manual acceptance is defined in
 Product-owner manual acceptance passed on 2026-08-12 for command group
 creation, suggestions, persistence, deterministic packaging, and supported-host
 imports. The follow-up keeps the Designer open after Save, adds Ctrl+S inside
-the Designer, and exposes Ctrl+Shift+D from the workspace; those workflow
-adjustments require a short confirmation before **Phase 25G is complete**.
+the Designer, and exposes Ctrl+Shift+D from the workspace. Product-owner
+confirmation of those workflow adjustments passed on 2026-08-12. **Phase 25G
+is complete.**
