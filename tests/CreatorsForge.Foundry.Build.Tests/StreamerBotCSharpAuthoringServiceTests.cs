@@ -93,7 +93,7 @@ public sealed class StreamerBotCSharpAuthoringServiceTests
         var second = StreamerBotDefinitionLoader.Load(schemaFour);
 
         Assert.True(first.IsSuccess);
-        Assert.Equal(5, first.Definition!.SchemaVersion);
+        Assert.Equal(StreamerBotDefinition.CurrentSchemaVersion, first.Definition!.SchemaVersion);
         Assert.Equal(StreamerBotDefinitionLoader.Serialize(first.Definition),
             StreamerBotDefinitionLoader.Serialize(second.Definition!));
     }

@@ -23,6 +23,7 @@ public partial class StreamerBotDesignerDialog : Window
     private readonly ObservableCollection<ResourceRow> resources = [];
     private readonly HashSet<string> createdSourcePaths = new(StringComparer.OrdinalIgnoreCase);
     private bool isRefreshingActionSuggestions;
+    private bool isRefreshingCommandSuggestions;
     private readonly string? profile;
     private StreamerBotImportProvenance? import;
     private string minimumVersion = "1.0.0-alpha.1";
@@ -30,9 +31,11 @@ public partial class StreamerBotDesignerDialog : Window
     private string? documentation;
 
     public ObservableCollection<string> GroupOptions { get; } = [];
+    public ObservableCollection<string> CommandGroupOptions { get; } = [];
     public ObservableCollection<QueueChoice> QueueOptions { get; } = [];
 
     public string? RequestedSourcePath { get; private set; }
+    public bool HasSavedChanges { get; private set; }
     internal bool ResourcesReadyForSmokeTest =>
         ResourcesGrid is not null && ResourceTypes.Count >= 13 && PortabilityOptions.Count == 4;
     internal bool CSharpAuthoringReadyForSmokeTest =>
@@ -79,12 +82,49 @@ public partial class StreamerBotDesignerDialog : Window
                converted.CSharpState == "Generated";
     }
 
+    internal bool VerifyCommandGroupsForSmokeTest()
+    {
+        if (commands.Count == 0) return false;
+        commands[0].Group = "Creator Commands";
+        RefreshCommandSuggestions();
+        var count = CommandGroupOptions.Count;
+        RefreshCommandSuggestions();
+        return CommandGroupOptions.Count == count &&
+               CommandGroupOptions.Contains("Creator Commands");
+    }
+
+    internal static bool VerifyEditableComboBoxForSmokeTest()
+    {
+        var editor = new ComboBox
+        {
+            IsEditable = true,
+            Style = (Style)Application.Current.FindResource(typeof(ComboBox)),
+        };
+        editor.ApplyTemplate();
+        if (editor.Template.FindName("PART_EditableTextBox", editor) is not TextBox textBox ||
+            textBox.Visibility != Visibility.Visible || textBox.IsReadOnly)
+            return false;
+        textBox.Text = "New typed group";
+        return editor.Text == "New typed group";
+    }
+
     public StreamerBotDesignerDialog(string definitionPath, string? profile = null)
     {
         this.definitionPath = definitionPath;
         this.profile = profile;
         InitializeComponent();
+        PreviewKeyDown += Designer_PreviewKeyDown;
         LoadDefinition();
+    }
+
+    private void Designer_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (System.Windows.Input.Keyboard.Modifiers == System.Windows.Input.ModifierKeys.Control &&
+            e.Key == System.Windows.Input.Key.S)
+        {
+            e.Handled = true;
+            SaveDefinition();
+        }
     }
 
     private void LoadDefinition()
@@ -118,7 +158,8 @@ public partial class StreamerBotDesignerDialog : Window
                 item.CaseSensitive,
                 item.GlobalCooldown,
                 item.UserCooldown, item.SourceId, item.ReadOnly, item.PreservationKey,
-                item.IgnoreBotAccount, item.IgnoreInternalMessages, item.Sources, item.Description));
+                item.IgnoreBotAccount, item.IgnoreInternalMessages, item.Sources, item.Description,
+                item.Group));
         }
 
         foreach (var item in definition.Actions)
@@ -137,6 +178,7 @@ public partial class StreamerBotDesignerDialog : Window
         ResourcesGrid.ItemsSource = resources;
         ActionsGrid.SelectedIndex = actions.Count > 0 ? 0 : -1;
         RefreshActionSuggestions();
+        RefreshCommandSuggestions();
         RefreshGeneratedSourceStates();
         StatusText.Text = Path.GetFileName(definitionPath);
         RefreshValidation();
@@ -163,7 +205,28 @@ public partial class StreamerBotDesignerDialog : Window
     private void Grid_CurrentCellChanged(object? sender, EventArgs e)
     {
         if (ReferenceEquals(sender, QueuesGrid)) RefreshActionSuggestions();
+        if (ReferenceEquals(sender, CommandsGrid)) RefreshCommandSuggestions();
         RefreshValidation();
+    }
+
+    private void RefreshCommandSuggestions()
+    {
+        if (isRefreshingCommandSuggestions) return;
+        isRefreshingCommandSuggestions = true;
+        try
+        {
+            var groups = commands.Select(item => item.Group?.Trim())
+                .Where(item => !string.IsNullOrWhiteSpace(item))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(item => item, StringComparer.OrdinalIgnoreCase)
+                .Cast<string>()
+                .ToArray();
+            SynchronizeChoices(CommandGroupOptions, groups);
+        }
+        finally
+        {
+            isRefreshingCommandSuggestions = false;
+        }
     }
 
     private void RefreshActionSuggestions()
@@ -255,13 +318,29 @@ public partial class StreamerBotDesignerDialog : Window
             0,
             ignoreBotAccount: true,
             ignoreInternalMessages: true,
-            sources: 1);
+            sources: 1,
+            group: null);
         commands.Add(item);
         CommandsGrid.SelectedItem = item;
     }
 
     private void RemoveCommand_Click(object sender, RoutedEventArgs e) =>
         RemoveSelected(commands, CommandsGrid);
+
+    private void DuplicateCommand_Click(object sender, RoutedEventArgs e)
+    {
+        if (CommandsGrid.SelectedItem is not CommandRow source) return;
+        if (source.ReadOnly)
+        {
+            StatusText.Text = "Preserved read-only commands cannot be duplicated safely.";
+            return;
+        }
+
+        var copy = source.Duplicate(UniqueId("command", commands.Select(value => value.Id)));
+        commands.Insert(CommandsGrid.SelectedIndex + 1, copy);
+        CommandsGrid.SelectedItem = copy;
+        RefreshCommandSuggestions();
+    }
 
     private void AddQueue_Click(object sender, RoutedEventArgs e)
     {
@@ -472,7 +551,9 @@ public partial class StreamerBotDesignerDialog : Window
         if (ActionsGrid.SelectedItem is ActionRow action) MoveSelected(action.SubActions, SubActionsGrid, 1);
     }
 
-    private void Save_Click(object sender, RoutedEventArgs e)
+    private void Save_Click(object sender, RoutedEventArgs e) => SaveDefinition();
+
+    private bool SaveDefinition()
     {
         CommitGridEdits();
         RefreshGeneratedSourceStates();
@@ -488,13 +569,15 @@ public partial class StreamerBotDesignerDialog : Window
                 "Definition validation",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
-            return;
+            return false;
         }
 
         var temporaryPath = definitionPath + ".tmp";
         File.WriteAllText(temporaryPath, StreamerBotDefinitionLoader.Serialize(definition));
         File.Move(temporaryPath, definitionPath, overwrite: true);
-        DialogResult = true;
+        HasSavedChanges = true;
+        StatusText.Text = $"Saved {Path.GetFileName(definitionPath)}.";
+        return true;
     }
 
     private StreamerBotDefinition CreateDefinition() => new()
@@ -535,7 +618,8 @@ public partial class StreamerBotDesignerDialog : Window
                     item.IgnoreBotAccount,
                     item.IgnoreInternalMessages,
                     item.Sources,
-                    item.Description)).ToArray(),
+                    item.Description,
+                    string.IsNullOrWhiteSpace(item.Group) ? null : item.Group.Trim())).ToArray(),
             Actions = actions.Select(item => item.ToDefinition()).ToArray(),
             Resources = resources.Select(item => item.ToDefinition()).ToArray(),
         };
@@ -639,8 +723,8 @@ public partial class StreamerBotDesignerDialog : Window
         if (SubActionsGrid.SelectedItem is SubActionRow { Kind: "executeCSharp", SourcePath: { Length: > 0 } sourcePath })
         {
             RequestedSourcePath = sourcePath;
-            Save_Click(sender, e);
-            if (DialogResult != true) RequestedSourcePath = null;
+            if (SaveDefinition()) DialogResult = true;
+            else RequestedSourcePath = null;
         }
     }
 
@@ -727,6 +811,7 @@ public partial class StreamerBotDesignerDialog : Window
         public bool ReadOnly { get; } = readOnly;
         public string? PreservationKey { get; } = preservationKey;
         public string Mode => ReadOnly ? "Read-only" : "Editable";
+
     }
 
     private sealed class CommandRow(
@@ -743,7 +828,8 @@ public partial class StreamerBotDesignerDialog : Window
         bool ignoreBotAccount = true,
         bool ignoreInternalMessages = true,
         int sources = 1,
-        string? description = null) : IDesignerRow
+        string? description = null,
+        string? group = null) : IDesignerRow
     {
         public string Id { get; set; } = id;
         public string Name { get; set; } = name;
@@ -756,10 +842,25 @@ public partial class StreamerBotDesignerDialog : Window
         public bool IgnoreInternalMessages { get; set; } = ignoreInternalMessages;
         public int Sources { get; set; } = sources;
         public string? Description { get; set; } = description;
+        public string? Group { get; set; } = group;
         public string? SourceId { get; } = sourceId;
         public bool ReadOnly { get; } = readOnly;
         public string? PreservationKey { get; } = preservationKey;
         public string Mode => ReadOnly ? "Read-only" : "Editable";
+
+        public CommandRow Duplicate(string id) => new(
+            id,
+            Name + " Copy",
+            Aliases,
+            Enabled,
+            CaseSensitive,
+            GlobalCooldown,
+            UserCooldown,
+            ignoreBotAccount: IgnoreBotAccount,
+            ignoreInternalMessages: IgnoreInternalMessages,
+            sources: Sources,
+            description: Description,
+            group: Group);
     }
 
     private sealed class ResourceRow : IDesignerRow

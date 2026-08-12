@@ -164,7 +164,7 @@ public static class StreamerBotCSharpAuthoringService
                 return true;
             }
         }
-        """ + "\n";
+        """.Replace("\r\n", "\n", StringComparison.Ordinal) + "\n";
 
     private static string CSharpLiteral(string value)
     {

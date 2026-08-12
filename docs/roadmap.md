@@ -844,3 +844,19 @@ ordering, zero changes to opaque nodes, and successful import into every exact
 Streamer.bot host claimed by the adapter, currently 1.0.4, 1.0.5-alpha.34,
 1.0.5-beta.1, 1.0.5-beta.6, and 1.0.7. The full Foundry regression suite must
 continue to pass with no OBS regressions.
+
+Implementation uses definition schema v6 and the verified text-valued
+`data.commands[].group` property documented by Streamer.bot. The Commands tab
+offers existing groups through a case-insensitive editable selector, preserves
+group membership when duplicating an editable command, and represents an empty
+selection as an ungrouped command. Generated v23 and preserved v23/v24 packages
+carry the value without changing source IDs, ordering, trigger relationships,
+or opaque nodes. Manual acceptance is defined in
+[streamerbot-command-groups.md](streamerbot-command-groups.md).
+
+Product-owner manual acceptance passed on 2026-08-12 for command group
+creation, suggestions, persistence, deterministic packaging, and supported-host
+imports. The follow-up keeps the Designer open after Save, adds Ctrl+S inside
+the Designer, and exposes Ctrl+Shift+D from the workspace. Product-owner
+confirmation of those workflow adjustments passed on 2026-08-12. **Phase 25G
+is complete.**

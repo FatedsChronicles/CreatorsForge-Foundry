@@ -21,7 +21,7 @@ public sealed class StreamerBotPortabilityServiceTests
         var second = StreamerBotDefinitionLoader.Load(source);
 
         Assert.True(first.IsSuccess);
-        Assert.Equal(5, first.Definition!.SchemaVersion);
+        Assert.Equal(StreamerBotDefinition.CurrentSchemaVersion, first.Definition!.SchemaVersion);
         Assert.Empty(first.Definition.Resources);
         Assert.Equal(StreamerBotDefinitionLoader.Serialize(first.Definition),
             StreamerBotDefinitionLoader.Serialize(second.Definition!));

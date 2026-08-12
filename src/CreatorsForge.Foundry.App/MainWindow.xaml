@@ -87,7 +87,7 @@
         <MenuItem Header="_Publish Release" Click="Publish_Click" />
         <MenuItem Header="_Test Explorer..." InputGestureText="Ctrl+Shift+T" Click="TestExplorer_Click" />
         <Separator />
-        <MenuItem Header="Streamer.bot _Designer..." Click="StreamerBotDesigner_Click" />
+        <MenuItem Header="Streamer.bot _Designer..." InputGestureText="Ctrl+Shift+D" Click="StreamerBotDesigner_Click" />
         <MenuItem Header="OBS Plugin D_esigner..." Click="ObsPluginDesigner_Click" />
         <MenuItem Header="_View Package..." Click="PackageViewer_Click" />
         <Separator />

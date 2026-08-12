@@ -137,7 +137,9 @@ public partial class MainWindow : Window
             designerReady = newProjectSuggestionsReady && designer.Content is not null &&
                 designer.ResourcesReadyForSmokeTest &&
                 designer.CSharpAuthoringReadyForSmokeTest &&
+                StreamerBotDesignerDialog.VerifyEditableComboBoxForSmokeTest() &&
                 designer.VerifyActionSuggestionsForSmokeTest() &&
+                designer.VerifyCommandGroupsForSmokeTest() &&
                 designer.VerifyCSharpConversionForSmokeTest() &&
                 palette.Content is not null &&
                 new OperationReferenceChoice("command-id", "Friendly command").ToString() == "Friendly command";
@@ -200,6 +202,9 @@ public partial class MainWindow : Window
         var terminalShortcutReady = IsTerminalShortcut(
             Key.T,
             ModifierKeys.Control);
+        var streamerBotDesignerShortcutReady = IsStreamerBotDesignerShortcut(
+            Key.D,
+            ModifierKeys.Control | ModifierKeys.Shift);
         var terminalReady = TerminalInput is not null &&
             TerminalOutput is not null &&
             TerminalTab is not null;
@@ -265,6 +270,7 @@ public partial class MainWindow : Window
             streamerBotImportReady &&
             previewDesignerReady &&
             previewShortcutReady &&
+            streamerBotDesignerShortcutReady &&
             terminalShortcutReady &&
             terminalReady &&
             darkSyntaxHighlightingReady;
@@ -774,18 +780,19 @@ public partial class MainWindow : Window
             {
                 Owner = this,
             };
-            if (dialog.ShowDialog() == true)
+            var navigateToSource = dialog.ShowDialog() == true;
+            if (dialog.HasSavedChanges)
             {
                 await viewModel.OpenProjectAsync(
                     workspace.ProjectPath,
                     lifetimeCancellation.Token);
-                if (dialog.RequestedSourcePath is { Length: > 0 } sourcePath)
-                {
-                    await NavigateToSourceAsync(new(
-                        Path.Combine(workspace.ProjectRoot, sourcePath.Replace('/', Path.DirectorySeparatorChar)),
-                        1,
-                        1));
-                }
+            }
+            if (navigateToSource && dialog.RequestedSourcePath is { Length: > 0 } sourcePath)
+            {
+                await NavigateToSourceAsync(new(
+                    Path.Combine(workspace.ProjectRoot, sourcePath.Replace('/', Path.DirectorySeparatorChar)),
+                    1,
+                    1));
             }
         }
         catch (Exception exception) when (
@@ -1636,6 +1643,11 @@ public partial class MainWindow : Window
             e.Handled = true;
             PreviewDesigner_Click(sender, e);
         }
+        else if (IsStreamerBotDesignerShortcut(e.Key, Keyboard.Modifiers))
+        {
+            e.Handled = true;
+            StreamerBotDesigner_Click(sender, e);
+        }
         else if (IsTerminalShortcut(e.Key, Keyboard.Modifiers))
         {
             e.Handled = true;
@@ -1660,6 +1672,9 @@ public partial class MainWindow : Window
 
     internal static bool IsTerminalShortcut(Key key, ModifierKeys modifiers) =>
         key == Key.T && modifiers == ModifierKeys.Control;
+
+    internal static bool IsStreamerBotDesignerShortcut(Key key, ModifierKeys modifiers) =>
+        key == Key.D && modifiers == (ModifierKeys.Control | ModifierKeys.Shift);
 
     private async Task<bool> NavigateToSourceAsync(EditorSourceLocation location)
     {

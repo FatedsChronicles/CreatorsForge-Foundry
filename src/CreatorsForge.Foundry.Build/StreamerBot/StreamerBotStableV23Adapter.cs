@@ -223,7 +223,8 @@ public static class StreamerBotStableV23Adapter
                     RequiredInteger(value, "userCooldown"),
                     IgnoreBotAccount: RequiredBoolean(value, "ignoreBotAccount"),
                     IgnoreInternalMessages: RequiredBoolean(value, "ignoreInternal"),
-                    Sources: RequiredInteger(value, "sources"));
+                    Sources: RequiredInteger(value, "sources"),
+                    Group: value["group"] is JsonValue group ? group.GetValue<string>() : null);
             })
             .ToArray();
         var actions = data["actions"]!.AsArray()
@@ -412,7 +413,7 @@ public static class StreamerBotStableV23Adapter
                 ["caseSensitive"] = command.CaseSensitive,
                 ["globalCooldown"] = command.GlobalCooldown,
                 ["userCooldown"] = command.UserCooldown,
-                ["group"] = null,
+                ["group"] = string.IsNullOrWhiteSpace(command.Group) ? null : command.Group.Trim(),
                 ["grantType"] = 0,
             });
         }

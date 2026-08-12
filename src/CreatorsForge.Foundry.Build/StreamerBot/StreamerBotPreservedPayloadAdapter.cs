@@ -109,6 +109,7 @@ public static class StreamerBotPreservedPayloadAdapter
             if (target.ContainsKey("ignoreInternal"))
                 target["ignoreInternal"] = item.IgnoreInternalMessages;
             target["sources"] = item.Sources;
+            target["group"] = string.IsNullOrWhiteSpace(item.Group) ? null : item.Group.Trim();
         }
     }
 

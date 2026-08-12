@@ -6,9 +6,12 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
-- Planned Phase 25G command-group support for the Streamer.bot Designer,
-  including verified wire-format capture, source-first schema migration,
-  friendly reusable group selection, and deterministic import/export.
+- Phase 25G Streamer.bot definition schema v6 command groups, deterministic
+  migration from schemas v1-v5, and group-aware v23/v24 import and export.
+- An editable Commands-tab Group selector with reusable project suggestions,
+  explicit ungrouped state, and group-preserving command duplication.
+- A Ctrl+Shift+D Streamer.bot Designer shortcut and a non-dismissing Save
+  workflow, including Ctrl+S, so creators can continue editing after each save.
 - Phase 25F Streamer.bot definition schema v5 with deterministic migration and
   Execute C# generation provenance, source hashes, and detached-edit state.
 - Manual Execute C# creation in the Streamer.bot Designer, confined source
@@ -68,6 +71,11 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Fixed
 
+- Editable dropdowns now expose a real keyboard-editable text field in the
+  shared themed ComboBox template, allowing new action and command group names
+  to be typed instead of limiting creators to existing suggestions.
+- Execute C# conversion now normalizes generated source to LF independently of
+  checkout line endings, keeping generated source hashes deterministic.
 - Prevented the Streamer.bot Designer from locking the UI thread when action
   group and queue suggestions refreshed. Suggestion updates are now guarded,
   idempotent, and update queue labels without recursively refreshing the grid.
@@ -116,6 +124,10 @@ identity.
 
 ### Acceptance
 
+- Phase 25G product-owner acceptance passed on 2026-08-12 for command group
+  creation, suggestions, persistence, deterministic packaging, and supported
+  Streamer.bot host imports. Save-without-close, Ctrl+S, Ctrl+Shift+D, and the
+  simplified save confirmation also passed final workflow acceptance.
 - Phase 25F product-owner acceptance passed on 2026-08-12. Execute C# authoring,
   native Set Argument conversion, source-only and managed package behavior,
   Designer suggestions and theme fixes, deterministic builds, and Streamer.bot

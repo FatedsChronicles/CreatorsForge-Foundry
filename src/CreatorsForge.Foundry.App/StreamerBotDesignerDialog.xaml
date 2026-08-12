@@ -61,6 +61,8 @@
                 <DataGridTemplateColumn.CellEditingTemplate>
                   <DataTemplate>
                     <ComboBox IsEditable="True"
+                        IsTextSearchEnabled="False"
+                        StaysOpenOnEdit="True"
                         ItemsSource="{Binding GroupOptions, RelativeSource={RelativeSource AncestorType={x:Type local:StreamerBotDesignerDialog}}}"
                         Text="{Binding Group, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                   </DataTemplate>
@@ -202,6 +204,7 @@
         <DockPanel Margin="8">
           <StackPanel DockPanel.Dock="Bottom" Margin="0,6,0,0" Orientation="Horizontal">
             <Button Content="Add command" Click="AddCommand_Click" />
+            <Button Content="Duplicate command" Click="DuplicateCommand_Click" />
             <Button Content="Remove command" Click="RemoveCommand_Click" />
           </StackPanel>
           <DataGrid
@@ -213,6 +216,25 @@
             <DataGrid.Columns>
               <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
               <DataGridTextColumn Width="*" Header="Name" Binding="{Binding Name}" />
+              <DataGridTemplateColumn Width="*" Header="Group">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock Foreground="{DynamicResource TextBrush}" Text="{Binding Group}" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+                <DataGridTemplateColumn.CellEditingTemplate>
+                  <DataTemplate>
+                    <ComboBox
+                        IsEditable="True"
+                        IsTextSearchEnabled="False"
+                        StaysOpenOnEdit="True"
+                        Background="{DynamicResource EditorBackgroundBrush}"
+                        Foreground="{DynamicResource TextBrush}"
+                        ItemsSource="{Binding CommandGroupOptions, RelativeSource={RelativeSource AncestorType={x:Type local:StreamerBotDesignerDialog}}}"
+                        Text="{Binding Group, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellEditingTemplate>
+              </DataGridTemplateColumn>
               <DataGridTextColumn Width="2*" Header="Commands (comma separated)" Binding="{Binding Aliases}" />
               <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" />
               <DataGridCheckBoxColumn Header="Case sensitive" Binding="{Binding CaseSensitive}" />
@@ -377,8 +399,8 @@
           VerticalAlignment="Center"
           Foreground="{DynamicResource MutedTextBrush}" />
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-        <Button MinWidth="90" Content="Cancel" IsCancel="True" />
-        <Button MinWidth="90" Content="Save" IsDefault="True" Click="Save_Click" />
+        <Button MinWidth="90" Content="Close" IsCancel="True" />
+        <Button MinWidth="90" Content="Save" IsDefault="True" Click="Save_Click" ToolTip="Save changes and keep the Designer open (Ctrl+S)." />
       </StackPanel>
     </DockPanel>
   </Grid>

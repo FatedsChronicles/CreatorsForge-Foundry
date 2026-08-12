@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.creatorsforge.dev/foundry/streamerbot/definition/v6",
+  "title": "Creators Forge Foundry Streamer.bot definition v6",
+  "type": "object",
+  "required": ["schemaVersion", "metadata", "queues", "commands", "actions", "resources"],
+  "properties": {
+    "schemaVersion": { "const": 6 },
+    "metadata": { "$ref": "streamerbot-definition-v3.schema.json#/properties/metadata" },
+    "import": { "$ref": "streamerbot-definition-v3.schema.json#/properties/import" },
+    "queues": { "type": "array", "items": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/queue" } },
+    "commands": { "type": "array", "items": { "$ref": "#/$defs/command" } },
+    "actions": { "type": "array", "items": { "$ref": "streamerbot-definition-v5.schema.json#/$defs/action" } },
+    "resources": { "type": "array", "items": { "$ref": "streamerbot-definition-v4.schema.json#/$defs/resource" } }
+  },
+  "$defs": {
+    "command": {
+      "type": "object",
+      "required": ["id", "name", "commands", "enabled", "caseSensitive", "globalCooldown", "userCooldown", "ignoreBotAccount", "ignoreInternalMessages", "sources"],
+      "properties": {
+        "id": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/logicalId" },
+        "name": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/name" },
+        "commands": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "enabled": { "type": "boolean" },
+        "caseSensitive": { "type": "boolean" },
+        "globalCooldown": { "type": "integer", "minimum": 0 },
+        "userCooldown": { "type": "integer", "minimum": 0 },
+        "ignoreBotAccount": { "type": "boolean" },
+        "ignoreInternalMessages": { "type": "boolean" },
+        "sources": { "type": "integer", "minimum": 1 },
+        "description": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/nullableString" },
+        "group": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/nullableString" },
+        "sourceId": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/nullableString" },
+        "readOnly": { "type": "boolean" },
+        "preservationKey": { "$ref": "streamerbot-definition-v3.schema.json#/$defs/nullableString" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

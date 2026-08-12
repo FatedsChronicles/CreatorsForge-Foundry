@@ -93,6 +93,7 @@ public sealed class StreamerBotImportServiceTests
         var payload = CreatePayload();
         payload["version"] = version;
         payload["exportedFrom"] = version == 23 ? "1.0.4" : "1.0.7";
+        payload["data"]!["commands"]![0]!["group"] = "Creator Commands";
         payload["data"]!["actions"]![0]!["unknownActionField"] = "preserve-me";
         payload["data"]!["actions"]![0]!["subActions"]![1]!["references"] =
             new JsonArray("C:\\Developer\\Private\\Host.dll", ".\\Portable.Dependency.dll");
@@ -105,6 +106,7 @@ public sealed class StreamerBotImportServiceTests
         Assert.True(analysis.CanCreateProject);
         Assert.Equal(version, analysis.Summary!.PayloadVersion);
         Assert.Single(analysis.CSharpSources);
+        Assert.Equal("Creator Commands", analysis.Definition!.Commands[0].Group);
         var importedResource = Assert.Single(analysis.Definition!.Resources);
         Assert.Equal("localFile", importedResource.Type);
         Assert.Equal(StreamerBotResourcePortability.ManualConfiguration, importedResource.Portability);
@@ -152,6 +154,7 @@ public sealed class StreamerBotImportServiceTests
             var package = build.PackageIntermediate.Artifacts.Single(item => item.Kind == FoundryPackageArtifactKinds.StreamerBotPackage);
             var reexported = StreamerBotEnvelopeCodec.Decode(await File.ReadAllTextAsync(Path.Combine(root, "build", package.Path)));
             Assert.Equal("preserve-me", reexported["data"]!["actions"]![0]!["unknownActionField"]!.GetValue<string>());
+            Assert.Equal("Creator Commands", reexported["data"]!["commands"]![0]!["group"]!.GetValue<string>());
             Assert.Equal(42, reexported["data"]!["actions"]![0]!["subActions"]![2]!["unknown"]!.GetValue<int>());
             var editedCode = Encoding.UTF8.GetString(Convert.FromBase64String(
                 reexported["data"]!["actions"]![0]!["subActions"]![1]!["byteCode"]!.GetValue<string>()));
@@ -223,13 +226,13 @@ public sealed class StreamerBotImportServiceTests
     }
 
     [Fact]
-    public void DefinitionV1MigratesDeterministicallyToV4()
+    public void DefinitionV1MigratesDeterministicallyToV6()
     {
         const string json = """{"schemaVersion":1,"metadata":{"author":"A","description":"B"},"queues":[],"commands":[],"actions":[]}""";
         var first = StreamerBotDefinitionLoader.Load(json);
         var second = StreamerBotDefinitionLoader.Load(json);
         Assert.True(first.IsSuccess);
-        Assert.Equal(5, first.Definition!.SchemaVersion);
+        Assert.Equal(StreamerBotDefinition.CurrentSchemaVersion, first.Definition!.SchemaVersion);
         Assert.Equal(StreamerBotDefinitionLoader.Serialize(first.Definition), StreamerBotDefinitionLoader.Serialize(second.Definition!));
     }
 
@@ -242,6 +245,7 @@ public sealed class StreamerBotImportServiceTests
         var action = definition.Actions[0];
         definition = definition with
         {
+            Commands = [definition.Commands[0] with { Group = "Imported commands" }],
             Actions =
             [
                 action with
@@ -274,6 +278,8 @@ public sealed class StreamerBotImportServiceTests
             Assert.True(wire["excludeFromPending"]!.GetValue<bool>());
             Assert.True(wire["excludeFromHistory"]!.GetValue<bool>());
             Assert.Equal("Imported group", wire["group"]!.GetValue<string>());
+            Assert.Equal("Imported commands", StreamerBotEnvelopeCodec.Decode(artifact.ImportCode)
+                ["data"]!["commands"]![0]!["group"]!.GetValue<string>());
             Assert.Equal([1d, 2d], wire["subActions"]!.AsArray().Select(item => item!["weight"]!.GetValue<double>()));
             Assert.Equal(definition.Actions[0].SubActions.Select(item => item.SourceId),
                 wire["subActions"]!.AsArray().Select(item => item!["id"]!.GetValue<string>()));
