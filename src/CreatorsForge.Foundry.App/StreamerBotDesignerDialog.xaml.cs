@@ -92,6 +92,21 @@ public partial class StreamerBotDesignerDialog : Window
                CommandGroupOptions.Contains("Creator Commands");
     }
 
+    internal static bool VerifyEditableComboBoxForSmokeTest()
+    {
+        var editor = new ComboBox
+        {
+            IsEditable = true,
+            Style = (Style)Application.Current.FindResource(typeof(ComboBox)),
+        };
+        editor.ApplyTemplate();
+        if (editor.Template.FindName("PART_EditableTextBox", editor) is not TextBox textBox ||
+            textBox.Visibility != Visibility.Visible || textBox.IsReadOnly)
+            return false;
+        textBox.Text = "New typed group";
+        return editor.Text == "New typed group";
+    }
+
     public StreamerBotDesignerDialog(string definitionPath, string? profile = null)
     {
         this.definitionPath = definitionPath;

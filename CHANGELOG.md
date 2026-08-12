@@ -69,6 +69,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Fixed
 
+- Editable dropdowns now expose a real keyboard-editable text field in the
+  shared themed ComboBox template, allowing new action and command group names
+  to be typed instead of limiting creators to existing suggestions.
 - Execute C# conversion now normalizes generated source to LF independently of
   checkout line endings, keeping generated source hashes deterministic.
 - Prevented the Streamer.bot Designer from locking the UI thread when action

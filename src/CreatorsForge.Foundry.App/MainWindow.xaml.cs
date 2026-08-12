@@ -137,6 +137,7 @@ public partial class MainWindow : Window
             designerReady = newProjectSuggestionsReady && designer.Content is not null &&
                 designer.ResourcesReadyForSmokeTest &&
                 designer.CSharpAuthoringReadyForSmokeTest &&
+                StreamerBotDesignerDialog.VerifyEditableComboBoxForSmokeTest() &&
                 designer.VerifyActionSuggestionsForSmokeTest() &&
                 designer.VerifyCommandGroupsForSmokeTest() &&
                 designer.VerifyCSharpConversionForSmokeTest() &&

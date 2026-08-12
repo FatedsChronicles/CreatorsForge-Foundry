@@ -61,6 +61,8 @@
                 <DataGridTemplateColumn.CellEditingTemplate>
                   <DataTemplate>
                     <ComboBox IsEditable="True"
+                        IsTextSearchEnabled="False"
+                        StaysOpenOnEdit="True"
                         ItemsSource="{Binding GroupOptions, RelativeSource={RelativeSource AncestorType={x:Type local:StreamerBotDesignerDialog}}}"
                         Text="{Binding Group, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                   </DataTemplate>
@@ -224,6 +226,8 @@
                   <DataTemplate>
                     <ComboBox
                         IsEditable="True"
+                        IsTextSearchEnabled="False"
+                        StaysOpenOnEdit="True"
                         Background="{DynamicResource EditorBackgroundBrush}"
                         Foreground="{DynamicResource TextBrush}"
                         ItemsSource="{Binding CommandGroupOptions, RelativeSource={RelativeSource AncestorType={x:Type local:StreamerBotDesignerDialog}}}"
