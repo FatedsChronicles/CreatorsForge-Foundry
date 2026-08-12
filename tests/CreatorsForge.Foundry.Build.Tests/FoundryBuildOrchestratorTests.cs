@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
 using CreatorsForge.Foundry.Build;
 using CreatorsForge.Foundry.Core.Projects;
+using CreatorsForge.Foundry.Core.Packaging;
+using CreatorsForge.Foundry.Workspaces;
 
 namespace CreatorsForge.Foundry.Build.Tests;
 
@@ -39,6 +41,36 @@ public sealed class FoundryBuildOrchestratorTests
         };
 
         Assert.Throws<ArgumentException>(() => CphInlineBridgeGenerator.Generate(bridge));
+    }
+
+    [Fact]
+    public async Task SourceFirstStreamerBotTemplateBuildsWithoutManagedBridge()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "foundry-source-package-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var created = await FoundryWorkspaceService.CreateAsync(new(
+                root, "Source Package", "com.example.source-package", "1.0.7-stable",
+                "streamerbot", FoundryProjectTemplateService.StreamerBotExtension));
+            Assert.True(created.IsSuccess);
+            var runner = new RejectingBuildRunner();
+
+            var result = await new FoundryBuildOrchestrator(runner).BuildAsync(
+                created.Value!.Manifest, created.Value.ProjectPath, CancellationToken.None);
+
+            Assert.True(result.IsSuccess, string.Join(Environment.NewLine,
+                result.Diagnostics.Select(item => item.Message)));
+            Assert.Equal(0, runner.InvocationCount);
+            Assert.DoesNotContain(result.PackageIntermediate!.Artifacts,
+                item => item.Kind is FoundryPackageArtifactKinds.ManagedAssembly or
+                    FoundryPackageArtifactKinds.CphInlineBridge);
+            Assert.Contains(result.PackageIntermediate.Artifacts,
+                item => item.Kind == FoundryPackageArtifactKinds.StreamerBotPackage);
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
     }
 
     [Fact]
@@ -288,6 +320,19 @@ public sealed class FoundryBuildOrchestratorTests
                 assemblyBytes,
                 cancellationToken);
             return new(0, "Build succeeded.", string.Empty);
+        }
+    }
+
+    private sealed class RejectingBuildRunner : IBuildProcessRunner
+    {
+        public int InvocationCount { get; private set; }
+
+        public Task<BuildProcessResult> RunAsync(
+            BuildProcessRequest request,
+            CancellationToken cancellationToken)
+        {
+            InvocationCount++;
+            throw new InvalidOperationException("A source-first package must not start a managed compiler.");
         }
     }
 

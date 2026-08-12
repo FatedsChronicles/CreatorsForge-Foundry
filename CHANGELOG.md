@@ -6,6 +6,18 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Planned Phase 25G command-group support for the Streamer.bot Designer,
+  including verified wire-format capture, source-first schema migration,
+  friendly reusable group selection, and deterministic import/export.
+- Phase 25F Streamer.bot definition schema v5 with deterministic migration and
+  Execute C# generation provenance, source hashes, and detached-edit state.
+- Manual Execute C# creation in the Streamer.bot Designer, confined source
+  paths, save-before-editor navigation, and cancellation cleanup.
+- Preview-before-conversion for the verified Set Argument native operation,
+  with deterministic C# escaping and an explicit safety block for unverified
+  Auto Type coercion.
+- Deterministic Execute C# embedding for source-authored stable-v23 and
+  preserved v23/v24 packages without adding source files to managed DLL inputs.
 - Phase 25E Streamer.bot definition schema v4 resource requirements for OBS
   items, accounts, local paths, URLs, integrations, and custom values, with
   deterministic migration from schemas v1-v3.
@@ -56,6 +68,29 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Fixed
 
+- Prevented the Streamer.bot Designer from locking the UI thread when action
+  group and queue suggestions refreshed. Suggestion updates are now guarded,
+  idempotent, and update queue labels without recursively refreshing the grid.
+- Phase 25F acceptance follow-up: the general New Project dialog now derives
+  Package ID and the complete New folder from Project name while preserving
+  manual edits; new and converted Execute C# sources include `using System;`;
+  the manual scaffold includes an explicit main-code marker; the completion
+  list is wider; and the Streamer.bot Designer opens wide enough to retain its
+  sub-action toolbar on one row.
+- Set Argument conversion now atomically replaces the selected Designer row at
+  the same index and immediately reselects it, so kind and C# state visibly
+  become `executeCSharp` and `Generated`. An identical existing generated file
+  can be safely reused, while different source is never overwritten.
+- Phase 25F acceptance follow-up: all standard text fields, including Build,
+  Console, and Streamer.bot Designer grid editors, now use the themed
+  Cut/Copy/Paste menu in Dark mode.
+- The Actions grid now shows Queue Name beside Queue ID and supplies existing
+  groups and queues as reusable selections. Group remains editable so a new or
+  replacement group can still be entered.
+- The **Streamer.bot C# action package** template is now source-first and
+  package-only: it contains no unrelated managed DLL, CPHInline bridge, or
+  invented managed-entry test. The managed command-workflow template retains
+  the bridge for projects that intentionally call a Foundry DLL.
 - Phase 25E acceptance follow-up: Resources grid type and portability editors
   now retain dark-theme colours while open, text-edit context menus use the
   Foundry theme, and validation explicitly states that `SBD2007`/`SBD2008`
@@ -64,6 +99,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Security
 
+- Execute C# authoring and conversion operate on inert text only, enforce
+  project-confined `.cs` paths and a 1 MiB source limit, use create-new writes,
+  and never compile or execute code during design or export.
 - Import limits and validation for Base64, SBAE identity, GZip, strict UTF-8,
   JSON depth, decoded size, and entity count; credential-like values block
   project creation without being printed, while absolute machine paths block
@@ -78,6 +116,10 @@ identity.
 
 ### Acceptance
 
+- Phase 25F product-owner acceptance passed on 2026-08-12. Execute C# authoring,
+  native Set Argument conversion, source-only and managed package behavior,
+  Designer suggestions and theme fixes, deterministic builds, and Streamer.bot
+  import checks all passed.
 - Phase 25D product-owner acceptance passed on 2026-08-11. Arbitrary-extension
   loading, drag and drop, synchronized naming suggestions, friendly imported
   source labels, save/reopen, and regression checks passed.

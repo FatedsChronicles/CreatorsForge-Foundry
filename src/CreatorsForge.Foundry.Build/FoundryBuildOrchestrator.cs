@@ -394,20 +394,26 @@ public sealed class FoundryBuildOrchestrator
                 }
                 else
                 {
-                    if (bridgePath is null)
+                    var requiresBridge = streamerBotDefinition.Actions
+                        .SelectMany(action => action.SubActions)
+                        .Any(item => item.Kind == "executeBridge");
+                    if (requiresBridge && bridgePath is null)
                     {
                         throw new InvalidOperationException(
-                            "A source-authored Streamer.bot package requires a CPHInline bridge; package-only builds are supported for imported preserved payloads.");
+                            "This Streamer.bot definition contains Execute Bridge but the project does not provide a CPHInline bridge. Remove that sub-action or select a managed bridge project template.");
                     }
-                    var bridgeSource = await File.ReadAllTextAsync(
-                        bridgePath,
-                        cancellationToken).ConfigureAwait(false);
+                    var bridgeSource = bridgePath is null
+                        ? string.Empty
+                        : await File.ReadAllTextAsync(
+                            bridgePath,
+                            cancellationToken).ConfigureAwait(false);
                     export = StreamerBotStableV23Adapter.Encode(
                         streamerBotDefinition,
                         manifest.Id,
                         manifest.Name,
                         manifest.Version,
-                        bridgeSource);
+                        bridgeSource,
+                        projectRoot);
                 }
                 await File.WriteAllTextAsync(
                     streamerBotPackagePath,

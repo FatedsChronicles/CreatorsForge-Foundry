@@ -1,12 +1,13 @@
 <Window Style="{StaticResource FoundryWindowStyle}"
     x:Class="CreatorsForge.Foundry.App.StreamerBotDesignerDialog"
+    x:Name="DesignerWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:CreatorsForge.Foundry.App"
     Title="Streamer.bot Designer"
-    Width="1050"
+    Width="1400"
     Height="720"
-    MinWidth="850"
+    MinWidth="1200"
     MinHeight="560"
     WindowStartupLocation="CenterOwner">
   <Grid Margin="12">
@@ -53,10 +54,35 @@
             <DataGrid.Columns>
               <DataGridTextColumn Width="*" Header="ID" Binding="{Binding Id}" />
               <DataGridTextColumn Width="2*" Header="Name" Binding="{Binding Name}" />
-              <DataGridTextColumn Width="*" Header="Group" Binding="{Binding Group}" />
+              <DataGridTemplateColumn Width="*" Header="Group">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate><TextBlock Text="{Binding Group}" /></DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+                <DataGridTemplateColumn.CellEditingTemplate>
+                  <DataTemplate>
+                    <ComboBox IsEditable="True"
+                        ItemsSource="{Binding GroupOptions, RelativeSource={RelativeSource AncestorType={x:Type local:StreamerBotDesignerDialog}}}"
+                        Text="{Binding Group, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellEditingTemplate>
+              </DataGridTemplateColumn>
               <DataGridTextColumn Width="2*" Header="Description" Binding="{Binding Description}" />
               <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" />
-              <DataGridTextColumn Width="*" Header="Queue ID" Binding="{Binding QueueId}" />
+              <DataGridTemplateColumn Width="*" Header="Queue ID">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate><TextBlock Text="{Binding QueueId}" /></DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+                <DataGridTemplateColumn.CellEditingTemplate>
+                  <DataTemplate>
+                    <ComboBox IsEditable="False"
+                        DisplayMemberPath="Name"
+                        ItemsSource="{Binding QueueOptions, RelativeSource={RelativeSource AncestorType={x:Type local:StreamerBotDesignerDialog}}}"
+                        SelectedValue="{Binding QueueId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        SelectedValuePath="Id" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellEditingTemplate>
+              </DataGridTemplateColumn>
+              <DataGridTextColumn Width="*" Header="Queue Name" IsReadOnly="True" Binding="{Binding QueueName}" />
               <DataGridCheckBoxColumn Header="Concurrent" Binding="{Binding Concurrent}" />
               <DataGridCheckBoxColumn Header="Always run" Binding="{Binding AlwaysRun}" />
               <DataGridCheckBoxColumn Header="Random" Binding="{Binding RandomAction}" />
@@ -74,9 +100,9 @@
           </StackPanel>
           <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="2*" />
               <ColumnDefinition Width="10" />
-              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="5*" />
             </Grid.ColumnDefinitions>
             <GroupBox Header="Triggers">
               <DockPanel>
@@ -121,6 +147,8 @@
               <DockPanel>
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
                   <Button Content="Add from catalogue..." Click="AddSubAction_Click" />
+                  <Button x:Name="AddExecuteCSharpButton" Content="Add Execute C#..." Click="AddExecuteCSharp_Click" />
+                  <Button x:Name="ConvertToCSharpButton" Content="Convert to C#..." Click="ConvertSubActionToCSharp_Click" />
                   <Button Content="Remove" Click="RemoveSubAction_Click" />
                   <Button Content="Duplicate" Click="DuplicateSubAction_Click" />
                   <Button Content="Move up" Click="MoveSubActionUp_Click" />
@@ -158,6 +186,7 @@
                     <DataGridCheckBoxColumn Header="Auto type" Binding="{Binding AutoType}" />
                     <DataGridTextColumn x:Name="WeightColumn" Header="Weight" Binding="{Binding Weight}" />
                     <DataGridTextColumn Width="2*" Header="C# source" IsReadOnly="True" Binding="{Binding SourcePath}" />
+                    <DataGridTextColumn Width="*" Header="C# state" IsReadOnly="True" Binding="{Binding CSharpState}" />
                     <DataGridTextColumn Width="2*" Header="References (; separated)" Binding="{Binding ReferenceList}" />
                     <DataGridTextColumn Header="Source type" IsReadOnly="True" Binding="{Binding SourceType}" />
                     <DataGridTextColumn Header="Mode" IsReadOnly="True" Binding="{Binding Mode}" />

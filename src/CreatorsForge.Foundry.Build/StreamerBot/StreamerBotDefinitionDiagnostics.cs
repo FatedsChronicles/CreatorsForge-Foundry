@@ -160,6 +160,15 @@ public static class StreamerBotDefinitionDiagnostics
                 else if (subAction.Weight > 0 && !compatibility.WeightedRandomActions)
                     diagnostics.Add(new("SBD1004", StreamerBotDefinitionDiagnosticSeverity.Error,
                         $"Weighted sub-actions have not been verified for profile '{compatibility.Profile}'.", subPath, subAction.Id));
+                if (subAction.Kind == "executeCSharp" && subAction.DetachedFromGenerator)
+                    diagnostics.Add(new("SBD2009", StreamerBotDefinitionDiagnosticSeverity.Warning,
+                        $"Execute C# '{subAction.Id}' was edited after generation. Foundry will preserve the manual source and never overwrite it automatically.",
+                        subPath, subAction.Id));
+                if (subAction.Kind == "executeCSharp" && (subAction.References ?? []).Any(reference =>
+                        Path.IsPathFullyQualified(reference) || reference.StartsWith("\\\\", StringComparison.Ordinal)))
+                    diagnostics.Add(new("SBD1019", StreamerBotDefinitionDiagnosticSeverity.Error,
+                        $"Execute C# '{subAction.Id}' contains an absolute compiler reference. Remove it or replace it with a portable project-relative dependency before export.",
+                        subPath, subAction.Id));
             }
 
             if (action.Concurrent)

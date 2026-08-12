@@ -1,0 +1,34 @@
+<Window Style="{StaticResource FoundryWindowStyle}"
+    x:Class="CreatorsForge.Foundry.App.StreamerBotCSharpConversionDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Preview Execute C# conversion"
+    Width="760"
+    Height="600"
+    MinWidth="600"
+    MinHeight="420"
+    WindowStartupLocation="CenterOwner">
+  <Grid Margin="16">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <TextBlock FontSize="20" FontWeight="SemiBold" Text="Convert native operation to Execute C#" />
+    <StackPanel Grid.Row="1" Margin="0,10,0,10">
+      <TextBlock x:Name="SummaryText" TextWrapping="Wrap" />
+      <TextBlock Margin="0,6,0,0" Foreground="{DynamicResource MutedTextBrush}"
+          Text="This preview is inert text. Foundry will not compile or execute it. After conversion, manual edits are preserved and the file is never regenerated automatically."
+          TextWrapping="Wrap" />
+    </StackPanel>
+    <TextBox x:Name="SourceTextBox" Grid.Row="2" IsReadOnly="True"
+        FontFamily="Consolas" AcceptsReturn="True" AcceptsTab="True"
+        HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+        TextWrapping="NoWrap" />
+    <StackPanel Grid.Row="3" Margin="0,12,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
+      <Button Width="100" Content="Cancel" IsCancel="True" />
+      <Button Width="120" Content="Convert" IsDefault="True" Click="Convert_Click" />
+    </StackPanel>
+  </Grid>
+</Window>

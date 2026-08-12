@@ -25,7 +25,7 @@ public static class FoundryProjectTemplateService
 
     public static IReadOnlyList<FoundryProjectTemplateDescriptor> Templates { get; } =
     [
-        new(StreamerBotExtension, "Streamer.bot extension", "streamerbot", "Extension", "Minimal test-triggered extension and CPHInline bridge.", "1.0.2"),
+        new(StreamerBotExtension, "Streamer.bot C# action package", "streamerbot", "Extension", "Source-first Streamer.bot action package without a managed DLL bridge.", "1.1.0"),
         new(StreamerBotCommand, "Streamer.bot command workflow", "streamerbot", "Workflow", "Command, queue, action, and managed bridge starter.", "1.0.2"),
         new(ObsModule, "OBS module", "obsstudio", "Module", "SDK-backed module without a registered component.", "1.0.2"),
         new(ObsPassthroughFilter, "OBS passthrough filter", "obsstudio", "Filter", "Lifecycle-safe synchronous video filter.", "1.0.2"),

@@ -771,3 +771,76 @@ wire format or alter preserved opaque content. Manual acceptance is defined in
 [streamerbot-resources-portability.md](streamerbot-resources-portability.md).
 The implementation gate passes a zero-warning Release build, all 323 automated
 tests, and all ten representative desktop smoke projects.
+
+Product-owner manual acceptance passed on 2026-08-11. PR #24 merged the
+accepted resource workspace, portability diagnostics, package report, and
+dark-theme follow-up as commit `6ae8981`. **Phase 25E is complete.**
+
+### Phase 25F - Execute C# authoring and verified native conversion
+
+Phase 25F makes Execute C# a first-class, source-controlled Streamer.bot
+sub-action. The Designer can create a confined manual C# source beneath
+`streamerbot/code/<action-id>/<subaction-id>.cs`, save the definition, and
+navigate directly into the existing Roslyn editor. These files remain text;
+Foundry never executes imported or authored C# during design, validation, or
+packaging, and they are not added to managed DLL build inputs.
+
+The first native-to-C# conversion is deliberately limited to the retained,
+verified Set Argument type 123 mapping. Foundry shows the complete inert source
+before conversion, emits deterministic escaped `CPH.SetArgument(...)` code,
+and records generator revision, source entity, and source hash in definition
+schema v5. Auto Type conversions are blocked until native coercion semantics
+are proven equivalent. Generated files are written once and never silently
+regenerated; later edits are labelled Detached and preserved as authoritative
+manual source.
+
+Both source-authored stable-v23 packages and imported preserved v23/v24
+packages deterministically re-embed the confined source as Execute C# type
+99999 while retaining IDs, order, enabled state, weights, references, and
+same-format provenance. Broader conversions require representative capture
+evidence and exact-host verification. Manual acceptance is defined in
+[streamerbot-csharp-authoring.md](streamerbot-csharp-authoring.md).
+
+The acceptance follow-up separates source-only and managed project intent.
+**Streamer.bot C# action package** creates a package-only Designer project with
+no managed DLL, bridge sub-action, or invented managed-entry test. The managed
+command-workflow template retains the bridge. The Actions grid also reuses
+existing group and queue choices, shows the resolved Queue Name, and keeps Group
+editable for intentional overrides. Standard text-edit context menus now use
+the active Foundry theme throughout the Build pane and Designer grids.
+
+Product-owner manual acceptance passed on 2026-08-12. Execute C# creation, Set
+Argument conversion, source-only packaging, managed bridge separation, group
+and queue suggestions, dark-theme menus, save/reopen, deterministic build, and
+Streamer.bot import checks passed. The acceptance follow-up also removed a
+re-entrant Actions-grid refresh that could lock the Designer UI. **Phase 25F is
+complete.**
+
+### Phase 25G - Command groups and command organization
+
+Phase 25G adds first-class Streamer.bot command grouping to the Commands tab.
+Before changing the source model, representative exports will establish the
+exact command-group wire fields, IDs, ordering, and empty-group behavior for
+each supported payload adapter. Foundry will not infer undocumented fields.
+
+The next Streamer.bot definition schema will add the verified group relationship
+to commands with deterministic migration. Imported commands retain their source
+wire IDs and group relationships; newly authored groups receive deterministic
+identities derived from the project identity wherever the verified wire format
+requires an ID. Unsupported or adapter-specific group data remains preserved
+read-only under the existing opaque-data rules.
+
+The Commands tab will provide a friendly **Group** selector populated from
+groups already used by other commands, while remaining editable so a creator
+can add a new group or intentionally replace a suggestion. Blank means the
+command is ungrouped. Rename, duplicate, save/reopen, diagnostics, and Solution
+Explorer labels must retain the correct relationships without exposing IDs in
+place of names.
+
+Import, validation, package IR, and the verified v23/v24 encoders will carry
+command grouping deterministically. Acceptance requires grouped and ungrouped
+multi-command fixtures, import/edit/re-export preservation, stable IDs and
+ordering, zero changes to opaque nodes, and successful import into every exact
+Streamer.bot host claimed by the adapter, currently 1.0.4, 1.0.5-alpha.34,
+1.0.5-beta.1, 1.0.5-beta.6, and 1.0.7. The full Foundry regression suite must
+continue to pass with no OBS regressions.

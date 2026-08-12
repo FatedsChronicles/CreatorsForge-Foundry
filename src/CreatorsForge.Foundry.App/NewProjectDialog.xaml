@@ -42,7 +42,8 @@
         Grid.ColumnSpan="2"
         Margin="6"
         Padding="7"
-        Text="My Extension" />
+        Text="My Extension"
+        TextChanged="ProjectName_Changed" />
 
     <TextBlock Grid.Row="2" VerticalAlignment="Center" Text="Project ID" />
     <TextBox
@@ -52,15 +53,17 @@
         Grid.ColumnSpan="2"
         Margin="6"
         Padding="7"
-        Text="com.example.my-extension" />
+        Text="com.example.my-extension"
+        TextChanged="ProjectId_Changed" />
 
-    <TextBlock Grid.Row="3" VerticalAlignment="Center" Text="Parent folder" />
+    <TextBlock Grid.Row="3" VerticalAlignment="Center" Text="New folder" />
     <TextBox
         x:Name="ProjectLocationTextBox"
         Grid.Row="3"
         Grid.Column="1"
         Margin="6"
-        Padding="7" />
+        Padding="7"
+        TextChanged="ProjectLocation_Changed" />
     <Button
         Grid.Row="3"
         Grid.Column="2"

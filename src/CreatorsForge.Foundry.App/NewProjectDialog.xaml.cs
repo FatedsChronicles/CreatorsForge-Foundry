@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using CreatorsForge.Foundry.Core.Compatibility;
+using CreatorsForge.Foundry.Core.Projects;
 using CreatorsForge.Foundry.Workspaces;
 using Microsoft.Win32;
 
@@ -8,14 +9,33 @@ namespace CreatorsForge.Foundry.App;
 
 public partial class NewProjectDialog : Window
 {
+    private readonly string defaultProjectDirectory;
+    private bool isUpdatingSuggestions = true;
+    private bool projectIdManuallyEdited;
+    private bool destinationManuallyEdited;
+
     public NewProjectDialog(FoundryUserSettings settings)
     {
         InitializeComponent();
-        ProjectLocationTextBox.Text = settings.DefaultProjectDirectory;
+        defaultProjectDirectory = settings.DefaultProjectDirectory;
+        ApplyNameSuggestions();
+        isUpdatingSuggestions = false;
         RefreshProviderOptions();
     }
 
     public FoundryProjectCreationRequest? Request { get; private set; }
+
+    internal bool VerifyNamingSuggestionsForSmokeTest()
+    {
+        ProjectNameTextBox.Text = "Bot Eliminator";
+        var tracksName = ProjectIdTextBox.Text == "com.example.bot-eliminator" &&
+            ProjectLocationTextBox.Text == Path.Combine(defaultProjectDirectory, "BotEliminator");
+        ProjectIdTextBox.Text = "dev.example.manual";
+        ProjectLocationTextBox.Text = Path.Combine(defaultProjectDirectory, "ManualFolder");
+        ProjectNameTextBox.Text = "Renamed Project";
+        return tracksName && ProjectIdTextBox.Text == "dev.example.manual" &&
+            ProjectLocationTextBox.Text == Path.Combine(defaultProjectDirectory, "ManualFolder");
+    }
 
     private void TargetProvider_SelectionChanged(
         object sender,
@@ -54,7 +74,7 @@ public partial class NewProjectDialog : Window
         }
 
         ProfileComboBox.SelectedIndex = 0;
-        TemplateComboBox.SelectedIndex = TemplateComboBox.Items.Count > 1 ? 1 : 0;
+        TemplateComboBox.SelectedIndex = 0;
     }
 
     private void Template_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -73,42 +93,64 @@ public partial class NewProjectDialog : Window
     {
         var dialog = new OpenFolderDialog
         {
-            InitialDirectory = Directory.Exists(ProjectLocationTextBox.Text)
-                ? ProjectLocationTextBox.Text
+            InitialDirectory = Directory.Exists(Path.GetDirectoryName(ProjectLocationTextBox.Text))
+                ? Path.GetDirectoryName(ProjectLocationTextBox.Text)!
                 : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
             Multiselect = false,
             Title = "Select parent folder",
         };
         if (dialog.ShowDialog(this) == true)
         {
-            ProjectLocationTextBox.Text = dialog.FolderName;
+            isUpdatingSuggestions = true;
+            ProjectLocationTextBox.Text = FoundryProjectNamingService.Suggest(
+                ProjectNameTextBox.Text, dialog.FolderName).DestinationFolder;
+            isUpdatingSuggestions = false;
+            destinationManuallyEdited = false;
         }
+    }
+
+    private void ProjectName_Changed(object sender, TextChangedEventArgs e)
+    {
+        if (!isUpdatingSuggestions) ApplyNameSuggestions();
+    }
+
+    private void ProjectId_Changed(object sender, TextChangedEventArgs e)
+    {
+        if (!isUpdatingSuggestions) projectIdManuallyEdited = true;
+    }
+
+    private void ProjectLocation_Changed(object sender, TextChangedEventArgs e)
+    {
+        if (!isUpdatingSuggestions) destinationManuallyEdited = true;
+    }
+
+    private void ApplyNameSuggestions()
+    {
+        if (ProjectNameTextBox is null || ProjectIdTextBox is null || ProjectLocationTextBox is null)
+            return;
+        var parent = destinationManuallyEdited
+            ? Path.GetDirectoryName(ProjectLocationTextBox.Text)
+            : defaultProjectDirectory;
+        if (string.IsNullOrWhiteSpace(parent)) parent = defaultProjectDirectory;
+        var suggestion = FoundryProjectNamingService.Suggest(ProjectNameTextBox.Text, parent);
+        isUpdatingSuggestions = true;
+        if (!projectIdManuallyEdited) ProjectIdTextBox.Text = suggestion.PackageId;
+        if (!destinationManuallyEdited) ProjectLocationTextBox.Text = suggestion.DestinationFolder;
+        isUpdatingSuggestions = false;
     }
 
     private void Create_Click(object sender, RoutedEventArgs e)
     {
         var name = ProjectNameTextBox.Text.Trim();
         var id = ProjectIdTextBox.Text.Trim();
-        var parent = ProjectLocationTextBox.Text.Trim();
+        var projectDirectory = ProjectLocationTextBox.Text.Trim();
         if (string.IsNullOrWhiteSpace(name) ||
             string.IsNullOrWhiteSpace(id) ||
-            string.IsNullOrWhiteSpace(parent))
+            string.IsNullOrWhiteSpace(projectDirectory))
         {
             MessageBox.Show(
                 this,
                 "Project name, ID, and parent folder are required.",
-                "Create project",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
-            return;
-        }
-
-        var folderName = string.Concat(name.Where(char.IsLetterOrDigit));
-        if (string.IsNullOrWhiteSpace(folderName))
-        {
-            MessageBox.Show(
-                this,
-                "Project name must contain at least one letter or digit.",
                 "Create project",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
@@ -121,7 +163,7 @@ public partial class NewProjectDialog : Window
             "streamerbot";
         var template = TemplateComboBox.SelectedItem as FoundryProjectTemplateDescriptor;
         Request = new(
-            Path.Combine(parent, folderName),
+            projectDirectory,
             name,
             id,
             profile,

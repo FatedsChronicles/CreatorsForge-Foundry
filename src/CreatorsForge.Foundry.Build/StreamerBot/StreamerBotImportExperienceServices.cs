@@ -1,4 +1,5 @@
 using System.Text;
+using CreatorsForge.Foundry.Core.Projects;
 
 namespace CreatorsForge.Foundry.Build.StreamerBot;
 
@@ -36,18 +37,8 @@ public static class StreamerBotImportNamingService
 {
     public static StreamerBotImportNameSuggestion Suggest(string projectName, string parentDirectory)
     {
-        ArgumentNullException.ThrowIfNull(projectName);
-        ArgumentException.ThrowIfNullOrWhiteSpace(parentDirectory);
-        var words = projectName.ToLowerInvariant()
-            .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
-            .Select(word => new string(word.Where(char.IsLetterOrDigit).ToArray()))
-            .Where(word => word.Length > 0)
-            .ToArray();
-        var slug = string.Join('-', words);
-        var folder = string.Concat(projectName.Where(char.IsLetterOrDigit));
-        return new(
-            projectName,
-            $"com.example.{(slug.Length == 0 ? "imported-extension" : slug)}",
-            Path.Combine(parentDirectory, folder.Length == 0 ? "ImportedExtension" : folder));
+        var suggestion = FoundryProjectNamingService.Suggest(
+            projectName, parentDirectory, "imported-extension", "ImportedExtension");
+        return new(suggestion.ProjectName, suggestion.PackageId, suggestion.DestinationFolder);
     }
 }

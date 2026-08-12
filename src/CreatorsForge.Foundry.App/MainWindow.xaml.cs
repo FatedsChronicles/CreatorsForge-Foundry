@@ -109,6 +109,9 @@ public partial class MainWindow : Window
             viewModel.Workspace?.Manifest.Target?.Profile ?? "1.0.4-stable");
         var snippetBrowserReady = snippetBrowser.Content is not null;
         snippetBrowser.Close();
+        var newProjectDialog = new NewProjectDialog(viewModel.Settings);
+        var newProjectSuggestionsReady = newProjectDialog.VerifyNamingSuggestionsForSmokeTest();
+        newProjectDialog.Close();
         var obsReference = new ObsApiReferenceDialog(
             ObsNativeIntelligenceProvider.Default.Catalogue,
             viewModel.Workspace?.Manifest.Target?.Profile ?? "32.x-windows-x64");
@@ -126,8 +129,16 @@ public partial class MainWindow : Window
             var palette = new StreamerBotOperationPaletteDialog(
                 "subAction",
                 viewModel.Workspace.Manifest.Target?.Profile);
-            designerReady = designer.Content is not null &&
+            designer.UpdateLayout();
+            await designer.Dispatcher.InvokeAsync(
+                () => { },
+                DispatcherPriority.ContextIdle,
+                cancellationToken);
+            designerReady = newProjectSuggestionsReady && designer.Content is not null &&
                 designer.ResourcesReadyForSmokeTest &&
+                designer.CSharpAuthoringReadyForSmokeTest &&
+                designer.VerifyActionSuggestionsForSmokeTest() &&
+                designer.VerifyCSharpConversionForSmokeTest() &&
                 palette.Content is not null &&
                 new OperationReferenceChoice("command-id", "Friendly command").ToString() == "Friendly command";
             palette.Close();

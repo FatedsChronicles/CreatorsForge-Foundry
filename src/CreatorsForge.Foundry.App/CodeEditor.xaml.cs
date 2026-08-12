@@ -318,6 +318,7 @@ public partial class CodeEditor : UserControl
             completionWindow?.Close();
             completionContainsSnippets = false;
             completionWindow = new(Editor.TextArea);
+            ConfigureCompletionWindow(completionWindow);
             foreach (var item in items)
             {
                 completionWindow.CompletionList.CompletionData.Add(
@@ -345,6 +346,7 @@ public partial class CodeEditor : UserControl
         completionWindow?.Close();
         completionContainsSnippets = true;
         completionWindow = new(Editor.TextArea);
+        ConfigureCompletionWindow(completionWindow);
         foreach (var item in snippetItems)
         {
             completionWindow.CompletionList.CompletionData.Add(
@@ -421,6 +423,7 @@ public partial class CodeEditor : UserControl
         completionWindow?.Close();
         completionContainsSnippets = false;
         completionWindow = new(Editor.TextArea);
+        ConfigureCompletionWindow(completionWindow);
         foreach (var item in items)
         {
             completionWindow.CompletionList.CompletionData.Add(
@@ -429,6 +432,17 @@ public partial class CodeEditor : UserControl
 
         completionWindow.Closed += (_, _) => completionWindow = null;
         completionWindow.Show();
+    }
+
+    private static void ConfigureCompletionWindow(CompletionWindow window)
+    {
+        var width = Math.Clamp(SystemParameters.WorkArea.Width - 80, 560, 760);
+        window.Width = width;
+        window.MinWidth = Math.Min(560, width);
+        window.CompletionList.ListBox.MinWidth = Math.Max(520, width - 28);
+        ScrollViewer.SetHorizontalScrollBarVisibility(
+            window.CompletionList.ListBox,
+            ScrollBarVisibility.Disabled);
     }
 
     private void ShowNativeSignatureHelp()

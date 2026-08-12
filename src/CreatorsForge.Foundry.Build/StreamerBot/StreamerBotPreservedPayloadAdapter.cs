@@ -187,12 +187,19 @@ public static class StreamerBotPreservedPayloadAdapter
                 subTarget["weight"] = subAction.Weight;
                 if (subAction.Kind == "setArgument")
                 {
+                    subTarget["type"] = 123;
                     subTarget["variableName"] = subAction.VariableName;
                     subTarget["value"] = subAction.Value;
                     subTarget["autoType"] = subAction.AutoType;
+                    subTarget.Remove("byteCode");
+                    subTarget.Remove("references");
                 }
                 else if (subAction.Kind == "executeCSharp")
                 {
+                    subTarget["type"] = 99999;
+                    subTarget.Remove("variableName");
+                    subTarget.Remove("value");
+                    subTarget.Remove("autoType");
                     subTarget["references"] = new JsonArray((subAction.References ?? [])
                         .Select(value => (JsonNode?)JsonValue.Create(value)).ToArray());
                     var sourcePath = ResolveConfined(projectRoot, subAction.SourcePath!, ".cs");
