@@ -306,11 +306,22 @@ public sealed class WorkspaceServicesTests
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "streamerbot", "streamerbot.json")));
             }
 
-            Assert.Equal("tests/foundry-tests.json", created.Value.Manifest.TestDefinition);
-            var testDefinitionPath = Path.Combine(projectDirectory, "tests", "foundry-tests.json");
-            Assert.True(File.Exists(testDefinitionPath));
-            var testDefinition = await File.ReadAllTextAsync(testDefinitionPath);
-            Assert.Contains($"\"provider\": \"{template.Provider}\"", testDefinition, StringComparison.Ordinal);
+            if (template.Id == FoundryProjectTemplateService.StreamerBotExtension)
+            {
+                Assert.Null(created.Value.Manifest.TestDefinition);
+                Assert.Null(created.Value.Manifest.ManagedBuild);
+                Assert.Null(created.Value.Manifest.CphInlineBridge);
+                Assert.Equal([FoundryOutputKinds.StreamerBotPackage], created.Value.Manifest.Outputs);
+                Assert.False(File.Exists(Path.Combine(projectDirectory, "src", "EntryPoint.cs")));
+            }
+            else
+            {
+                Assert.Equal("tests/foundry-tests.json", created.Value.Manifest.TestDefinition);
+                var testDefinitionPath = Path.Combine(projectDirectory, "tests", "foundry-tests.json");
+                Assert.True(File.Exists(testDefinitionPath));
+                var testDefinition = await File.ReadAllTextAsync(testDefinitionPath);
+                Assert.Contains($"\"provider\": \"{template.Provider}\"", testDefinition, StringComparison.Ordinal);
+            }
         }
     }
 
@@ -331,6 +342,8 @@ public sealed class WorkspaceServicesTests
             "streamerbot.json"));
         Assert.Contains("\"kind\": \"test\"", definition, StringComparison.Ordinal);
         Assert.Contains("\"commands\": []", definition, StringComparison.Ordinal);
+        Assert.Contains("\"subActions\": []", definition, StringComparison.Ordinal);
+        Assert.DoesNotContain("executeBridge", definition, StringComparison.Ordinal);
 
         var obs = await FoundryWorkspaceService.CreateAsync(new(
             Path.Combine(temporary.Path, "obs"),

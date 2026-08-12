@@ -130,6 +130,10 @@ public static class FoundryWorkspaceService
                 "The selected project template is not available for this provider.",
                 projectDirectory);
         }
+        var isStreamerBotSourcePackage = string.Equals(
+            template.Id,
+            FoundryProjectTemplateService.StreamerBotExtension,
+            StringComparison.Ordinal);
 
         var author = string.IsNullOrWhiteSpace(request.Author)
             ? "Creator"
@@ -208,25 +212,27 @@ public static class FoundryWorkspaceService
             {
                 MockRuntime = true,
             },
-            ManagedBuild = new FoundryManagedBuild
+            ManagedBuild = isStreamerBotSourcePackage ? null : new FoundryManagedBuild
             {
                 AssemblyName = $"CreatorsForge.Extensions.{namespaceName}",
                 Sources = ["src/EntryPoint.cs"],
             },
-            CphInlineBridge = new FoundryCphInlineBridge
+            CphInlineBridge = isStreamerBotSourcePackage ? null : new FoundryCphInlineBridge
             {
                 Contract = FoundryCphInlineBridge.SupportedContract,
                 EntryType = $"CreatorsForge.Extensions.{namespaceName}.EntryPoint",
                 EntryMethod = "Execute",
             },
             TargetDefinition = "streamerbot/streamerbot.json",
-            TestDefinition = "tests/foundry-tests.json",
-            Outputs =
-            [
-                FoundryOutputKinds.ManagedLibrary,
-                FoundryOutputKinds.CphInlineBridge,
-                FoundryOutputKinds.StreamerBotPackage,
-            ],
+            TestDefinition = isStreamerBotSourcePackage ? null : "tests/foundry-tests.json",
+            Outputs = isStreamerBotSourcePackage
+                ? [FoundryOutputKinds.StreamerBotPackage]
+                :
+                [
+                    FoundryOutputKinds.ManagedLibrary,
+                    FoundryOutputKinds.CphInlineBridge,
+                    FoundryOutputKinds.StreamerBotPackage,
+                ],
             };
         var projectPath = Path.Combine(
             projectDirectory,
@@ -278,10 +284,13 @@ public static class FoundryWorkspaceService
             }
             else
             {
-                await AtomicFile.WriteTextAsync(
-                    Path.Combine(projectDirectory, "src", "EntryPoint.cs"),
-                    CreateEntryPointSource(namespaceName),
-                    cancellationToken).ConfigureAwait(false);
+                if (!isStreamerBotSourcePackage)
+                {
+                    await AtomicFile.WriteTextAsync(
+                        Path.Combine(projectDirectory, "src", "EntryPoint.cs"),
+                        CreateEntryPointSource(namespaceName),
+                        cancellationToken).ConfigureAwait(false);
+                }
                 await AtomicFile.WriteTextAsync(
                     Path.Combine(projectDirectory, "streamerbot", "streamerbot.json"),
                     CreateStreamerBotDefinitionJson(
@@ -290,10 +299,13 @@ public static class FoundryWorkspaceService
                         author,
                     description),
                     cancellationToken).ConfigureAwait(false);
-                await AtomicFile.WriteTextAsync(
-                    Path.Combine(projectDirectory, "tests", "foundry-tests.json"),
-                    CreateStreamerBotTestDefinitionJson(namespaceName),
-                    cancellationToken).ConfigureAwait(false);
+                if (!isStreamerBotSourcePackage)
+                {
+                    await AtomicFile.WriteTextAsync(
+                        Path.Combine(projectDirectory, "tests", "foundry-tests.json"),
+                        CreateStreamerBotTestDefinitionJson(namespaceName),
+                        cancellationToken).ConfigureAwait(false);
+                }
             }
         }
         catch (OperationCanceledException)
@@ -875,7 +887,10 @@ public static class FoundryWorkspaceService
                             commandId = usesCommand ? "default" : null,
                         },
                     },
-                    subActions = new[]
+            subActions = string.Equals(templateId, FoundryProjectTemplateService.StreamerBotExtension,
+                    StringComparison.Ordinal)
+                ? Array.Empty<object>()
+                : new object[]
                     {
                         new
                         {

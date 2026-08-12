@@ -800,3 +800,11 @@ packages deterministically re-embed the confined source as Execute C# type
 same-format provenance. Broader conversions require representative capture
 evidence and exact-host verification. Manual acceptance is defined in
 [streamerbot-csharp-authoring.md](streamerbot-csharp-authoring.md).
+
+The acceptance follow-up separates source-only and managed project intent.
+**Streamer.bot C# action package** creates a package-only Designer project with
+no managed DLL, bridge sub-action, or invented managed-entry test. The managed
+command-workflow template retains the bridge. The Actions grid also reuses
+existing group and queue choices, shows the resolved Queue Name, and keeps Group
+editable for intentional overrides. Standard text-edit context menus now use
+the active Foundry theme throughout the Build pane and Designer grids.

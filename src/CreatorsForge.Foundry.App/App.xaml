@@ -234,11 +234,26 @@
         </Setter.Value>
       </Setter>
     </Style>
+    <ContextMenu x:Key="FoundryTextEditContextMenu" x:Shared="False"
+        Background="{DynamicResource PanelBackgroundBrush}"
+        Foreground="{DynamicResource TextBrush}"
+        BorderBrush="{DynamicResource PanelBorderBrush}">
+      <MenuItem Header="Cut" Command="ApplicationCommands.Cut"
+          Background="{DynamicResource PanelBackgroundBrush}"
+          Foreground="{DynamicResource TextBrush}" />
+      <MenuItem Header="Copy" Command="ApplicationCommands.Copy"
+          Background="{DynamicResource PanelBackgroundBrush}"
+          Foreground="{DynamicResource TextBrush}" />
+      <MenuItem Header="Paste" Command="ApplicationCommands.Paste"
+          Background="{DynamicResource PanelBackgroundBrush}"
+          Foreground="{DynamicResource TextBrush}" />
+    </ContextMenu>
     <Style TargetType="TextBox">
       <Setter Property="Background" Value="{DynamicResource EditorBackgroundBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
       <Setter Property="CaretBrush" Value="{DynamicResource TextBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource PanelBorderBrush}" />
+      <Setter Property="ContextMenu" Value="{StaticResource FoundryTextEditContextMenu}" />
     </Style>
     <Style TargetType="PasswordBox">
       <Setter Property="Background" Value="{DynamicResource EditorBackgroundBrush}" />

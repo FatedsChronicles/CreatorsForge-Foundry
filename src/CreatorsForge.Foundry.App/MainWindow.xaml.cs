@@ -132,6 +132,7 @@ public partial class MainWindow : Window
             designerReady = newProjectSuggestionsReady && designer.Content is not null &&
                 designer.ResourcesReadyForSmokeTest &&
                 designer.CSharpAuthoringReadyForSmokeTest &&
+                designer.VerifyActionSuggestionsForSmokeTest() &&
                 designer.VerifyCSharpConversionForSmokeTest() &&
                 palette.Content is not null &&
                 new OperationReferenceChoice("command-id", "Friendly command").ToString() == "Friendly command";

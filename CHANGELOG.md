@@ -75,6 +75,16 @@ All notable changes to Creators Forge Foundry are documented in this file.
   the same index and immediately reselects it, so kind and C# state visibly
   become `executeCSharp` and `Generated`. An identical existing generated file
   can be safely reused, while different source is never overwritten.
+- Phase 25F acceptance follow-up: all standard text fields, including Build,
+  Console, and Streamer.bot Designer grid editors, now use the themed
+  Cut/Copy/Paste menu in Dark mode.
+- The Actions grid now shows Queue Name beside Queue ID and supplies existing
+  groups and queues as reusable selections. Group remains editable so a new or
+  replacement group can still be entered.
+- The **Streamer.bot C# action package** template is now source-first and
+  package-only: it contains no unrelated managed DLL, CPHInline bridge, or
+  invented managed-entry test. The managed command-workflow template retains
+  the bridge for projects that intentionally call a Foundry DLL.
 - Phase 25E acceptance follow-up: Resources grid type and portability editors
   now retain dark-theme colours while open, text-edit context menus use the
   Foundry theme, and validation explicitly states that `SBD2007`/`SBD2008`

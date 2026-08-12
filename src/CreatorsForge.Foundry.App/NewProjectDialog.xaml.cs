@@ -74,7 +74,7 @@ public partial class NewProjectDialog : Window
         }
 
         ProfileComboBox.SelectedIndex = 0;
-        TemplateComboBox.SelectedIndex = TemplateComboBox.Items.Count > 1 ? 1 : 0;
+        TemplateComboBox.SelectedIndex = 0;
     }
 
     private void Template_SelectionChanged(object sender, SelectionChangedEventArgs e)

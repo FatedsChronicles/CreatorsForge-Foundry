@@ -27,11 +27,25 @@ public partial class StreamerBotDesignerDialog : Window
     private string? maximumTestedVersion;
     private string? documentation;
 
+    public ObservableCollection<string> GroupOptions { get; } = [];
+    public ObservableCollection<QueueChoice> QueueOptions { get; } = [];
+
     public string? RequestedSourcePath { get; private set; }
     internal bool ResourcesReadyForSmokeTest =>
         ResourcesGrid is not null && ResourceTypes.Count >= 13 && PortabilityOptions.Count == 4;
     internal bool CSharpAuthoringReadyForSmokeTest =>
         AddExecuteCSharpButton is not null && ConvertToCSharpButton is not null;
+
+    internal bool VerifyActionSuggestionsForSmokeTest()
+    {
+        if (actions.Count == 0 || queues.Count == 0) return false;
+        actions[0].Group = "Shared Group";
+        actions[0].QueueId = queues[0].Id;
+        RefreshActionSuggestions();
+        return GroupOptions.Contains("Shared Group") &&
+               QueueOptions.Any(item => item.Id == queues[0].Id && item.Name == queues[0].Name) &&
+               actions[0].QueueName == queues[0].Name;
+    }
 
     internal bool VerifyCSharpConversionForSmokeTest()
     {
@@ -115,6 +129,7 @@ public partial class StreamerBotDesignerDialog : Window
         ActionsGrid.ItemsSource = actions;
         ResourcesGrid.ItemsSource = resources;
         ActionsGrid.SelectedIndex = actions.Count > 0 ? 0 : -1;
+        RefreshActionSuggestions();
         RefreshGeneratedSourceStates();
         StatusText.Text = Path.GetFileName(definitionPath);
         RefreshValidation();
@@ -134,10 +149,37 @@ public partial class StreamerBotDesignerDialog : Window
     {
         if (ActionsGrid.SelectedItem is ActionRow action)
             WeightColumn.IsReadOnly = !action.RandomAction;
+        RefreshActionSuggestions();
         RefreshValidation();
     }
 
-    private void Grid_CurrentCellChanged(object? sender, EventArgs e) => RefreshValidation();
+    private void Grid_CurrentCellChanged(object? sender, EventArgs e)
+    {
+        if (ReferenceEquals(sender, QueuesGrid)) RefreshActionSuggestions();
+        RefreshValidation();
+    }
+
+    private void RefreshActionSuggestions()
+    {
+        var groups = actions.Select(item => item.Group?.Trim())
+            .Where(item => !string.IsNullOrWhiteSpace(item))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(item => item, StringComparer.OrdinalIgnoreCase)
+            .Cast<string>()
+            .ToArray();
+        GroupOptions.Clear();
+        foreach (var group in groups) GroupOptions.Add(group);
+
+        QueueOptions.Clear();
+        foreach (var queue in queues.OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase))
+            QueueOptions.Add(new QueueChoice(queue.Id, queue.Name));
+        var names = QueueOptions.ToDictionary(item => item.Id, item => item.Name, StringComparer.Ordinal);
+        foreach (var action in actions)
+            action.QueueName = action.QueueId is not null && names.TryGetValue(action.QueueId, out var name)
+                ? name
+                : string.Empty;
+        ActionsGrid.Items.Refresh();
+    }
 
     private void AddAction_Click(object sender, RoutedEventArgs e)
     {
@@ -795,6 +837,7 @@ public partial class StreamerBotDesignerDialog : Window
         public string Name { get; set; } = string.Empty;
         public bool Enabled { get; set; }
         public string? QueueId { get; set; }
+        public string QueueName { get; set; } = string.Empty;
         public bool Concurrent { get; set; }
         public bool AlwaysRun { get; set; }
         public string? Group { get; set; }
@@ -852,6 +895,11 @@ public partial class StreamerBotDesignerDialog : Window
             RandomAction,
             ExcludeFromPending,
             ExcludeFromHistory);
+    }
+
+    public sealed record QueueChoice(string Id, string Name)
+    {
+        public override string ToString() => Name;
     }
 
     private sealed class TriggerRow : IDesignerRow

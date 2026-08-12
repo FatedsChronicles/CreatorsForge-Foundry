@@ -5,7 +5,9 @@ implementation never executes C# inside Foundry.
 
 ## Manual Execute C#
 
-1. Create or open a Streamer.bot project and open **Tools > Streamer.bot Designer**.
+1. Create a **Streamer.bot C# action package**, or open an existing
+   source-first project, then open **Tools > Streamer.bot Designer**. The C#
+   action-package template deliberately contains no managed bridge.
 2. Select an editable action and choose **Add Execute C#...**.
 3. Confirm the row reports `executeCSharp`, a confined
    `streamerbot/code/<action-id>/<subaction-id>.cs` path, and `Manual` state.
@@ -49,3 +51,8 @@ implementation never executes C# inside Foundry.
 Acceptance should cover Streamer.bot 1.0.4, 1.0.5-alpha.34,
 1.0.5-beta.1, 1.0.5-beta.6, and 1.0.7 wherever the selected adapter/profile
 claims compatibility.
+
+Existing managed-template projects may still contain an `executeBridge`
+sub-action. Keep it only when the action intentionally calls the generated
+Foundry DLL. For a Designer-authored C#-only action, select that bridge row and
+choose **Remove** before building the import package.
