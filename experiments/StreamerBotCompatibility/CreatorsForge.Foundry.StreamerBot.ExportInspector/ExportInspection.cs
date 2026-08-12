@@ -47,7 +47,8 @@ public static class ExportInspection
             normalized.DistinctGuidCount,
             normalized.AbsolutePathProperties,
             GetRootProperties(decoded.Root),
-            GetSchema(decoded.Root));
+            GetSchema(decoded.Root),
+            GetNativeOperations(decoded.Root));
 
         File.WriteAllText(
             reportPath,
@@ -73,6 +74,55 @@ public static class ExportInspection
         AddSchema(root, "$", schema);
         return schema.Order(StringComparer.Ordinal).ToArray();
     }
+
+    private static NativeOperationShape[] GetNativeOperations(JsonNode root)
+    {
+        if (root["data"]?["actions"] is not JsonArray actions) return [];
+        var shapes = new Dictionary<(string EntityKind, int NativeType),
+            (int Count, HashSet<string> Properties)>();
+        foreach (var action in actions.OfType<JsonObject>())
+        {
+            AddShapes(action["triggers"] as JsonArray, "trigger", shapes);
+            AddShapes(action["subActions"] as JsonArray, "subAction", shapes);
+        }
+
+        return shapes.OrderBy(item => item.Key.EntityKind, StringComparer.Ordinal)
+            .ThenBy(item => item.Key.NativeType)
+            .Select(item => new NativeOperationShape(
+                item.Key.EntityKind,
+                item.Key.NativeType,
+                item.Value.Count,
+                item.Value.Properties.Order(StringComparer.Ordinal).ToArray()))
+            .ToArray();
+    }
+
+    private static void AddShapes(
+        JsonArray? values,
+        string entityKind,
+        Dictionary<(string EntityKind, int NativeType), (int Count, HashSet<string> Properties)> shapes)
+    {
+        if (values is null) return;
+        foreach (var value in values.OfType<JsonObject>())
+        {
+            if (value["type"] is not JsonValue typeValue ||
+                !typeValue.TryGetValue<int>(out var nativeType))
+                continue;
+            var key = (entityKind, nativeType);
+            if (!shapes.TryGetValue(key, out var shape))
+                shape = (0, new(StringComparer.Ordinal));
+            foreach (var property in value)
+                shape.Properties.Add($"{property.Key}:{ValueKind(property.Value)}");
+            shapes[key] = (shape.Count + 1, shape.Properties);
+        }
+    }
+
+    private static string ValueKind(JsonNode? value) => value switch
+    {
+        null => "null",
+        JsonArray => "array",
+        JsonObject => "object",
+        _ => value.GetValueKind().ToString().ToLowerInvariant(),
+    };
 
     private static void AddSchema(JsonNode node, string path, ISet<string> schema)
     {
@@ -121,4 +171,11 @@ public sealed record ExportInspectionReport(
     int DistinctGuidCount,
     IReadOnlyList<string> AbsolutePathProperties,
     IReadOnlyList<string> RootProperties,
-    IReadOnlyList<string> Schema);
+    IReadOnlyList<string> Schema,
+    IReadOnlyList<NativeOperationShape> NativeOperations);
+
+public sealed record NativeOperationShape(
+    string EntityKind,
+    int NativeType,
+    int Occurrences,
+    IReadOnlyList<string> Properties);

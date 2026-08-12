@@ -29,6 +29,7 @@ try
     Console.WriteLine($"JSON bytes: {report.JsonBytes}");
     Console.WriteLine($"Distinct GUIDs: {report.DistinctGuidCount}");
     Console.WriteLine($"Absolute paths: {report.AbsolutePathProperties.Count}");
+    Console.WriteLine($"Native operation shapes: {report.NativeOperations.Count}");
     Console.WriteLine($"Output: {outputDirectory}");
     return 0;
 }

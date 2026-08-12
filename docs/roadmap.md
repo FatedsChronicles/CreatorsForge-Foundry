@@ -860,3 +860,34 @@ imports. The follow-up keeps the Designer open after Save, adds Ctrl+S inside
 the Designer, and exposes Ctrl+Shift+D from the workspace. Product-owner
 confirmation of those workflow adjustments passed on 2026-08-12. **Phase 25G
 is complete.**
+
+### Phase 25H - Expanded native sub-action catalogue and conversions
+
+Phase 25H expands the schema-driven Streamer.bot palette only from reviewed,
+representative exports. The first increment extends the non-executing Export
+Inspector with a value-free native-operation inventory: entity kind, numeric
+type, occurrence count, and property-name/type signatures. It never includes
+field values or executes an exported operation.
+
+Captures are deliberately minimal and paired. For each candidate, create one
+action containing the operation with defaults and a second export containing
+distinct non-secret values. Capture the same pair from Streamer.bot 1.0.4,
+1.0.5-alpha.34, 1.0.5-beta.1, 1.0.5-beta.6, and 1.0.7. The first candidate set
+is Delay, Log, Set Global Variable, Get Global Variable, Send Message, Execute
+Action, Set Command State, and Set Command Group State. Names are capture
+targets, not approved mappings; no native type enters the built-in catalogue
+until the retained evidence agrees.
+
+After review, each operation receives a stable Foundry catalogue ID, compatible
+profiles, typed parameter schema, argument input/output contract, native model
+mapping, deterministic v23/v24 encoding, import preservation tests, and exact-
+host acceptance. Native-to-C# conversion is a separate approval per operation:
+Foundry must prove equivalent behavior, escaping, default values, error
+semantics, and required CPH API availability before offering **Convert to C#**.
+Unsupported and unverified operations remain visible and read-only.
+
+The Phase 25H implementation gate requires bounded malformed-capture tests,
+value-free reports, matched five-host fixtures, deterministic package and
+golden regressions, Designer smoke coverage, and no OBS regressions. The
+capture procedure is defined in
+[streamerbot-native-operation-captures.md](streamerbot-native-operation-captures.md).
