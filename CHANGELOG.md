@@ -6,6 +6,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Planned Phase 25G command-group support for the Streamer.bot Designer,
+  including verified wire-format capture, source-first schema migration,
+  friendly reusable group selection, and deterministic import/export.
 - Phase 25F Streamer.bot definition schema v5 with deterministic migration and
   Execute C# generation provenance, source hashes, and detached-edit state.
 - Manual Execute C# creation in the Streamer.bot Designer, confined source
@@ -113,6 +116,10 @@ identity.
 
 ### Acceptance
 
+- Phase 25F product-owner acceptance passed on 2026-08-12. Execute C# authoring,
+  native Set Argument conversion, source-only and managed package behavior,
+  Designer suggestions and theme fixes, deterministic builds, and Streamer.bot
+  import checks all passed.
 - Phase 25D product-owner acceptance passed on 2026-08-11. Arbitrary-extension
   loading, drag and drop, synchronized naming suggestions, friendly imported
   source labels, save/reopen, and regression checks passed.

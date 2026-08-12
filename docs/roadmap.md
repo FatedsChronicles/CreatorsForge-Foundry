@@ -808,3 +808,39 @@ command-workflow template retains the bridge. The Actions grid also reuses
 existing group and queue choices, shows the resolved Queue Name, and keeps Group
 editable for intentional overrides. Standard text-edit context menus now use
 the active Foundry theme throughout the Build pane and Designer grids.
+
+Product-owner manual acceptance passed on 2026-08-12. Execute C# creation, Set
+Argument conversion, source-only packaging, managed bridge separation, group
+and queue suggestions, dark-theme menus, save/reopen, deterministic build, and
+Streamer.bot import checks passed. The acceptance follow-up also removed a
+re-entrant Actions-grid refresh that could lock the Designer UI. **Phase 25F is
+complete.**
+
+### Phase 25G - Command groups and command organization
+
+Phase 25G adds first-class Streamer.bot command grouping to the Commands tab.
+Before changing the source model, representative exports will establish the
+exact command-group wire fields, IDs, ordering, and empty-group behavior for
+each supported payload adapter. Foundry will not infer undocumented fields.
+
+The next Streamer.bot definition schema will add the verified group relationship
+to commands with deterministic migration. Imported commands retain their source
+wire IDs and group relationships; newly authored groups receive deterministic
+identities derived from the project identity wherever the verified wire format
+requires an ID. Unsupported or adapter-specific group data remains preserved
+read-only under the existing opaque-data rules.
+
+The Commands tab will provide a friendly **Group** selector populated from
+groups already used by other commands, while remaining editable so a creator
+can add a new group or intentionally replace a suggestion. Blank means the
+command is ungrouped. Rename, duplicate, save/reopen, diagnostics, and Solution
+Explorer labels must retain the correct relationships without exposing IDs in
+place of names.
+
+Import, validation, package IR, and the verified v23/v24 encoders will carry
+command grouping deterministically. Acceptance requires grouped and ungrouped
+multi-command fixtures, import/edit/re-export preservation, stable IDs and
+ordering, zero changes to opaque nodes, and successful import into every exact
+Streamer.bot host claimed by the adapter, currently 1.0.4, 1.0.5-alpha.34,
+1.0.5-beta.1, 1.0.5-beta.6, and 1.0.7. The full Foundry regression suite must
+continue to pass with no OBS regressions.
