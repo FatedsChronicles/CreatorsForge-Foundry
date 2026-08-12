@@ -138,6 +138,7 @@ public partial class MainWindow : Window
                 designer.ResourcesReadyForSmokeTest &&
                 designer.CSharpAuthoringReadyForSmokeTest &&
                 designer.VerifyActionSuggestionsForSmokeTest() &&
+                designer.VerifyCommandGroupsForSmokeTest() &&
                 designer.VerifyCSharpConversionForSmokeTest() &&
                 palette.Content is not null &&
                 new OperationReferenceChoice("command-id", "Friendly command").ToString() == "Friendly command";

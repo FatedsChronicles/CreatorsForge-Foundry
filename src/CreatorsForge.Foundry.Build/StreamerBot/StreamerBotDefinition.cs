@@ -5,7 +5,7 @@ namespace CreatorsForge.Foundry.Build.StreamerBot;
 
 public sealed record StreamerBotDefinition
 {
-    public const int CurrentSchemaVersion = 5;
+    public const int CurrentSchemaVersion = 6;
 
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
     public StreamerBotMetadata Metadata { get; init; } = new();
@@ -58,7 +58,8 @@ public sealed record StreamerBotCommand(
     bool IgnoreBotAccount = true,
     bool IgnoreInternalMessages = true,
     int Sources = 1,
-    string? Description = null);
+    string? Description = null,
+    string? Group = null);
 
 public sealed record StreamerBotAction(
     string Id,
@@ -187,7 +188,7 @@ public static class StreamerBotDefinitionLoader
             return new(null, ["Definition JSON is empty."]);
         }
 
-        if (value.SchemaVersion is 1 or 2 or 3 or 4)
+        if (value.SchemaVersion is 1 or 2 or 3 or 4 or 5)
         {
             value = value with { SchemaVersion = StreamerBotDefinition.CurrentSchemaVersion };
         }
@@ -202,7 +203,7 @@ public static class StreamerBotDefinitionLoader
     public static string[] Validate(StreamerBotDefinition value)
     {
         var errors = new List<string>();
-        if (value.SchemaVersion is not (1 or 2 or 3 or 4 or StreamerBotDefinition.CurrentSchemaVersion))
+        if (value.SchemaVersion is not (1 or 2 or 3 or 4 or 5 or StreamerBotDefinition.CurrentSchemaVersion))
         {
             errors.Add($"Schema {value.SchemaVersion} is unsupported.");
         }

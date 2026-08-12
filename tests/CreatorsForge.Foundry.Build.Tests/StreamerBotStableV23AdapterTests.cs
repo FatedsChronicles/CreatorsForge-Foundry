@@ -67,6 +67,7 @@ public sealed class StreamerBotStableV23AdapterTests
         Assert.Equal(
             command["id"]!.GetValue<string>(),
             action["triggers"]![0]!["commandId"]!.GetValue<string>());
+        Assert.Null(command["group"]);
         var executeBridge = action["subActions"]![1]!.AsObject();
         Assert.Empty(executeBridge["references"]!.AsArray());
         Assert.Equal(
@@ -122,6 +123,7 @@ public sealed class StreamerBotStableV23AdapterTests
                 IgnoreBotAccount = false,
                 IgnoreInternalMessages = false,
                 Sources = 7,
+                Group = "Creator Commands",
             }],
             Actions = [original.Actions[0] with
             {
@@ -142,6 +144,7 @@ public sealed class StreamerBotStableV23AdapterTests
         Assert.False(decoded.Commands[0].IgnoreBotAccount);
         Assert.False(decoded.Commands[0].IgnoreInternalMessages);
         Assert.Equal(7, decoded.Commands[0].Sources);
+        Assert.Equal("Creator Commands", decoded.Commands[0].Group);
         Assert.Equal("Moderation", decoded.Actions[0].Group);
         Assert.True(decoded.Actions[0].RandomAction);
         Assert.True(decoded.Actions[0].ExcludeFromPending);

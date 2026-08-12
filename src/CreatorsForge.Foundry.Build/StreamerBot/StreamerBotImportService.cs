@@ -330,7 +330,8 @@ public static partial class StreamerBotImportService
                     wire["ignoreBotAccount"]?.GetValue<bool>() ?? true,
                     wire["ignoreInternal"]?.GetValue<bool>() ?? true,
                     ReadInteger(wire, "sources") ?? 1,
-                    ReadString(wire, "description"));
+                    ReadString(wire, "description"),
+                    ReadString(wire, "group"));
             }).ToArray();
 
             var actions = data["actions"]!.AsArray().Select((node, actionIndex) =>
