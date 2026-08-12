@@ -10,6 +10,8 @@ All notable changes to Creators Forge Foundry are documented in this file.
   migration from schemas v1-v5, and group-aware v23/v24 import and export.
 - An editable Commands-tab Group selector with reusable project suggestions,
   explicit ungrouped state, and group-preserving command duplication.
+- A Ctrl+Shift+D Streamer.bot Designer shortcut and a non-dismissing Save
+  workflow, including Ctrl+S, so creators can continue editing after each save.
 - Phase 25F Streamer.bot definition schema v5 with deterministic migration and
   Execute C# generation provenance, source hashes, and detached-edit state.
 - Manual Execute C# creation in the Streamer.bot Designer, confined source
@@ -122,6 +124,10 @@ identity.
 
 ### Acceptance
 
+- Phase 25G product-owner acceptance passed on 2026-08-12 for command group
+  creation, suggestions, persistence, deterministic packaging, and supported
+  Streamer.bot host imports. Save-without-close and Ctrl+Shift+D are follow-up
+  workflow improvements awaiting confirmation.
 - Phase 25F product-owner acceptance passed on 2026-08-12. Execute C# authoring,
   native Set Argument conversion, source-only and managed package behavior,
   Designer suggestions and theme fixes, deterministic builds, and Streamer.bot

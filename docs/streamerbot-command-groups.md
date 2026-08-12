@@ -53,3 +53,12 @@ fixed in the Actions tab.
 
 Imported code and sub-actions remain inert throughout analysis, editing, and
 packaging.
+
+## Designer workflow
+
+- **Ctrl+Shift+D** opens the Streamer.bot Designer from the Foundry workspace.
+- **Ctrl+S** or **Save** writes the definition atomically and keeps the Designer
+  open so creators can continue editing.
+- **Close**, Escape, or the window close button dismisses the Designer manually.
+- **Open C# source** is the intentional exception: it saves, closes the Designer,
+  and returns to the main editor so the selected source can be opened.

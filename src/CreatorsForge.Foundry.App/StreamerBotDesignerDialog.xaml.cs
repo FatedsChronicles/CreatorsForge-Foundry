@@ -35,6 +35,7 @@ public partial class StreamerBotDesignerDialog : Window
     public ObservableCollection<QueueChoice> QueueOptions { get; } = [];
 
     public string? RequestedSourcePath { get; private set; }
+    public bool HasSavedChanges { get; private set; }
     internal bool ResourcesReadyForSmokeTest =>
         ResourcesGrid is not null && ResourceTypes.Count >= 13 && PortabilityOptions.Count == 4;
     internal bool CSharpAuthoringReadyForSmokeTest =>
@@ -112,7 +113,18 @@ public partial class StreamerBotDesignerDialog : Window
         this.definitionPath = definitionPath;
         this.profile = profile;
         InitializeComponent();
+        PreviewKeyDown += Designer_PreviewKeyDown;
         LoadDefinition();
+    }
+
+    private void Designer_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (System.Windows.Input.Keyboard.Modifiers == System.Windows.Input.ModifierKeys.Control &&
+            e.Key == System.Windows.Input.Key.S)
+        {
+            e.Handled = true;
+            SaveDefinition();
+        }
     }
 
     private void LoadDefinition()
@@ -539,7 +551,9 @@ public partial class StreamerBotDesignerDialog : Window
         if (ActionsGrid.SelectedItem is ActionRow action) MoveSelected(action.SubActions, SubActionsGrid, 1);
     }
 
-    private void Save_Click(object sender, RoutedEventArgs e)
+    private void Save_Click(object sender, RoutedEventArgs e) => SaveDefinition();
+
+    private bool SaveDefinition()
     {
         CommitGridEdits();
         RefreshGeneratedSourceStates();
@@ -555,13 +569,15 @@ public partial class StreamerBotDesignerDialog : Window
                 "Definition validation",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
-            return;
+            return false;
         }
 
         var temporaryPath = definitionPath + ".tmp";
         File.WriteAllText(temporaryPath, StreamerBotDefinitionLoader.Serialize(definition));
         File.Move(temporaryPath, definitionPath, overwrite: true);
-        DialogResult = true;
+        HasSavedChanges = true;
+        StatusText.Text = $"Saved {Path.GetFileName(definitionPath)}. The Designer remains open.";
+        return true;
     }
 
     private StreamerBotDefinition CreateDefinition() => new()
@@ -707,8 +723,8 @@ public partial class StreamerBotDesignerDialog : Window
         if (SubActionsGrid.SelectedItem is SubActionRow { Kind: "executeCSharp", SourcePath: { Length: > 0 } sourcePath })
         {
             RequestedSourcePath = sourcePath;
-            Save_Click(sender, e);
-            if (DialogResult != true) RequestedSourcePath = null;
+            if (SaveDefinition()) DialogResult = true;
+            else RequestedSourcePath = null;
         }
     }
 

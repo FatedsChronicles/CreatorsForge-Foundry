@@ -853,3 +853,9 @@ selection as an ungrouped command. Generated v23 and preserved v23/v24 packages
 carry the value without changing source IDs, ordering, trigger relationships,
 or opaque nodes. Manual acceptance is defined in
 [streamerbot-command-groups.md](streamerbot-command-groups.md).
+
+Product-owner manual acceptance passed on 2026-08-12 for command group
+creation, suggestions, persistence, deterministic packaging, and supported-host
+imports. The follow-up keeps the Designer open after Save, adds Ctrl+S inside
+the Designer, and exposes Ctrl+Shift+D from the workspace; those workflow
+adjustments require a short confirmation before **Phase 25G is complete**.

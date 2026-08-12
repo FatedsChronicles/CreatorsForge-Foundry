@@ -399,8 +399,8 @@
           VerticalAlignment="Center"
           Foreground="{DynamicResource MutedTextBrush}" />
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-        <Button MinWidth="90" Content="Cancel" IsCancel="True" />
-        <Button MinWidth="90" Content="Save" IsDefault="True" Click="Save_Click" />
+        <Button MinWidth="90" Content="Close" IsCancel="True" />
+        <Button MinWidth="90" Content="Save" IsDefault="True" Click="Save_Click" ToolTip="Save changes and keep the Designer open (Ctrl+S)." />
       </StackPanel>
     </DockPanel>
   </Grid>
