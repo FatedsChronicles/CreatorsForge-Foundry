@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using CreatorsForge.Foundry.Build.StreamerBot;
@@ -21,6 +22,7 @@ public partial class StreamerBotDesignerDialog : Window
     private readonly ObservableCollection<QueueRow> queues = [];
     private readonly ObservableCollection<ResourceRow> resources = [];
     private readonly HashSet<string> createdSourcePaths = new(StringComparer.OrdinalIgnoreCase);
+    private bool isRefreshingActionSuggestions;
     private readonly string? profile;
     private StreamerBotImportProvenance? import;
     private string minimumVersion = "1.0.0-alpha.1";
@@ -42,7 +44,12 @@ public partial class StreamerBotDesignerDialog : Window
         actions[0].Group = "Shared Group";
         actions[0].QueueId = queues[0].Id;
         RefreshActionSuggestions();
-        return GroupOptions.Contains("Shared Group") &&
+        var groupCount = GroupOptions.Count;
+        var queueCount = QueueOptions.Count;
+        RefreshActionSuggestions();
+        return GroupOptions.Count == groupCount &&
+               QueueOptions.Count == queueCount &&
+               GroupOptions.Contains("Shared Group") &&
                QueueOptions.Any(item => item.Id == queues[0].Id && item.Name == queues[0].Name) &&
                actions[0].QueueName == queues[0].Name;
     }
@@ -161,24 +168,39 @@ public partial class StreamerBotDesignerDialog : Window
 
     private void RefreshActionSuggestions()
     {
-        var groups = actions.Select(item => item.Group?.Trim())
-            .Where(item => !string.IsNullOrWhiteSpace(item))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(item => item, StringComparer.OrdinalIgnoreCase)
-            .Cast<string>()
-            .ToArray();
-        GroupOptions.Clear();
-        foreach (var group in groups) GroupOptions.Add(group);
+        if (isRefreshingActionSuggestions) return;
+        isRefreshingActionSuggestions = true;
+        try
+        {
+            var groups = actions.Select(item => item.Group?.Trim())
+                .Where(item => !string.IsNullOrWhiteSpace(item))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(item => item, StringComparer.OrdinalIgnoreCase)
+                .Cast<string>()
+                .ToArray();
+            SynchronizeChoices(GroupOptions, groups);
 
-        QueueOptions.Clear();
-        foreach (var queue in queues.OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase))
-            QueueOptions.Add(new QueueChoice(queue.Id, queue.Name));
-        var names = QueueOptions.ToDictionary(item => item.Id, item => item.Name, StringComparer.Ordinal);
-        foreach (var action in actions)
-            action.QueueName = action.QueueId is not null && names.TryGetValue(action.QueueId, out var name)
-                ? name
-                : string.Empty;
-        ActionsGrid.Items.Refresh();
+            var queueChoices = queues.OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(item => new QueueChoice(item.Id, item.Name))
+                .ToArray();
+            SynchronizeChoices(QueueOptions, queueChoices);
+            var names = QueueOptions.ToDictionary(item => item.Id, item => item.Name, StringComparer.Ordinal);
+            foreach (var action in actions)
+                action.QueueName = action.QueueId is not null && names.TryGetValue(action.QueueId, out var name)
+                    ? name
+                    : string.Empty;
+        }
+        finally
+        {
+            isRefreshingActionSuggestions = false;
+        }
+    }
+
+    private static void SynchronizeChoices<T>(ObservableCollection<T> target, IReadOnlyList<T> values)
+    {
+        if (target.SequenceEqual(values)) return;
+        target.Clear();
+        foreach (var value in values) target.Add(value);
     }
 
     private void AddAction_Click(object sender, RoutedEventArgs e)
@@ -786,8 +808,11 @@ public partial class StreamerBotDesignerDialog : Window
             .ToArray();
     }
 
-    private sealed class ActionRow : IDesignerRow
+    private sealed class ActionRow : IDesignerRow, INotifyPropertyChanged
     {
+        private string queueName = string.Empty;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
         public ActionRow()
         {
         }
@@ -837,7 +862,16 @@ public partial class StreamerBotDesignerDialog : Window
         public string Name { get; set; } = string.Empty;
         public bool Enabled { get; set; }
         public string? QueueId { get; set; }
-        public string QueueName { get; set; } = string.Empty;
+        public string QueueName
+        {
+            get => queueName;
+            set
+            {
+                if (string.Equals(queueName, value, StringComparison.Ordinal)) return;
+                queueName = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(QueueName)));
+            }
+        }
         public bool Concurrent { get; set; }
         public bool AlwaysRun { get; set; }
         public string? Group { get; set; }

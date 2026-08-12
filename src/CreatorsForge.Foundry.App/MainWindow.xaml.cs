@@ -129,6 +129,11 @@ public partial class MainWindow : Window
             var palette = new StreamerBotOperationPaletteDialog(
                 "subAction",
                 viewModel.Workspace.Manifest.Target?.Profile);
+            designer.UpdateLayout();
+            await designer.Dispatcher.InvokeAsync(
+                () => { },
+                DispatcherPriority.ContextIdle,
+                cancellationToken);
             designerReady = newProjectSuggestionsReady && designer.Content is not null &&
                 designer.ResourcesReadyForSmokeTest &&
                 designer.CSharpAuthoringReadyForSmokeTest &&

@@ -65,6 +65,9 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Fixed
 
+- Prevented the Streamer.bot Designer from locking the UI thread when action
+  group and queue suggestions refreshed. Suggestion updates are now guarded,
+  idempotent, and update queue labels without recursively refreshing the grid.
 - Phase 25F acceptance follow-up: the general New Project dialog now derives
   Package ID and the complete New folder from Project name while preserving
   manual edits; new and converted Execute C# sources include `using System;`;
