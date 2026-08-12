@@ -6,6 +6,11 @@ All notable changes to Creators Forge Foundry are documented in this file.
 
 ### Added
 
+- Phase 25H capture-driven native sub-action expansion foundation, including a
+  value-free Export Inspector inventory of operation kinds, numeric types,
+  occurrence counts, and property/type signatures.
+- A five-host paired-capture and approval procedure for expanding native
+  mappings and independently verifying any proposed native-to-C# conversion.
 - Phase 25G Streamer.bot definition schema v6 command groups, deterministic
   migration from schemas v1-v5, and group-aware v23/v24 import and export.
 - An editable Commands-tab Group selector with reusable project suggestions,

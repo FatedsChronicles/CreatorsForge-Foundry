@@ -103,6 +103,42 @@ public sealed class ExportEnvelopeTests
         }
     }
 
+    [Fact]
+    public void InspectReportsValueFreeNativeOperationShapes()
+    {
+        const string json = """
+            {
+              "version": 24,
+              "data": {
+                "actions": [{
+                  "triggers": [{"id":"secret-trigger-id","type":401,"enabled":true,"commandId":"secret-command-id"}],
+                  "subActions": [
+                    {"id":"one","type":123,"enabled":true,"variableName":"secret-name","value":"secret-value","autoType":true},
+                    {"id":"two","type":123,"enabled":false,"variableName":"other","value":"other-value","autoType":false}
+                  ]
+                }]
+              }
+            }
+            """;
+        var outputDirectory = Path.Combine(Path.GetTempPath(), $"foundry-native-shapes-{Guid.NewGuid():N}");
+        try
+        {
+            var report = ExportInspection.Inspect("fixture", CreateImportCode(json), outputDirectory);
+            var trigger = Assert.Single(report.NativeOperations, item => item.EntityKind == "trigger");
+            var subAction = Assert.Single(report.NativeOperations, item => item.EntityKind == "subAction");
+            Assert.Equal(401, trigger.NativeType);
+            Assert.Equal(123, subAction.NativeType);
+            Assert.Equal(2, subAction.Occurrences);
+            Assert.Contains("variableName:string", subAction.Properties);
+            Assert.DoesNotContain(report.NativeOperations.SelectMany(item => item.Properties),
+                value => value.Contains("secret", StringComparison.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            if (Directory.Exists(outputDirectory)) Directory.Delete(outputDirectory, true);
+        }
+    }
+
     private static string CreateImportCode(string json)
     {
         using var envelope = new MemoryStream();
